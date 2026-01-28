@@ -273,7 +273,7 @@ private void UpdateRetracting()
             if (casterAtk > 0)
                 raw += casterAtk;
 
-            entity.TakeDamage(raw, caster);
+            CombatResolver.ApplyHit(caster, entity, raw, "projectile");
             Debug.Log($"[InkStream] Hit {entity.name} for {raw} damage");
         }
         

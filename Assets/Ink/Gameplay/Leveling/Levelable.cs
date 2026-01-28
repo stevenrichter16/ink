@@ -20,6 +20,7 @@ namespace InkSim
         public int MaxHp { get; private set; }
         public int Atk { get; private set; }
         public int Def { get; private set; }
+        public int Spd { get; private set; }
         public int XpToNextLevel { get; private set; }
         
         // Public accessors
@@ -46,10 +47,11 @@ namespace InkSim
             {
                 Debug.LogWarning($"[Levelable] {gameObject.name} has no LevelProfile assigned!");
                 // Fallback with linear scaling
-                MaxHp = 100 + 20 * (_level - 1);
-                Atk = 10 + 2 * (_level - 1);
-                Def = 5 + 1 * (_level - 1);
-                XpToNextLevel = 50 + 50 * _level;
+            MaxHp = 100 + 20 * (_level - 1);
+            Atk = 10 + 2 * (_level - 1);
+            Def = 5 + 1 * (_level - 1);
+            Spd = 5 + 1 * (_level - 1);
+            XpToNextLevel = 50 + 50 * _level;
                 
                 OnStatsChanged?.Invoke();
                 return;
@@ -58,6 +60,7 @@ namespace InkSim
             MaxHp = profile.GetMaxHp(_level);
             Atk = profile.GetAtk(_level);
             Def = profile.GetDef(_level);
+            Spd = profile.GetSpd(_level);
             XpToNextLevel = profile.GetXpToNextLevel(_level);
             
             OnStatsChanged?.Invoke();

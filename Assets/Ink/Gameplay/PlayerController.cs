@@ -36,6 +36,7 @@ namespace InkSim
         public int MaxHealth => (levelable != null ? levelable.MaxHp : baseMaxHealth) + (equipment?.TotalHealthBonus ?? 0);
         public int AttackDamage => (levelable != null ? levelable.Atk : baseAttack) + (equipment?.TotalAttackBonus ?? 0);
         public int Defense => (levelable != null ? levelable.Def : baseDefense) + (equipment?.TotalDefenseBonus ?? 0);
+        public int Speed => (levelable != null ? levelable.Spd : 5) + (equipment?.TotalSpeedBonus ?? 0);
 
         // Shortcuts for common items
         public int Coins => inventory?.CountItem("coin") ?? 0;
@@ -220,7 +221,7 @@ namespace InkSim
             if (!HostilityService.IsHostile(this, target)) return;
 
             Debug.Log($"[Player] Attacking {target.name} for {AttackDamage} damage!");
-            target.TakeDamage(AttackDamage, this);
+            target.ReceiveHit(this, AttackDamage, "melee");
         }
 
         /// <summary>
@@ -270,11 +271,11 @@ namespace InkSim
             return UseItem(item);
         }
 
-public override void TakeDamage(int amount, GridEntity attacker)
+public override void ApplyDamageInternal(int amount, GridEntity attacker)
         {
-            int actualDamage = DamageUtils.ComputeDamageAfterDefense(amount, Defense);
+            int actualDamage = amount;
             
-            if (actualDamage == 0)
+            if (actualDamage <= 0)
             {
                 Debug.Log($"[Player] BLOCKED! Took 0 damage");
                 DamageNumber.Spawn(transform.position, 0, Color.gray);

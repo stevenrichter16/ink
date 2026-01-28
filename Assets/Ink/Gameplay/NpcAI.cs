@@ -162,9 +162,9 @@ namespace InkSim
             }
         }
 
-        public int maxHealth => _levelable != null ? _levelable.MaxHp : baseMaxHealth;
+        public int speed => _levelable != null ? _levelable.Spd : 5;
 
-        private int GetDefense()
+        public override int GetDefenseValue()
         {
             int def = _levelable != null ? _levelable.Def : baseDefense;
             var fm = GetComponent<FactionMember>();
@@ -173,6 +173,9 @@ namespace InkSim
             return def;
         }
 
+        public int maxHealth => _levelable != null ? _levelable.MaxHp : baseMaxHealth;
+
+        
         public override bool CanAttack(GridEntity target)
         {
             if (target == null || target == this) return false;
@@ -193,7 +196,7 @@ namespace InkSim
             }
 
             Debug.Log($"[{name}] Attacking {target.name} for {attackDamage} damage!");
-            target.TakeDamage(attackDamage, this);
+            target.ReceiveHit(this, attackDamage, "melee");
         }
 
         private void WanderRandomly()
@@ -223,7 +226,7 @@ namespace InkSim
             }
         }
 
-        public override void TakeDamage(int amount, GridEntity attacker)
+        public override void ApplyDamageInternal(int amount, GridEntity attacker)
         {
             // NPCs could react to being attacked
             Debug.Log($"[{name}] Hey! Don't hit me!");
@@ -235,9 +238,9 @@ namespace InkSim
             {
                 FactionCombatService.OnPlayerHit(this, pc);
             }
-            
-            int actualDamage = DamageUtils.ComputeDamageAfterDefense(amount, GetDefense());
-            if (actualDamage == 0)
+
+            int actualDamage = amount;
+            if (actualDamage <= 0)
             {
                 DamageNumber.Spawn(transform.position, 0, Color.gray);
                 return;

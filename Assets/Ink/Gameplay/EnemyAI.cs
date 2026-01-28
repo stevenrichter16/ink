@@ -16,6 +16,7 @@ namespace InkSim
         // Computed stats from Levelable (or fallback)
         public int maxHealth => levelable != null ? levelable.MaxHp : 20;
         public int attackDamage => levelable != null ? levelable.Atk : 5;
+        public int speed => levelable != null ? levelable.Spd : 5;
         public string lootTableId;   // Links to LootDatabase
         public string enemyId;       // ID from EnemyDatabase for XP lookup
         [Header("Defense")]
@@ -211,7 +212,7 @@ namespace InkSim
             _retaliationTarget = target;
         }
 
-        private int GetDefense()
+        public override int GetDefenseValue()
         {
             int def = levelable != null ? levelable.Def : baseDefense;
             var fm = GetComponent<FactionMember>();
@@ -225,10 +226,10 @@ namespace InkSim
             if (!CanAttack(target)) return;
             
             Debug.Log($"[{name}] Attacking {target.name} for {attackDamage} damage!");
-            target.TakeDamage(attackDamage, this);
+            target.ReceiveHit(this, attackDamage, "melee");
         }
 
-public override void TakeDamage(int amount, GridEntity attacker)
+public override void ApplyDamageInternal(int amount, GridEntity attacker)
         {
             // Track attacker for XP award
             if (attacker != null)
@@ -239,9 +240,10 @@ public override void TakeDamage(int amount, GridEntity attacker)
             {
                 FactionCombatService.OnPlayerHit(this, pc);
             }
-            
-            int actualDamage = DamageUtils.ComputeDamageAfterDefense(amount, GetDefense());
-            
+
+            // Dodge handled in CombatResolver
+            int actualDamage = DamageUtils.ComputeDamageAfterDefense(amount, GetDefenseValue());
+
             if (actualDamage == 0)
             {
                 DamageNumber.Spawn(transform.position, 0, Color.gray);

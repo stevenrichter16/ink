@@ -13,11 +13,13 @@ namespace InkSim
         public int baseHp = 100;
         public int baseAtk = 10;
         public int baseDef = 5;
+        public int baseSpd = 5;
         
         [Header("Growth Per Level")]
         public int hpPerLevel = 20;
         public int atkPerLevel = 2;
         public int defPerLevel = 1;
+        public int spdPerLevel = 1;
         
         [Header("XP Curve (Linear)")]
         [Tooltip("XP needed = baseXpToLevel + (xpPerLevel * level)")]
@@ -46,6 +48,14 @@ namespace InkSim
         public int GetDef(int level)
         {
             return baseDef + (defPerLevel * (level - 1));
+        }
+
+        /// <summary>
+        /// Calculate speed at a given level.
+        /// </summary>
+        public int GetSpd(int level)
+        {
+            return baseSpd + (spdPerLevel * (level - 1));
         }
         
         /// <summary>

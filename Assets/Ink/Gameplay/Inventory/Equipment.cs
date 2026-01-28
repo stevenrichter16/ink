@@ -64,6 +64,21 @@ namespace InkSim
         }
 
         /// <summary>
+        /// Total speed bonus from all equipped items.
+        /// </summary>
+        public int TotalSpeedBonus
+        {
+            get
+            {
+                int total = 0;
+                if (weapon?.data != null) total += weapon.data.speedBonus;
+                if (armor?.data != null) total += armor.data.speedBonus;
+                if (accessory?.data != null) total += accessory.data.speedBonus;
+                return total;
+            }
+        }
+
+        /// <summary>
         /// Equip an item from inventory.
         /// Returns the previously equipped item (or null).
         /// </summary>

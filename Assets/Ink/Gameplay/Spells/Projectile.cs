@@ -127,7 +127,7 @@ namespace InkSim
             if (casterAtk > 0)
                 raw += casterAtk;
 
-            occupant.TakeDamage(raw, caster);
+            CombatResolver.ApplyHit(caster, occupant, raw, "projectile");
             Debug.Log($"[Projectile] Hit {occupant.name} for {raw} damage");
         }
         

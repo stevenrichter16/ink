@@ -58,6 +58,27 @@ namespace InkSim
             }
         }
 
+        /// <summary>
+        /// Entry point for resolving an incoming hit. Handles dodge/defense in CombatResolver.
+        /// </summary>
+        public virtual void ReceiveHit(GridEntity attacker, int rawDamage, string damageType = "melee")
+        {
+            CombatResolver.ApplyHit(attacker, this, rawDamage, damageType);
+        }
+
+        /// <summary>
+        /// Override to provide this entity's defense value (used by CombatResolver).
+        /// </summary>
+        public virtual int GetDefenseValue() => 0;
+
+        /// <summary>
+        /// Applies already-mitigated damage (after dodge/defense). Do not run dodge/defense here.
+        /// </summary>
+        public virtual void ApplyDamageInternal(int amount, GridEntity attacker)
+        {
+            // Base has no health; concrete entities override.
+        }
+
         protected virtual void Update()
         {
             if (isMoving)

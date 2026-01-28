@@ -16,6 +16,7 @@ namespace InkSim
         public int attackBonus;
         public int defenseBonus;
         public int healthBonus;     // Max HP increase when equipped
+        public int speedBonus;      // Dodge/move related bonus when equipped
         
         // Consumable stats
         public int healAmount;      // HP restored when used
