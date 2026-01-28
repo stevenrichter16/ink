@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0d5e1b4c1c94a2c8f49bb0c97c7a987, type: 3}
+  m_Name: Inkbound
+  m_EditorClassIdentifier: 
+  id: faction_inkbound
+  displayName: Inkbound
+  defaultReputation: 30
+  defaultLevelProfile: {fileID: 11400000, guid: 9f16b2ce5a8e4a8bb1b2dbe72f8e4895, type: 2}
+  disposition: 0
+  rallyRadius: 5
+  alertDurationTurns: 2
+  repOnHit: -5
+  repOnKill: -100
+  ranks:
+  - rankId: low
+    displayName: Inkbound Novice
+    level: 1
+    levelProfileOverride: {fileID: 0}
+    spriteIndices:
+    - 9
+    defaultSpells:
+    - {fileID: 11400000, guid: 8cf77dd05f89f4b5991182ca21ea627e, type: 2}
+    weaponId: 
+    armorId: 
+    accessoryId: 
+    neutralDialogue: {fileID: 11400000, guid: e83b0c703f364b499e97e5a5f5ccd1c3, type: 2}
+    friendlyDialogue: {fileID: 11400000, guid: d8ededc4167b49ca9626c55f1928f6ff, type: 2}
+    hostileDialogue: {fileID: 11400000, guid: 2bc25fb1a5c247d9a472cab70bd62e2e, type: 2}
+  - rankId: mid
+    displayName: Inkbound Adept
+    level: 3
+    levelProfileOverride: {fileID: 0}
+    spriteIndices:
+    - 9
+    defaultSpells:
+    - {fileID: 11400000, guid: 8cf77dd05f89f4b5991182ca21ea627e, type: 2}
+    weaponId: 
+    armorId: 
+    accessoryId: 
+    neutralDialogue: {fileID: 11400000, guid: e83b0c703f364b499e97e5a5f5ccd1c3, type: 2}
+    friendlyDialogue: {fileID: 11400000, guid: d8ededc4167b49ca9626c55f1928f6ff, type: 2}
+    hostileDialogue: {fileID: 11400000, guid: 2bc25fb1a5c247d9a472cab70bd62e2e, type: 2}
+  - rankId: high
+    displayName: Inkbound Magus
+    level: 5
+    levelProfileOverride: {fileID: 0}
+    spriteIndices:
+    - 9
+    defaultSpells:
+    - {fileID: 11400000, guid: 8cf77dd05f89f4b5991182ca21ea627e, type: 2}
+    weaponId: 
+    armorId: 
+    accessoryId: 
+    neutralDialogue: {fileID: 11400000, guid: e83b0c703f364b499e97e5a5f5ccd1c3, type: 2}
+    friendlyDialogue: {fileID: 11400000, guid: d8ededc4167b49ca9626c55f1928f6ff, type: 2}
+    hostileDialogue: {fileID: 11400000, guid: 2bc25fb1a5c247d9a472cab70bd62e2e, type: 2}

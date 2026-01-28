@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0d5e1b4c1c94a2c8f49bb0c97c7a987, type: 3}
+  m_Name: Inkguard
+  m_EditorClassIdentifier: 
+  id: faction_inkguard
+  displayName: Inkguard
+  defaultReputation: 0
+  defaultLevelProfile: {fileID: 11400000, guid: aef54a2f81dff4044b85a3078067d738, type: 2}
+  disposition: 1
+  rallyRadius: 5
+  alertDurationTurns: 2
+  repOnHit: -5
+  repOnKill: -100
+  ranks:
+  - rankId: low
+    displayName: Inkguard Recruit
+    level: 1
+    levelProfileOverride: {fileID: 0}
+    spriteIndices:
+    - 15
+    weaponId: sword
+    armorId: iron_armor
+    accessoryId: 
+    neutralDialogue: {fileID: 11400000, guid: 51c47b8d1a4b45f8be5a4451d949ea6b, type: 2}
+    friendlyDialogue: {fileID: 11400000, guid: b2f14618e1bf456dafea4cc270a3e305, type: 2}
+    hostileDialogue: {fileID: 11400000, guid: e780bea1ccd54b2983dec4b30cf6bf56, type: 2}
+  - rankId: mid
+    displayName: Inkguard Soldier
+    level: 3
+    levelProfileOverride: {fileID: 0}
+    spriteIndices:
+    - 15
+    weaponId: sword
+    armorId: iron_armor
+    accessoryId: 
+    neutralDialogue: {fileID: 11400000, guid: 51c47b8d1a4b45f8be5a4451d949ea6b, type: 2}
+    friendlyDialogue: {fileID: 11400000, guid: b2f14618e1bf456dafea4cc270a3e305, type: 2}
+    hostileDialogue: {fileID: 11400000, guid: e780bea1ccd54b2983dec4b30cf6bf56, type: 2}
+  - rankId: high
+    displayName: Inkguard Captain
+    level: 5
+    levelProfileOverride: {fileID: 0}
+    spriteIndices:
+    - 15
+    weaponId: sword
+    armorId: iron_armor
+    accessoryId: 
+    neutralDialogue: {fileID: 11400000, guid: 51c47b8d1a4b45f8be5a4451d949ea6b, type: 2}
+    friendlyDialogue: {fileID: 11400000, guid: b2f14618e1bf456dafea4cc270a3e305, type: 2}
+    hostileDialogue: {fileID: 11400000, guid: e780bea1ccd54b2983dec4b30cf6bf56, type: 2}

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42eae818f460247198f2e3600b7ff49c, type: 3}
+  m_Name: Dialogue_Inkbound_Friendly
+  m_EditorClassIdentifier: 
+  id: dialogue_inkbound_friendly
+  lines:
+  - speaker: Inkbound
+    text: "Ah, friend of the archive. Your deeds have found their margin notes."
+  - speaker: Inkbound
+    text: "We bind knowledge the way others bind wounds."
+  - speaker: Inkbound
+    text: "If you seek a truth, we will help you keep it."
+  questToGive: {fileID: 0}
+  questToTurnIn: {fileID: 0}

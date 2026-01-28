@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42eae818f460247198f2e3600b7ff49c, type: 3}
+  m_Name: Dialogue_Inkbound_Neutral
+  m_EditorClassIdentifier: 
+  id: dialogue_inkbound_neutral
+  lines:
+  - speaker: Inkbound
+    text: "We are Inkbound. The world forgets; ink remembers."
+  - speaker: Inkbound
+    text: "We preserve what time would erase. Truth is a page worth copying."
+  - speaker: Inkbound
+    text: "History is a palimpsest. We read the first draft beneath the noise."
+  questToGive: {fileID: 0}
+  questToTurnIn: {fileID: 0}

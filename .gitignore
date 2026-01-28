@@ -1,0 +1,56 @@
+# Unity / C# project ignore
+#
+# Generated caches and per-user files
+Library/
+Temp/
+Obj/
+Logs/
+UserSettings/
+MemoryCaptures/
+ProfilerCaptures/
+.vs/
+.idea/
+*.user
+*.csproj
+*.sln
+*.suo
+*.tmp
+*.pidb
+*.booproj
+*.svd
+.DS_Store
+Thumbs.db
+
+# Unity build outputs
+Build/
+Builds/
+bin/
+obj/
+
+# Rider / VSCode / JetBrains
+.vscode/
+.history/
+.RiderIgnore
+
+# Crash dumps
+mono_crash.*
+
+# TextMesh Pro auto-generated
+Assets/TextMesh Pro/Resources/*
+
+# Addressables / AssetBundles (generated)
+[Aa]sset[Bb]undles*/
+Assets/StreamingAssets/aa*/
+
+# Logs from MCP bridge or tooling
+*.log
+
+# Avoid ignoring committed source assets under Assets/Ink/
+!Assets/Ink/**
+
+# Unity tutorial content (remove or ignore)
+Assets/Tutorials/
+
+# Local source dumps and captures
+Assets/SourceFiles/
+Assets/Screenshots/

@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a283adc08703644af94303c67cb8f7b7, type: 3}
+  m_Name: InkStream
+  m_EditorClassIdentifier: Assembly-CSharp::InkSim.SpellData
+  spellName: Ink Stream
+  description: Spurts a stream of corrosive ink that leaves puddles
+  hotkey: 101
+  damage: 6
+  manaCost: 0
+  cooldown: 0.8
+  range: 7
+  requiresLineOfSight: 0
+  canTargetSelf: 0
+  canTargetEmpty: 1
+  projectileType: 1
+  projectileSpeed: 10
+  impactRadius: 0
+  puddleChance: 0.5
+  puddleLifetime: 4
+  puddleDamagePerTick: 1
+  primaryColor: {r: 0.15, g: 0.08, b: 0.22, a: 1}
+  secondaryColor: {r: 0.25, g: 0.12, b: 0.35, a: 1}
+  projectileSize: 0.15
