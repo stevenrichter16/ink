@@ -268,9 +268,13 @@ private void UpdateRetracting()
             var entity = gridWorld.GetEntityAt(targetGridX, targetGridY);
             if (entity == null || entity == caster) return;
             
-            // Damage any entity (spells can hit neutral/friendly targets)
-            entity.TakeDamage(damage, caster);
-            Debug.Log($"[InkStream] Hit {entity.name} for {damage} damage");
+            int raw = damage;
+            int casterAtk = DamageUtils.GetAttackDamage(caster);
+            if (casterAtk > 0)
+                raw += casterAtk;
+
+            entity.TakeDamage(raw, caster);
+            Debug.Log($"[InkStream] Hit {entity.name} for {raw} damage");
         }
         
         private void SpawnPuddle()

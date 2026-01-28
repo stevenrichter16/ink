@@ -18,6 +18,8 @@ namespace InkSim
         public int attackDamage => levelable != null ? levelable.Atk : 5;
         public string lootTableId;   // Links to LootDatabase
         public string enemyId;       // ID from EnemyDatabase for XP lookup
+        [Header("Defense")]
+        public int baseDefense = 0;
         
         private GridEntity _lastAttacker; // Track who killed us for XP award
 
@@ -209,6 +211,15 @@ namespace InkSim
             _retaliationTarget = target;
         }
 
+        private int GetDefense()
+        {
+            int def = levelable != null ? levelable.Def : baseDefense;
+            var fm = GetComponent<FactionMember>();
+            if (fm != null)
+                def += fm.RankDefenseBonus;
+            return def;
+        }
+
         public override void Attack(GridEntity target)
         {
             if (!CanAttack(target)) return;
@@ -229,8 +240,7 @@ public override void TakeDamage(int amount, GridEntity attacker)
                 FactionCombatService.OnPlayerHit(this, pc);
             }
             
-            // Clamp damage to minimum 0
-            int actualDamage = Mathf.Max(0, amount);
+            int actualDamage = DamageUtils.ComputeDamageAfterDefense(amount, GetDefense());
             
             if (actualDamage == 0)
             {

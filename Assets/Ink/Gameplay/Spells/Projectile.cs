@@ -122,9 +122,13 @@ namespace InkSim
             // Don't damage self
             if (occupant == caster) return;
             
-            // Damage any entity (spells can hit neutral/friendly targets)
-            occupant.TakeDamage(damage, caster);
-            Debug.Log($"[Projectile] Hit {occupant.name} for {damage} damage");
+            int raw = damage;
+            int casterAtk = DamageUtils.GetAttackDamage(caster);
+            if (casterAtk > 0)
+                raw += casterAtk;
+
+            occupant.TakeDamage(raw, caster);
+            Debug.Log($"[Projectile] Hit {occupant.name} for {raw} damage");
         }
         
         /// <summary>

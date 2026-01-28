@@ -14,6 +14,8 @@ namespace InkSim
         [Header("Combat")]
         public int baseAttack = 3;
         public int baseMaxHealth = 20;
+        [Header("Defense")]
+        public int baseDefense = 0;
         public int aggroRange = 6;
         public int attackRange = 1;
         public int pursuitRange = 10;
@@ -162,6 +164,15 @@ namespace InkSim
 
         public int maxHealth => _levelable != null ? _levelable.MaxHp : baseMaxHealth;
 
+        private int GetDefense()
+        {
+            int def = _levelable != null ? _levelable.Def : baseDefense;
+            var fm = GetComponent<FactionMember>();
+            if (fm != null)
+                def += fm.RankDefenseBonus;
+            return def;
+        }
+
         public override bool CanAttack(GridEntity target)
         {
             if (target == null || target == this) return false;
@@ -225,7 +236,7 @@ namespace InkSim
                 FactionCombatService.OnPlayerHit(this, pc);
             }
             
-            int actualDamage = Mathf.Max(0, amount);
+            int actualDamage = DamageUtils.ComputeDamageAfterDefense(amount, GetDefense());
             if (actualDamage == 0)
             {
                 DamageNumber.Spawn(transform.position, 0, Color.gray);

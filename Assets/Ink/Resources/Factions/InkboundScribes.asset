@@ -25,6 +25,7 @@ MonoBehaviour:
   - rankId: low
     displayName: Scribe Acolyte
     level: 1
+    baseDefense: 1
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 15
@@ -37,6 +38,7 @@ MonoBehaviour:
   - rankId: mid
     displayName: Scribe Adept
     level: 3
+    baseDefense: 2
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 44
@@ -49,6 +51,7 @@ MonoBehaviour:
   - rankId: high
     displayName: Scribe Magus
     level: 5
+    baseDefense: 4
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 45

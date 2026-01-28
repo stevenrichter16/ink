@@ -25,6 +25,7 @@ MonoBehaviour:
   - rankId: low
     displayName: Specter
     level: 1
+    baseDefense: 0
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 25
@@ -37,6 +38,7 @@ MonoBehaviour:
   - rankId: mid
     displayName: Phantom
     level: 2
+    baseDefense: 1
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 25
@@ -49,6 +51,7 @@ MonoBehaviour:
   - rankId: high
     displayName: Wraith
     level: 3
+    baseDefense: 2
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 25
@@ -61,6 +64,7 @@ MonoBehaviour:
   - rankId: elder
     displayName: Revenant
     level: 4
+    baseDefense: 3
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 25

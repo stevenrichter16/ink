@@ -272,8 +272,7 @@ namespace InkSim
 
 public override void TakeDamage(int amount, GridEntity attacker)
         {
-            // Apply defense (minimum 0 damage)
-            int actualDamage = Mathf.Max(0, amount - Defense);
+            int actualDamage = DamageUtils.ComputeDamageAfterDefense(amount, Defense);
             
             if (actualDamage == 0)
             {

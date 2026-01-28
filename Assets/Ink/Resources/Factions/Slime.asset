@@ -25,6 +25,7 @@ MonoBehaviour:
   - rankId: low
     displayName: Slime Spawn
     level: 1
+    baseDefense: 1
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 24
@@ -37,6 +38,7 @@ MonoBehaviour:
   - rankId: mid
     displayName: Slime
     level: 2
+    baseDefense: 1
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 24
@@ -49,6 +51,7 @@ MonoBehaviour:
   - rankId: high
     displayName: Slime Brute
     level: 3
+    baseDefense: 2
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 24
@@ -61,6 +64,7 @@ MonoBehaviour:
   - rankId: elder
     displayName: Slime Elder
     level: 4
+    baseDefense: 3
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 24

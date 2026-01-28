@@ -25,6 +25,7 @@ MonoBehaviour:
   - rankId: low
     displayName: Inkbound Novice
     level: 1
+    baseDefense: 1
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 9
@@ -39,6 +40,7 @@ MonoBehaviour:
   - rankId: mid
     displayName: Inkbound Adept
     level: 3
+    baseDefense: 3
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 9
@@ -53,6 +55,7 @@ MonoBehaviour:
   - rankId: high
     displayName: Inkbound Magus
     level: 5
+    baseDefense: 5
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 9

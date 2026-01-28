@@ -27,6 +27,7 @@ namespace InkSim
         public int alertTurnsRemaining;
         private int turnsSincePlayerAttack;
         private bool lastAggroFromPlayer;
+        private int _rankDefenseBonus;
 
         private FactionDefinition.RankDefinition _rank;
 
@@ -66,6 +67,7 @@ namespace InkSim
             }
 
             _rank = faction.GetRank(rankId);
+            _rankDefenseBonus = _rank?.baseDefense ?? 0;
 
             ReputationSystem.EnsureFaction(faction.id, faction.defaultReputation + reputationOffset);
 
@@ -100,6 +102,8 @@ namespace InkSim
             WireDialogue();
             ApplySpells();
         }
+
+        public int RankDefenseBonus => _rankDefenseBonus;
 
         public void EnterAlert(bool allowFromHostile = false)
         {
