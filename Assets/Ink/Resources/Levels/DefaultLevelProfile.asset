@@ -15,8 +15,10 @@ MonoBehaviour:
   baseHp: 20
   baseAtk: 5
   baseDef: 2
+  baseSpd: 5
   hpPerLevel: 10
   atkPerLevel: 2
   defPerLevel: 1
+  spdPerLevel: 1
   baseXpToLevel: 25
   xpPerLevel: 25

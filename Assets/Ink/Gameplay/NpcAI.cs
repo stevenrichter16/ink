@@ -162,7 +162,17 @@ namespace InkSim
             }
         }
 
-        public int speed => _levelable != null ? _levelable.Spd : 5;
+        public int speed
+        {
+            get
+            {
+                int spd = _levelable != null ? _levelable.Spd : 5;
+                var fm = GetComponent<FactionMember>();
+                if (fm != null) spd += fm.RankSpeedBonus;
+                return spd;
+            }
+        }
+
 
         public override int GetDefenseValue()
         {

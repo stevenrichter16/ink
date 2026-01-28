@@ -26,6 +26,7 @@ MonoBehaviour:
     displayName: Unknown
     level: 1
     baseDefense: 0
+    baseSpeed: 5
     levelProfileOverride: {fileID: 0}
     spriteIndices: []
     weaponId: 

@@ -26,6 +26,7 @@ MonoBehaviour:
     displayName: Inkguard Recruit
     level: 1
     baseDefense: 2
+    baseSpeed: 5
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 15
@@ -39,6 +40,7 @@ MonoBehaviour:
     displayName: Inkguard Soldier
     level: 3
     baseDefense: 4
+    baseSpeed: 6
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 15
@@ -52,6 +54,7 @@ MonoBehaviour:
     displayName: Inkguard Captain
     level: 5
     baseDefense: 6
+    baseSpeed: 7
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 15

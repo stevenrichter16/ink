@@ -26,6 +26,7 @@ MonoBehaviour:
     displayName: Snake Baby
     level: 1
     baseDefense: 1
+    baseSpeed: 8
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 161
@@ -39,6 +40,7 @@ MonoBehaviour:
     displayName: Snake
     level: 2
     baseDefense: 2
+    baseSpeed: 9
     levelProfileOverride: {fileID: 0}
     spriteIndices: []
     weaponId: 
@@ -51,6 +53,7 @@ MonoBehaviour:
     displayName: Snake Adult
     level: 3
     baseDefense: 3
+    baseSpeed: 10
     levelProfileOverride: {fileID: 0}
     spriteIndices:
     - 160
@@ -64,6 +67,7 @@ MonoBehaviour:
     displayName: Snake Elder
     level: 4
     baseDefense: 4
+    baseSpeed: 11
     levelProfileOverride: {fileID: 0}
     spriteIndices: []
     weaponId: 

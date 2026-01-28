@@ -37,6 +37,7 @@ namespace InkSim
             public string displayName = "Acolyte";
             public int level = 1;
             public int baseDefense = 0;
+            public int baseSpeed = 0;
             public LevelProfile levelProfileOverride;
             public List<int> spriteIndices = new List<int>();
 

@@ -28,6 +28,7 @@ namespace InkSim
         private int turnsSincePlayerAttack;
         private bool lastAggroFromPlayer;
         private int _rankDefenseBonus;
+        private int _rankSpeedBonus;
 
         private FactionDefinition.RankDefinition _rank;
 
@@ -68,6 +69,7 @@ namespace InkSim
 
             _rank = faction.GetRank(rankId);
             _rankDefenseBonus = _rank?.baseDefense ?? 0;
+            _rankSpeedBonus = _rank?.baseSpeed ?? 0;
 
             ReputationSystem.EnsureFaction(faction.id, faction.defaultReputation + reputationOffset);
 
@@ -104,6 +106,7 @@ namespace InkSim
         }
 
         public int RankDefenseBonus => _rankDefenseBonus;
+        public int RankSpeedBonus => _rankSpeedBonus;
 
         public void EnterAlert(bool allowFromHostile = false)
         {

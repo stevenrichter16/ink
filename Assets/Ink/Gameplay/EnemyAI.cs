@@ -16,7 +16,17 @@ namespace InkSim
         // Computed stats from Levelable (or fallback)
         public int maxHealth => levelable != null ? levelable.MaxHp : 20;
         public int attackDamage => levelable != null ? levelable.Atk : 5;
-        public int speed => levelable != null ? levelable.Spd : 5;
+        public int speed
+        {
+            get
+            {
+                int spd = levelable != null ? levelable.Spd : 5;
+                var fm = GetComponent<FactionMember>();
+                if (fm != null) spd += fm.RankSpeedBonus;
+                return spd;
+            }
+        }
+
         public string lootTableId;   // Links to LootDatabase
         public string enemyId;       // ID from EnemyDatabase for XP lookup
         [Header("Defense")]
