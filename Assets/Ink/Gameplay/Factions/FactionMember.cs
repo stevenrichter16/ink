@@ -108,6 +108,16 @@ namespace InkSim
         public int RankDefenseBonus => _rankDefenseBonus;
         public int RankSpeedBonus => _rankSpeedBonus;
 
+        public void SetFaction(FactionDefinition newFaction, string newRankId = null)
+        {
+            if (newFaction == null) return;
+            faction = newFaction;
+            rankId = string.IsNullOrEmpty(newRankId) ? newFaction.DefaultRankId : newRankId;
+            // Reset hostility/alert state and clear targets when forcibly reassigned
+            EnterCalm();
+            ApplyRank();
+        }
+
         public void EnterAlert(bool allowFromHostile = false)
         {
             if (state == AlertState.Hostile && !allowFromHostile) return;

@@ -232,6 +232,23 @@ private void LoadAllTiles()
             // Create GameManager (for restart functionality)
             GameObject gameManagerGO = new GameObject("GameManager");
             gameManagerGO.AddComponent<GameManager>();
+
+            // Territory control service (lean loop)
+            var territoryGO = new GameObject("DistrictControlService");
+            territoryGO.AddComponent<DistrictControlService>();
+
+            // Quick palimpsest test surface near the player spawn
+            var palSurface = new GameObject("PalimpsestTestSurface");
+            var surface = palSurface.AddComponent<InscribableSurface>();
+            surface.radius = 6;
+            surface.priority = 1;
+            surface.turns = 8;
+            surface.defaultTokens = new List<string> { "TRUCE", "ALLY:PLAYER" };
+            surface.registerOnStart = true;
+            palSurface.transform.position = new Vector3(8, 12, 0f);
+
+            // Territory debug panel
+            new GameObject("TerritoryDebugPanel").AddComponent<TerritoryDebugPanel>();
         }
 
         private void BuildMap()

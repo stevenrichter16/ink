@@ -54,6 +54,7 @@ namespace InkSim
         private List<PooledHeader> _headerPool = new List<PooledHeader>();
         private const int InitialButtonPoolSize = 20;
         private const int InitialHeaderPoolSize = 6;
+        private Dictionary<ActionCategory, bool> _categoryExpanded = new Dictionary<ActionCategory, bool>();
 
         // Cached references for pooled objects
         private class PooledButton
@@ -68,6 +69,7 @@ namespace InkSim
         {
             public GameObject gameObject;
             public Text text;
+            public Button button;
             public ActionCategory category;
         }
 
@@ -108,13 +110,20 @@ namespace InkSim
             _monoFont = Font.CreateDynamicFontFromOSFont("Courier New", 16);
             if (_monoFont == null)
                 _monoFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (_monoFont == null)
+                _monoFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
 
             _providers.Add(new CombatActionProvider());
             _providers.Add(new DialogueActionProvider());
             _providers.Add(new MerchantActionProvider());
             _providers.Add(new SpawnActionProvider());
             _providers.Add(new MovementActionProvider());
+            _providers.Add(new FactionChangeActionProvider());
             _providers.Add(new DebugActionProvider());
+
+            // Default all categories to collapsed except Combat
+            foreach (ActionCategory cat in Enum.GetValues(typeof(ActionCategory)))
+                _categoryExpanded[cat] = (cat == ActionCategory.Combat);
 
             CollectActions();
         }
@@ -150,6 +159,10 @@ namespace InkSim
 
             if (mouse.leftButton.wasPressedThisFrame)
             {
+                // If we clicked on UI (e.g., a TileInfo button), let the UI handle it
+                if (IsPointerOverUI())
+                    return;
+
                 if (_isOpen && cursor.gridX == _targetX && cursor.gridY == _targetY)
                 {
                     Hide();
@@ -193,34 +206,41 @@ namespace InkSim
             return _panelRect.rect.Contains(localPoint);
         }
 
+        private bool IsPointerOverUI()
+        {
+            return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+        }
+
         private void Show(int x, int y)
         {
+            if (_monoFont == null)
+            {
+                _monoFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+                if (_monoFont == null)
+                    _monoFont = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            }
+
             _targetX = x;
             _targetY = y;
 
-            if (_canvas == null)
-            {
-                CreatePanel();
-                InitializeButtonPool();
-                InitializeHeaderPool();
-            }
+            EnsurePanel();
 
             _contentText.text = GetTileInfo(x, y);
             RefreshActions();
 
             Canvas.ForceUpdateCanvases();
-            
+
             _fixedPosition = CalculatePanelPosition();
+
+            // Clamp to screen so the panel never bleeds off-screen
+            float margin = 10f;
+            float w = _panelRect.rect.width;
+            float h = _panelRect.rect.height;
+            _fixedPosition.x = Mathf.Clamp(_fixedPosition.x, margin, Screen.width - w - margin);
+            // pivot is (0,1): y is top edge; keep top below top margin and bottom above bottom margin
+            _fixedPosition.y = Mathf.Clamp(_fixedPosition.y, h + margin, Screen.height - margin);
+
             _panelRect.position = _fixedPosition;
-            
-            float panelBottom = _panelRect.position.y - _panelRect.rect.height;
-            float bottomMargin = 10f;
-            if (panelBottom < bottomMargin)
-            {
-                float adjustment = bottomMargin - panelBottom;
-                _fixedPosition.y += adjustment;
-                _panelRect.position = _fixedPosition;
-            }
 
             _canvas.SetActive(true);
             _isOpen = true;
@@ -350,6 +370,20 @@ namespace InkSim
             _actionsContainer = actionsGO.transform;
         }
 
+        private void EnsurePanel()
+        {
+            if (_canvas == null)
+            {
+                CreatePanel();
+                InitializeButtonPool();
+                InitializeHeaderPool();
+            }
+            else if (_actionsContainer == null)
+            {
+                CreatePanel();
+            }
+        }
+
         #region Object Pooling
 
         private void InitializeButtonPool()
@@ -370,6 +404,19 @@ namespace InkSim
                 pooled.gameObject.SetActive(false);
                 _headerPool.Add(pooled);
             }
+        }
+
+        private bool IsCategoryExpanded(ActionCategory category)
+        {
+            if (_categoryExpanded.TryGetValue(category, out var expanded))
+                return expanded;
+            return false;
+        }
+
+        private void ToggleCategory(ActionCategory category)
+        {
+            bool current = IsCategoryExpanded(category);
+            _categoryExpanded[category] = !current;
         }
 
         private PooledButton CreatePooledButton()
@@ -423,8 +470,15 @@ namespace InkSim
             GameObject headerGO = new GameObject("PooledHeader");
             headerGO.transform.SetParent(_actionsContainer, false);
 
-            Text headerLabel = headerGO.AddComponent<Text>();
-            headerLabel.font = _monoFont;
+            var img = headerGO.AddComponent<Image>();
+            img.color = new Color(0f, 0.2f, 0.2f, 0.6f);
+            var btn = headerGO.AddComponent<Button>();
+
+            // Child text (Graphic cannot share with Image on same GO)
+            var textGO = new GameObject("Label");
+            textGO.transform.SetParent(headerGO.transform, false);
+            Text headerLabel = textGO.AddComponent<Text>();
+            headerLabel.font = _monoFont ?? Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             headerLabel.fontSize = 16;
             headerLabel.color = headerColor;
             headerLabel.alignment = TextAnchor.MiddleLeft;
@@ -435,14 +489,21 @@ namespace InkSim
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
 
+            var textRT = textGO.GetComponent<RectTransform>();
+            textRT.anchorMin = Vector2.zero;
+            textRT.anchorMax = Vector2.one;
+            textRT.offsetMin = new Vector2(10, 0);
+            textRT.offsetMax = new Vector2(-10, 0);
+
             LayoutElement layout = headerGO.AddComponent<LayoutElement>();
-            layout.minHeight = 24;
-            layout.preferredHeight = 24;
+            layout.minHeight = 28;
+            layout.preferredHeight = 28;
 
             return new PooledHeader
             {
                 gameObject = headerGO,
                 text = headerLabel,
+                button = btn,
                 category = ActionCategory.Combat
             };
         }
@@ -499,7 +560,8 @@ namespace InkSim
         private void ConfigureHeader(PooledHeader pooled, ActionCategory category)
         {
             pooled.category = category;
-            pooled.text.text = category switch
+            bool expanded = IsCategoryExpanded(category);
+            string label = category switch
             {
                 ActionCategory.Combat => "⚔ Combat",
                 ActionCategory.SpawnEnemy => "👾 Spawn Enemy",
@@ -508,6 +570,14 @@ namespace InkSim
                 ActionCategory.Debug => "🔧 Debug",
                 _ => category.ToString()
             };
+            pooled.text.text = $"{(expanded ? "[-] " : "[+] ")}{label}";
+
+            pooled.button.onClick.RemoveAllListeners();
+            pooled.button.onClick.AddListener(() =>
+            {
+                ToggleCategory(category);
+                RefreshActions();
+            });
 
             pooled.gameObject.SetActive(true);
             pooled.gameObject.transform.SetAsLastSibling();
@@ -517,6 +587,7 @@ namespace InkSim
 
         private void RefreshActions()
         {
+            EnsurePanel();
             if (_actionsContainer == null) return;
 
             // Deactivate all pooled objects (no Destroy!)
@@ -543,6 +614,10 @@ namespace InkSim
                     ConfigureHeader(header, action.category);
                     lastCategory = action.category;
                 }
+
+                // Skip actions for collapsed categories
+                if (!IsCategoryExpanded(action.category))
+                    continue;
 
                 // Configure button from pool
                 _visibleActions.Add(action);

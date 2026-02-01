@@ -20,6 +20,27 @@ namespace InkSim
             var attackerFaction = GetFaction(attacker);
             var targetFaction = GetFaction(target);
 
+            // Palimpsest social overrides
+            var rules = OverlayResolver.GetRulesAt(target.gridX, target.gridY);
+            if (rules.truce)
+                return false; // Peace zone unless retaliation handled elsewhere
+
+            // Ally override: treat target as ally of specified faction or player
+            if (!string.IsNullOrEmpty(rules.allyFactionId))
+            {
+                // Player ally token
+                if (rules.allyFactionId == "player" && attacker is PlayerController)
+                    return false;
+
+                // Faction ally token
+                if (attackerFaction != null && rules.allyFactionId == attackerFaction.id.ToLowerInvariant())
+                    return false;
+
+                // If target is factionless, temporarily treat as ally of specified faction to avoid hostility from that faction
+                if (targetFaction == null && attackerFaction != null && rules.allyFactionId == attackerFaction.id.ToLowerInvariant())
+                    return false;
+            }
+
             // Player attacking something
             if (attacker is PlayerController)
             {

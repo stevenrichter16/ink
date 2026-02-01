@@ -122,6 +122,7 @@ private IEnumerator ProcessEnemyTurns()
             }
 
             _processingEnemyTurns = false;
+            OverlayResolver.TickDecay();
             TurnNumber++;
             IsPlayerTurn = true;
         }

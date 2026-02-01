@@ -55,7 +55,12 @@ namespace InkSim
             public DialogueSequence hostileDialogue;
         }
 
-        public RankDefinition GetRank(string rankId)
+                /// <summary>
+        /// Returns the first rank as the default, or null if no ranks defined.
+        /// </summary>
+        public string DefaultRankId => ranks.Count > 0 ? ranks[0].rankId : null;
+
+public RankDefinition GetRank(string rankId)
         {
             if (string.IsNullOrEmpty(rankId)) return null;
             return ranks.Find(r => r.rankId == rankId);

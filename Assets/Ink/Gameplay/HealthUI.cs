@@ -50,12 +50,11 @@ namespace InkSim
             GameObject textGO = new GameObject("HPText");
             textGO.transform.SetParent(transform);
             _hpText = textGO.AddComponent<TextMesh>();
-            _hpText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            _hpText.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             if (_hpText.font == null)
-            {
-                // Fallback for platforms where Arial is stripped
+                _hpText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            if (_hpText.font == null)
                 _hpText.font = Font.CreateDynamicFontFromOSFont("Arial", 32);
-            }
             _hpText.fontSize = 32;
             _hpText.characterSize = 0.04f; // smaller so the fraction doesn’t fill the screen
             _hpText.anchor = TextAnchor.MiddleLeft;

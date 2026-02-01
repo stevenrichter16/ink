@@ -36,5 +36,14 @@ namespace InkSim
         {
             SetRep(factionId, GetRep(factionId) + delta);
         }
+
+        /// <summary>Test helper to clear all reputation data and listeners (editor/tests only).</summary>
+        public static void ClearForTests()
+        {
+#if UNITY_EDITOR
+            _rep.Clear();
+            OnRepChanged = null;
+#endif
+        }
     }
 }

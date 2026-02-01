@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f1f9c529b1b4a4fa57a58c9b6e0d58e, type: 3}
+  m_Name: PalimpsestTokenRegistry
+  m_EditorClassIdentifier: 
+  rules:
+  - token: TRUCE
+    truce: 1
+    allyFactionId: 
+    huntFactionId: 
+  - token: ALLY:PLAYER
+    truce: 0
+    allyFactionId: player
+    huntFactionId: 
+  - token: HUNT:FACTION_GHOST
+    truce: 0
+    allyFactionId: 
+    huntFactionId: faction_ghost
+  - token: HUNT:FACTION_SLIME
+    truce: 0
+    allyFactionId: 
+    huntFactionId: faction_slime
