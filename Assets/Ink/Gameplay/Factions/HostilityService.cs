@@ -79,9 +79,9 @@ namespace InkSim
                 return ReputationSystem.GetRep(faction.id) <= HostileThreshold;
             }
 
-            // Both have factions - hostile only if different factions AND one is hostile-rep
-            // For now, different factions are NOT auto-hostile (allows neutral NPCs)
-            return false;
+            // Both have factions - check inter-faction reputation
+            int interRep = ReputationSystem.GetInterRep(attackerFaction.id, targetFaction.id);
+            return interRep <= HostileThreshold;
         }
 
         /// <summary>

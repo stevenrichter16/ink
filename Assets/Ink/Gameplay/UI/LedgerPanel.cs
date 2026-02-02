@@ -25,6 +25,13 @@ namespace InkSim
         private Dictionary<string, Text> _listLabels = new Dictionary<string, Text>();
 
         private Font _font;
+        // Inter-faction editing
+        private Dropdown _sourceDropdown;
+        private Dropdown _targetDropdown;
+        private int _interSourceIndex = -1;
+        private int _interTargetIndex = -1;
+        private bool _interFactionMode = false;
+
 
         public void Initialize(Action onClose, List<FactionDefinition> injectedFactions = null)
         {
@@ -41,6 +48,7 @@ namespace InkSim
             BuildUI();
             if (_factions.Count > 0) SelectFaction(0);
             ReputationSystem.OnRepChanged += OnRepChanged;
+            ReputationSystem.OnInterRepChanged += OnInterRepChanged;
         }
 
         private void OnDestroy()
@@ -233,7 +241,9 @@ namespace InkSim
         {
             if (_selectedIndex < 0) return;
             var f = _factions[_selectedIndex];
+            int oldRep = ReputationSystem.GetRep(f.id);
             int rep = Mathf.RoundToInt(_repSlider.value);
+            Debug.Log($"[Ledger] Player reputation with '{f.displayName}' changed: {oldRep} → {rep} ({StatusWord(rep)})");
             ReputationSystem.SetRep(f.id, rep);
             UpdateDetail(f, rep);
             RefreshListLabel(f.id, rep);
@@ -262,7 +272,88 @@ namespace InkSim
             _root.SetActive(false);
         }
 
-        // Helpers
+        
+        #region Inter-Faction Reputation Editing
+
+        /// <summary>Select a source and target faction pair for inter-faction reputation editing.</summary>
+        public void SelectInterFactionPair(int sourceIndex, int targetIndex)
+        {
+            if (sourceIndex < 0 || sourceIndex >= _factions.Count) return;
+            if (targetIndex < 0 || targetIndex >= _factions.Count) return;
+            
+            _interSourceIndex = sourceIndex;
+            _interTargetIndex = targetIndex;
+            _interFactionMode = true;
+            
+            // Don't allow same source and target
+            if (sourceIndex == targetIndex)
+            {
+                _interFactionMode = false;
+                return;
+            }
+            
+            var src = _factions[sourceIndex];
+            var dst = _factions[targetIndex];
+            int rep = ReputationSystem.GetInterRep(src.id, dst.id);
+            UpdateInterDetail(src, dst, rep);
+        }
+
+        private void UpdateInterDetail(FactionDefinition src, FactionDefinition dst, int rep)
+        {
+            _factionName.text = $"{src.displayName} → {dst.displayName}";
+            _repSlider.SetValueWithoutNotify(rep);
+            _repValue.text = $"Rep: {rep} ({StatusWord(rep)})";
+            _repValue.color = StatusColor(rep);
+        }
+
+        /// <summary>Apply the current slider value as inter-faction reputation.</summary>
+        public void ApplyInterRep()
+        {
+            if (!_interFactionMode) return;
+            if (_interSourceIndex < 0 || _interTargetIndex < 0) return;
+            if (_interSourceIndex == _interTargetIndex) return; // Prevent self-targeting
+            if (_interSourceIndex >= _factions.Count || _interTargetIndex >= _factions.Count) return;
+            
+            var src = _factions[_interSourceIndex];
+            var dst = _factions[_interTargetIndex];
+            int oldRep = ReputationSystem.GetInterRep(src.id, dst.id);
+            int rep = Mathf.RoundToInt(_repSlider.value);
+            Debug.Log($"[Ledger] Inter-faction reputation '{src.displayName}' → '{dst.displayName}' changed: {oldRep} → {rep} ({StatusWord(rep)})");
+            ReputationSystem.SetInterRep(src.id, dst.id, rep);
+            UpdateInterDetail(src, dst, rep);
+        }
+
+        /// <summary>Revert the slider to the current inter-faction reputation value.</summary>
+        public void RevertInterRep()
+        {
+            if (!_interFactionMode) return;
+            if (_interSourceIndex < 0 || _interTargetIndex < 0) return;
+            if (_interSourceIndex >= _factions.Count || _interTargetIndex >= _factions.Count) return;
+            
+            var src = _factions[_interSourceIndex];
+            var dst = _factions[_interTargetIndex];
+            int rep = ReputationSystem.GetInterRep(src.id, dst.id);
+            UpdateInterDetail(src, dst, rep);
+        }
+
+        private void OnInterRepChanged(string srcId, string dstId, int value)
+        {
+            if (!_interFactionMode) return;
+            if (_interSourceIndex < 0 || _interTargetIndex < 0) return;
+            if (_interSourceIndex >= _factions.Count || _interTargetIndex >= _factions.Count) return;
+            
+            var src = _factions[_interSourceIndex];
+            var dst = _factions[_interTargetIndex];
+            if (string.Equals(src.id, srcId, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(dst.id, dstId, StringComparison.OrdinalIgnoreCase))
+            {
+                UpdateInterDetail(src, dst, value);
+            }
+        }
+
+        #endregion
+
+// Helpers
         private Text CreateText(Transform parent, string content, int size, FontStyle style)
         {
             var go = new GameObject("Text", typeof(RectTransform), typeof(Text));

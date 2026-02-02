@@ -114,14 +114,6 @@ namespace InkSim
             
             Debug.Log($"[TestMapBuilder] START - mapWidth={mapWidth}, mapHeight={mapHeight}");
             
-            // Spawn performance monitor
-            if (FindObjectOfType<PerfMonitor>() == null)
-                new GameObject("PerfMonitor").AddComponent<PerfMonitor>();
-            
-            // Spawn build diagnostic for debugging black screen
-            if (FindObjectOfType<BuildDiagnostic>() == null)
-                new GameObject("BuildDiagnostic").AddComponent<BuildDiagnostic>();
-            
             LoadAllTiles();
             
             if (showTileCatalog)
@@ -137,82 +129,41 @@ namespace InkSim
             SetupCamera();
         }
 
-private void LoadAllTiles()
+        private void LoadAllTiles()
         {
-            // First try to load as Sprite (if textures imported as Sprite type)
-            Sprite[] loadedSprites = Resources.LoadAll<Sprite>("Tiles");
-            Debug.Log($"[TestMapBuilder] Resources.LoadAll<Sprite> returned: {loadedSprites?.Length ?? 0}");
-            
-            // If no sprites found, try loading as Texture2D and create sprites
-            if (loadedSprites == null || loadedSprites.Length == 0)
+            string fullPath = Path.Combine(Application.dataPath, tileFolderPath.Replace("Assets/", ""));
+            string[] allFiles = Directory.GetFiles(fullPath, "*.png");
+            List<string> tileFiles = new List<string>();
+            List<string> extraFiles = new List<string>();
+
+            for (int i = 0; i < allFiles.Length; i++)
             {
-                Debug.Log("[TestMapBuilder] No sprites found, trying Texture2D...");
-                Texture2D[] textures = Resources.LoadAll<Texture2D>("Tiles");
-                Debug.Log($"[TestMapBuilder] Resources.LoadAll<Texture2D> returned: {textures?.Length ?? 0}");
-                
-                if (textures == null || textures.Length == 0)
-                {
-                    Debug.LogError("[TestMapBuilder] No textures found in Resources/Tiles! Game cannot start.");
-                    return;
-                }
-                
-                // Separate tile_ prefixed textures from extras
-                List<Texture2D> tileTextures = new List<Texture2D>();
-                List<Texture2D> extraTextures = new List<Texture2D>();
-                
-                for (int i = 0; i < textures.Length; i++)
-                {
-                    if (textures[i].name.StartsWith("tile_"))
-                        tileTextures.Add(textures[i]);
-                    else
-                        extraTextures.Add(textures[i]);
-                }
-                
-                // Sort by name
-                tileTextures.Sort((a, b) => string.Compare(a.name, b.name, System.StringComparison.Ordinal));
-                extraTextures.Sort((a, b) => string.Compare(a.name, b.name, System.StringComparison.Ordinal));
-                
-                // Create sprites from textures
-                _allSprites = new Sprite[tileTextures.Count + extraTextures.Count];
-                
-                for (int i = 0; i < tileTextures.Count; i++)
-                {
-                    var tex = tileTextures[i];
-                    _allSprites[i] = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f, pixelsPerUnit);
-                }
-                
-                for (int i = 0; i < extraTextures.Count; i++)
-                {
-                    var tex = extraTextures[i];
-                    _allSprites[tileTextures.Count + i] = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f, pixelsPerUnit);
-                }
-                
-                Debug.Log($"[TestMapBuilder] Created {_allSprites.Length} sprites from textures ({tileTextures.Count} tiles + {extraTextures.Count} extras)");
-                return;
-            }
-            
-            // Sprites loaded directly - sort them
-            List<Sprite> tileSprites = new List<Sprite>();
-            List<Sprite> extraSprites = new List<Sprite>();
-            
-            for (int i = 0; i < loadedSprites.Length; i++)
-            {
-                if (loadedSprites[i].name.StartsWith("tile_"))
-                    tileSprites.Add(loadedSprites[i]);
+                string fileName = Path.GetFileName(allFiles[i]);
+                if (fileName.StartsWith("tile_"))
+                    tileFiles.Add(allFiles[i]);
                 else
-                    extraSprites.Add(loadedSprites[i]);
+                    extraFiles.Add(allFiles[i]);
+            }
+
+            tileFiles.Sort();
+            extraFiles.Sort();
+
+            string[] files = new string[tileFiles.Count + extraFiles.Count];
+            tileFiles.CopyTo(files, 0);
+            extraFiles.CopyTo(files, tileFiles.Count);
+
+            _allSprites = new Sprite[files.Length];
+            
+            for (int i = 0; i < files.Length; i++)
+            {
+                byte[] data = File.ReadAllBytes(files[i]);
+                Texture2D tex = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+                tex.LoadImage(data);
+                tex.filterMode = FilterMode.Point;
+                _allSprites[i] = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f, pixelsPerUnit);
             }
             
-            tileSprites.Sort((a, b) => string.Compare(a.name, b.name, System.StringComparison.Ordinal));
-            extraSprites.Sort((a, b) => string.Compare(a.name, b.name, System.StringComparison.Ordinal));
-            
-            _allSprites = new Sprite[tileSprites.Count + extraSprites.Count];
-            for (int i = 0; i < tileSprites.Count; i++)
-                _allSprites[i] = tileSprites[i];
-            for (int i = 0; i < extraSprites.Count; i++)
-                _allSprites[tileSprites.Count + i] = extraSprites[i];
-            
-            Debug.Log($"[TestMapBuilder] Loaded {_allSprites.Length} sprites from Resources ({tileSprites.Count} tiles + {extraSprites.Count} extras)");
+            Debug.Log($"[TestMapBuilder] Loaded {_allSprites.Length} tiles");
         }
 
         private void SetupGameplaySystems()
@@ -232,23 +183,6 @@ private void LoadAllTiles()
             // Create GameManager (for restart functionality)
             GameObject gameManagerGO = new GameObject("GameManager");
             gameManagerGO.AddComponent<GameManager>();
-
-            // Territory control service (lean loop)
-            var territoryGO = new GameObject("DistrictControlService");
-            territoryGO.AddComponent<DistrictControlService>();
-
-            // Quick palimpsest test surface near the player spawn
-            var palSurface = new GameObject("PalimpsestTestSurface");
-            var surface = palSurface.AddComponent<InscribableSurface>();
-            surface.radius = 6;
-            surface.priority = 1;
-            surface.turns = 8;
-            surface.defaultTokens = new List<string> { "TRUCE", "ALLY:PLAYER" };
-            surface.registerOnStart = true;
-            palSurface.transform.position = new Vector3(8, 12, 0f);
-
-            // Territory debug panel
-            new GameObject("TerritoryDebugPanel").AddComponent<TerritoryDebugPanel>();
         }
 
         private void BuildMap()
@@ -411,13 +345,12 @@ private void PlaceEntities()
             // Load factions
             var inkboundFaction = Resources.Load<FactionDefinition>("Factions/Inkbound");
             var inkguardFaction = Resources.Load<FactionDefinition>("Factions/Inkguard");
+            var ghostFaction = Resources.Load<FactionDefinition>("Factions/Ghost");
             var snakeSpecies = Resources.Load<SpeciesDefinition>("Species/Snake");
 
             // === NPCs ===
             // Merchant in forest clearing (left area with sign)
             CreateNPC(Tiles.NPC1, 6, 18, NpcAI.AIBehavior.Stationary, "general_store", inkboundFaction, "low");
-            // Companion Inkbound nearby
-            CreateNPC(Tiles.NPC1, 7, 18, NpcAI.AIBehavior.Stationary, null, inkboundFaction, "low");
             // Weaponsmith inside dungeon
             CreateNPC(Tiles.NPC2, 32, 8, NpcAI.AIBehavior.Stationary, "weaponsmith", inkguardFaction, "mid");
             
@@ -570,7 +503,8 @@ private void CreateHealthUI(PlayerController player)
             GameObject go = new GameObject("HealthUI");
             HealthUI healthUI = go.AddComponent<HealthUI>();
             healthUI.player = player;
-            healthUI.heartSprite = _allSprites[Tiles.HeartFull];
+            healthUI.heartFull = _allSprites[Tiles.HeartFull];
+            healthUI.heartEmpty = _allSprites[Tiles.HeartEmpty];
         }
 
 private void CreateXPUI(PlayerController player)
@@ -646,24 +580,18 @@ private void CreateEnemy(int tileIndex, int x, int y, string lootTableId, int le
 
             // Add Levelable first
             Levelable levelable = enemyGO.AddComponent<Levelable>();
-            // Load level profile (works in both editor and builds)
-            levelable.profile = Resources.Load<LevelProfile>("Levels/DefaultLevelProfile");
-            if (levelable.profile == null)
-                Debug.LogWarning($"[TestMapBuilder] Could not load DefaultLevelProfile for enemy at ({x},{y})");
+            #if UNITY_EDITOR
+            levelable.profile = UnityEditor.AssetDatabase.LoadAssetAtPath<LevelProfile>("Assets/Ink/Data/Levels/DefaultLevelProfile.asset");
+            #endif
             levelable.SetLevel(level);
 
             EnemyAI enemy = enemyGO.AddComponent<EnemyAI>();
             enemy.gridX = x;
             enemy.gridY = y;
             enemy.levelable = levelable;
-            // NOTE: Don't set currentHealth here - let FactionMember.ApplyRank() handle it
-            // after stats are finalizednitialize from levelable
+            enemy.currentHealth = enemy.maxHealth; // Initialize from levelable
             enemy.lootTableId = lootTableId;
             enemy.enemyId = lootTableId;
-
-            bool explicitSpecies = species != null;
-            if (!explicitSpecies)
-                species = EnemyFactory.GetDefaultSpeciesForEnemyId(lootTableId);
 
             if (species != null)
             {
@@ -671,11 +599,13 @@ private void CreateEnemy(int tileIndex, int x, int y, string lootTableId, int le
                 speciesMember.species = species;
             }
 
-            var factionMember = enemyGO.AddComponent<FactionMember>();
-            factionMember.faction = faction;
-            factionMember.rankId = factionRankId;
-            factionMember.applyLevelFromRank = faction != null || explicitSpecies;
-            factionMember.ApplyRank();
+            if (faction != null || species != null)
+            {
+                var member = enemyGO.AddComponent<FactionMember>();
+                member.faction = faction;
+                member.rankId = factionRankId;
+                member.ApplyRank();
+            }
 
             _gridWorld.SetOccupant(x, y, enemy);
         }
@@ -773,47 +703,19 @@ private void CreateItemPickup(string itemId, int tileIndex, int x, int y, int qu
             sr.sortingOrder = sortOrder;
         }
 
-private void SetupCamera()
+        private void SetupCamera()
         {
             Camera cam = Camera.main;
-            
-            // If no camera exists, create one
             if (cam == null)
             {
-                Debug.Log("[TestMapBuilder] No Camera.main found, creating new camera");
                 GameObject camGO = new GameObject("Main Camera");
                 cam = camGO.AddComponent<Camera>();
                 camGO.tag = "MainCamera";
-                
-                // Add AudioListener
-                camGO.AddComponent<AudioListener>();
-            }
-            else
-            {
-                Debug.Log($"[TestMapBuilder] Using existing camera: {cam.name}");
             }
 
-            // Configure camera for 2D
             cam.orthographic = true;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.15f, 0.12f, 0.18f);
-            cam.nearClipPlane = -100f;  // Important for 2D - allow negative Z
-            cam.farClipPlane = 100f;
-            cam.cullingMask = -1; // Render all layers
-            cam.depth = 0;
-            
-            // For URP - try to add Universal camera data if available
-            var urpCamData = cam.GetComponent("UnityEngine.Rendering.Universal.UniversalAdditionalCameraData");
-            if (urpCamData == null)
-            {
-                // Try to add it via reflection (works in URP projects)
-                var urpCamType = System.Type.GetType("UnityEngine.Rendering.Universal.UniversalAdditionalCameraData, Unity.RenderPipelines.Universal.Runtime");
-                if (urpCamType != null)
-                {
-                    cam.gameObject.AddComponent(urpCamType);
-                    Debug.Log("[TestMapBuilder] Added UniversalAdditionalCameraData");
-                }
-            }
             
             if (showTileCatalog)
             {
@@ -826,10 +728,7 @@ private void SetupCamera()
                 cam.orthographicSize = 14 * tileSize * 0.6f;
                 
                 // Add camera controller for smooth follow
-                CameraController camController = cam.gameObject.GetComponent<CameraController>();
-                if (camController == null)
-                    camController = cam.gameObject.AddComponent<CameraController>();
-                    
+                CameraController camController = cam.gameObject.AddComponent<CameraController>();
                 camController.target = _player?.transform;
                 camController.gridWorld = _gridWorld;
                 camController.smoothSpeed = 8f;
@@ -840,8 +739,6 @@ private void SetupCamera()
                 // Snap to player initially
                 camController.SnapToTarget();
             }
-            
-            Debug.Log($"[TestMapBuilder] Camera setup complete: pos={cam.transform.position}, orthoSize={cam.orthographicSize}");
         }
 
         private void ShowTileCatalog()

@@ -55,7 +55,9 @@ namespace InkSim
                 var speciesMember = GetComponent<SpeciesMember>();
                 if (speciesMember != null && speciesMember.species != null)
                 {
+                    // SpeciesMember.EnsureDefaultFaction() guarantees defaultFaction is set
                     faction = speciesMember.species.defaultFaction;
+                    
                     if (string.IsNullOrEmpty(rankId))
                         rankId = speciesMember.species.defaultRankId;
                 }

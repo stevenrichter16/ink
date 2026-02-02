@@ -10,6 +10,9 @@ namespace InkSim
         [Header("References")]
         public PlayerController player;
         public Sprite heartSprite;
+        // Legacy references expected by TestMapBuilder; optional use.
+        public Sprite heartFull;
+        public Sprite heartEmpty;
 
         [Header("Layout")]
         public float heartSize = 0.4f;

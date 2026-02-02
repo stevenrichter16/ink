@@ -133,6 +133,12 @@ namespace InkSim
         {
             if (target == null) return;
 
+            // Log chase behavior
+            var fm = GetComponent<FactionMember>();
+            string factionInfo = fm != null && fm.faction != null ? $" ({fm.faction.displayName})" : "";
+            string targetName = target is PlayerController ? "Player" : target.name;
+            Debug.Log($"[Chase]{factionInfo} {name} is chasing {targetName} (distance: {GridWorld.Distance(gridX, gridY, target.gridX, target.gridY)})");
+
             Vector2Int dir = GridWorld.DirectionToward(gridX, gridY, target.gridX, target.gridY);
             
             // Try to move in that direction
@@ -147,23 +153,37 @@ namespace InkSim
             }
         }
 
+        /// <summary>
+        /// Public wrapper for testing.
+        /// </summary>
+        public GridEntity FindTargetPublic() => FindTarget();
+
         private GridEntity FindTarget()
         {
             GridEntity bestTarget = null;
             int bestDistance = int.MaxValue;
 
-            // Prefer explicit retaliation target if valid
+            // Prefer explicit retaliation target if valid AND still hostile
             if (_retaliationTarget != null && _retaliationTarget.gameObject.activeInHierarchy)
             {
-                int dist = GridWorld.Distance(gridX, gridY, _retaliationTarget.gridX, _retaliationTarget.gridY);
-                if (dist <= aggroRange)
+                // Clear retaliation if target is no longer hostile (e.g., reputation improved)
+                if (!HostilityService.IsHostile(this, _retaliationTarget))
                 {
-                    bestTarget = _retaliationTarget;
-                    bestDistance = dist;
+                    Debug.Log($"[{name}] Clearing retaliation target - no longer hostile");
+                    _retaliationTarget = null;
                 }
                 else
                 {
-                    _retaliationTarget = null;
+                    int dist = GridWorld.Distance(gridX, gridY, _retaliationTarget.gridX, _retaliationTarget.gridY);
+                    if (dist <= aggroRange)
+                    {
+                        bestTarget = _retaliationTarget;
+                        bestDistance = dist;
+                    }
+                    else
+                    {
+                        _retaliationTarget = null;
+                    }
                 }
             }
 
