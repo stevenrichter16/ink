@@ -12,6 +12,8 @@ namespace InkSim
         [Header("Identity")]
         public string id;
         public string displayName = "Merchant";
+        [Tooltip("Faction this merchant belongs to (for reputation-based pricing)")]
+        public string factionId;
         
         [Header("Pricing")]
         [Tooltip("Multiplier for buy prices (1.0 = item value, 1.5 = 50% markup)")]
@@ -29,21 +31,17 @@ namespace InkSim
         /// <summary>
         /// Calculate buy price for an item (what player pays).
         /// </summary>
-        public int GetBuyPrice(string itemId)
+        public int GetBuyPrice(string itemId, Vector2Int? position = null)
         {
-            var data = ItemDatabase.Get(itemId);
-            if (data == null) return 0;
-            return Mathf.Max(1, Mathf.RoundToInt(data.value * buyMultiplier));
+            return EconomicPriceResolver.ResolveBuyPrice(itemId, this, position);
         }
         
         /// <summary>
         /// Calculate sell price for an item (what player receives).
         /// </summary>
-        public int GetSellPrice(string itemId)
+        public int GetSellPrice(string itemId, Vector2Int? position = null)
         {
-            var data = ItemDatabase.Get(itemId);
-            if (data == null) return 0;
-            return Mathf.Max(1, Mathf.RoundToInt(data.value * sellMultiplier));
+            return EconomicPriceResolver.ResolveSellPrice(itemId, this, position);
         }
     }
 }

@@ -14,6 +14,8 @@ namespace InkSim
         public float[] patrol;
         public float[] heat;
         public int[] lossStreak;
+        // Economic runtime prosperity (1 = baseline). Stub for future economy systems.
+        public float prosperity = 1f;
 
         public DistrictState(DistrictDefinition def, int factionCount)
         {

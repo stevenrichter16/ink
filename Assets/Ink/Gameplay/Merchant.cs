@@ -131,7 +131,8 @@ namespace InkSim
         /// </summary>
         public int GetBuyPrice(string itemId)
         {
-            return Profile?.GetBuyPrice(itemId) ?? 0;
+            var pos = new Vector2Int(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.y));
+            return Profile?.GetBuyPrice(itemId, pos) ?? 0;
         }
         
         /// <summary>
@@ -139,7 +140,8 @@ namespace InkSim
         /// </summary>
         public int GetSellPrice(string itemId)
         {
-            return Profile?.GetSellPrice(itemId) ?? 0;
+            var pos = new Vector2Int(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.y));
+            return Profile?.GetSellPrice(itemId, pos) ?? 0;
         }
     }
 }

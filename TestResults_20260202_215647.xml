@@ -1,0 +1,705 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="83" result="Failed(Child)" total="83" passed="78" failed="5" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-02-03 03:56:27Z" end-time="2026-02-03 03:56:30Z" duration="3.1018926">
+  <test-suite type="TestSuite" id="1101" name="Setup Guide In-Editor Tutorial" fullname="Setup Guide In-Editor Tutorial" runstate="Runnable" testcasecount="83" result="Failed" site="Child" start-time="2026-02-03 03:56:27Z" end-time="2026-02-03 03:56:30Z" duration="3.101893" total="83" passed="78" failed="5" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <failure>
+      <message><![CDATA[One or more child tests had errors]]></message>
+    </failure>
+    <test-suite type="Assembly" id="1091" name="Assembly-CSharp-Editor.dll" fullname="/Users/steven/Setup Guide In-Editor Tutorial/Library/ScriptAssemblies/Assembly-CSharp-Editor.dll" runstate="Runnable" testcasecount="83" result="Failed" site="Child" start-time="2026-02-03 03:56:28Z" end-time="2026-02-03 03:56:30Z" duration="2.116005" total="83" passed="78" failed="5" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="37505" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <failure>
+        <message><![CDATA[One or more child tests had errors]]></message>
+      </failure>
+      <test-suite type="TestFixture" id="1001" name="DamageUtilsTests" fullname="DamageUtilsTests" classname="DamageUtilsTests" runstate="Runnable" testcasecount="7" result="Passed" start-time="2026-02-03 03:56:28Z" end-time="2026-02-03 03:56:29Z" duration="0.499775" total="7" passed="7" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1005" name="CustomPerPoint_UsesProvidedValue" fullname="DamageUtilsTests.CustomPerPoint_UsesProvidedValue" methodname="CustomPerPoint_UsesProvidedValue" classname="DamageUtilsTests" runstate="Runnable" seed="1229005451" result="Passed" start-time="2026-02-03 03:56:28Z" end-time="2026-02-03 03:56:29Z" duration="0.494105" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1004" name="HighDefense_ClampsAtZero" fullname="DamageUtilsTests.HighDefense_ClampsAtZero" methodname="HighDefense_ClampsAtZero" classname="DamageUtilsTests" runstate="Runnable" seed="2067608377" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000037" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1003" name="LowDefense_ReducesDamageByPercent" fullname="DamageUtilsTests.LowDefense_ReducesDamageByPercent" methodname="LowDefense_ReducesDamageByPercent" classname="DamageUtilsTests" runstate="Runnable" seed="298900020" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000020" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1008" name="MeleeDamage_CombinesAttackStatAndWeaponBonus" fullname="DamageUtilsTests.MeleeDamage_CombinesAttackStatAndWeaponBonus" methodname="MeleeDamage_CombinesAttackStatAndWeaponBonus" classname="DamageUtilsTests" runstate="Runnable" seed="847606446" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000021" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1002" name="NoDefense_ReturnsRawDamage" fullname="DamageUtilsTests.NoDefense_ReturnsRawDamage" methodname="NoDefense_ReturnsRawDamage" classname="DamageUtilsTests" runstate="Runnable" seed="1047396237" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000019" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1006" name="NonPositiveRawDamage_ReturnsZero" fullname="DamageUtilsTests.NonPositiveRawDamage_ReturnsZero" methodname="NonPositiveRawDamage_ReturnsZero" classname="DamageUtilsTests" runstate="Runnable" seed="319101987" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000026" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1007" name="SpellDamage_IncludesCasterAttack" fullname="DamageUtilsTests.SpellDamage_IncludesCasterAttack" methodname="SpellDamage_IncludesCasterAttack" classname="DamageUtilsTests" runstate="Runnable" seed="1280046101" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000019" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1009" name="DodgeTests" fullname="DodgeTests" classname="DodgeTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.002666" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1010" name="EqualSpeeds_AboutFiftyPercentBeforeCaps" fullname="DodgeTests.EqualSpeeds_AboutFiftyPercentBeforeCaps" methodname="EqualSpeeds_AboutFiftyPercentBeforeCaps" classname="DodgeTests" runstate="Runnable" seed="1888821433" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000402" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1012" name="FasterAttacker_ApproachesMin" fullname="DodgeTests.FasterAttacker_ApproachesMin" methodname="FasterAttacker_ApproachesMin" classname="DodgeTests" runstate="Runnable" seed="44169254" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000028" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1011" name="FasterDefender_ClampedAtMax" fullname="DodgeTests.FasterDefender_ClampedAtMax" methodname="FasterDefender_ClampedAtMax" classname="DodgeTests" runstate="Runnable" seed="1531535595" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000030" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1013" name="ProjectileGetsHigherDodgeMultiplier" fullname="DodgeTests.ProjectileGetsHigherDodgeMultiplier" methodname="ProjectileGetsHigherDodgeMultiplier" classname="DodgeTests" runstate="Runnable" seed="2109895859" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000777" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestSuite" id="1092" name="InkSim" fullname="InkSim" runstate="Runnable" testcasecount="36" result="Failed" site="Child" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.530855" total="36" passed="31" failed="5" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <failure>
+          <message><![CDATA[One or more child tests had errors]]></message>
+        </failure>
+        <test-suite type="TestSuite" id="1093" name="Tests" fullname="InkSim.Tests" runstate="Runnable" testcasecount="36" result="Failed" site="Child" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.530030" total="36" passed="31" failed="5" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <failure>
+            <message><![CDATA[One or more child tests had errors]]></message>
+          </failure>
+          <test-suite type="TestFixture" id="1051" name="EconomicPrereqTests" fullname="InkSim.Tests.EconomicPrereqTests" classname="InkSim.Tests.EconomicPrereqTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.001180" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1055" name="DistrictState_HasProsperityField" fullname="InkSim.Tests.EconomicPrereqTests.DistrictState_HasProsperityField" methodname="DistrictState_HasProsperityField" classname="InkSim.Tests.EconomicPrereqTests" runstate="Runnable" seed="1065876277" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000631" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1052" name="EconomicPriceResolver_TypeExists" fullname="InkSim.Tests.EconomicPrereqTests.EconomicPriceResolver_TypeExists" methodname="EconomicPriceResolver_TypeExists" classname="InkSim.Tests.EconomicPrereqTests" runstate="Runnable" seed="37834667" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000031" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1053" name="PalimpsestLayer_ContainsEconomicFields" fullname="InkSim.Tests.EconomicPrereqTests.PalimpsestLayer_ContainsEconomicFields" methodname="PalimpsestLayer_ContainsEconomicFields" classname="InkSim.Tests.EconomicPrereqTests" runstate="Runnable" seed="1632073723" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000050" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1054" name="PalimpsestRules_ContainsEconomicFields" fullname="InkSim.Tests.EconomicPrereqTests.PalimpsestRules_ContainsEconomicFields" methodname="PalimpsestRules_ContainsEconomicFields" classname="InkSim.Tests.EconomicPrereqTests" runstate="Runnable" seed="1115515115" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000051" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1056" name="EconomicPriceResolverTests" fullname="InkSim.Tests.EconomicPriceResolverTests" classname="InkSim.Tests.EconomicPriceResolverTests" runstate="Runnable" testcasecount="5" result="Failed" site="Child" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.496316" total="5" passed="0" failed="5" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <failure>
+              <message><![CDATA[One or more child tests had errors]]></message>
+            </failure>
+            <test-case id="1057" name="BuyPrice_Applies_PalimpsestPriceAndTax" fullname="InkSim.Tests.EconomicPriceResolverTests.BuyPrice_Applies_PalimpsestPriceAndTax" methodname="BuyPrice_Applies_PalimpsestPriceAndTax" classname="InkSim.Tests.EconomicPriceResolverTests" runstate="Runnable" seed="1611618609" result="Failed" label="Error" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.002920" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[SetUp : System.InvalidOperationException : The following game object is invoking the DontDestroyOnLoad method: DistrictControlService. Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot be part of an editor script.]]></message>
+                <stack-trace><![CDATA[--SetUp
+  at (wrapper managed-to-native) UnityEngine.Object.DontDestroyOnLoad_Injected(intptr)
+  at UnityEngine.Object.DontDestroyOnLoad (UnityEngine.Object target) [0x00023] in <24fced3a8ae74facb149ed282bb550ef>:0 
+  at InkSim.Tests.EconomicPriceResolverTests.SetUp () [0x00053] in /Users/steven/Setup Guide In-Editor Tutorial/Assets/Tests/Editor/EconomicPriceResolverTests.cs:29 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <032c206a1674455bacfc3546f1de5ef3>:0 ]]></stack-trace>
+              </failure>
+            </test-case>
+            <test-case id="1060" name="FactionReputation_AdjustsPrice" fullname="InkSim.Tests.EconomicPriceResolverTests.FactionReputation_AdjustsPrice" methodname="FactionReputation_AdjustsPrice" classname="InkSim.Tests.EconomicPriceResolverTests" runstate="Runnable" seed="604253062" result="Failed" label="Error" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000082" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[SetUp : System.InvalidOperationException : The following game object is invoking the DontDestroyOnLoad method: DistrictControlService. Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot be part of an editor script.]]></message>
+                <stack-trace><![CDATA[--SetUp
+  at (wrapper managed-to-native) UnityEngine.Object.DontDestroyOnLoad_Injected(intptr)
+  at UnityEngine.Object.DontDestroyOnLoad (UnityEngine.Object target) [0x00023] in <24fced3a8ae74facb149ed282bb550ef>:0 
+  at InkSim.Tests.EconomicPriceResolverTests.SetUp () [0x00053] in /Users/steven/Setup Guide In-Editor Tutorial/Assets/Tests/Editor/EconomicPriceResolverTests.cs:29 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <032c206a1674455bacfc3546f1de5ef3>:0 ]]></stack-trace>
+              </failure>
+            </test-case>
+            <test-case id="1059" name="Prosperity_Multiplies_BuyAndSell" fullname="InkSim.Tests.EconomicPriceResolverTests.Prosperity_Multiplies_BuyAndSell" methodname="Prosperity_Multiplies_BuyAndSell" classname="InkSim.Tests.EconomicPriceResolverTests" runstate="Runnable" seed="252615572" result="Failed" label="Error" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000059" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[SetUp : System.InvalidOperationException : The following game object is invoking the DontDestroyOnLoad method: DistrictControlService. Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot be part of an editor script.]]></message>
+                <stack-trace><![CDATA[--SetUp
+  at (wrapper managed-to-native) UnityEngine.Object.DontDestroyOnLoad_Injected(intptr)
+  at UnityEngine.Object.DontDestroyOnLoad (UnityEngine.Object target) [0x00023] in <24fced3a8ae74facb149ed282bb550ef>:0 
+  at InkSim.Tests.EconomicPriceResolverTests.SetUp () [0x00053] in /Users/steven/Setup Guide In-Editor Tutorial/Assets/Tests/Editor/EconomicPriceResolverTests.cs:29 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <032c206a1674455bacfc3546f1de5ef3>:0 ]]></stack-trace>
+              </failure>
+            </test-case>
+            <test-case id="1058" name="SellPrice_UsesPriceMultiplierOnly" fullname="InkSim.Tests.EconomicPriceResolverTests.SellPrice_UsesPriceMultiplierOnly" methodname="SellPrice_UsesPriceMultiplierOnly" classname="InkSim.Tests.EconomicPriceResolverTests" runstate="Runnable" seed="174218327" result="Failed" label="Error" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000069" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[SetUp : System.InvalidOperationException : The following game object is invoking the DontDestroyOnLoad method: DistrictControlService. Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot be part of an editor script.]]></message>
+                <stack-trace><![CDATA[--SetUp
+  at (wrapper managed-to-native) UnityEngine.Object.DontDestroyOnLoad_Injected(intptr)
+  at UnityEngine.Object.DontDestroyOnLoad (UnityEngine.Object target) [0x00023] in <24fced3a8ae74facb149ed282bb550ef>:0 
+  at InkSim.Tests.EconomicPriceResolverTests.SetUp () [0x00053] in /Users/steven/Setup Guide In-Editor Tutorial/Assets/Tests/Editor/EconomicPriceResolverTests.cs:29 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <032c206a1674455bacfc3546f1de5ef3>:0 ]]></stack-trace>
+              </failure>
+            </test-case>
+            <test-case id="1061" name="SupplyDemand_DefaultsToOne" fullname="InkSim.Tests.EconomicPriceResolverTests.SupplyDemand_DefaultsToOne" methodname="SupplyDemand_DefaultsToOne" classname="InkSim.Tests.EconomicPriceResolverTests" runstate="Runnable" seed="1532462835" result="Failed" label="Error" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000057" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <failure>
+                <message><![CDATA[SetUp : System.InvalidOperationException : The following game object is invoking the DontDestroyOnLoad method: DistrictControlService. Notice that DontDestroyOnLoad can only be used in play mode and, as such, cannot be part of an editor script.]]></message>
+                <stack-trace><![CDATA[--SetUp
+  at (wrapper managed-to-native) UnityEngine.Object.DontDestroyOnLoad_Injected(intptr)
+  at UnityEngine.Object.DontDestroyOnLoad (UnityEngine.Object target) [0x00023] in <24fced3a8ae74facb149ed282bb550ef>:0 
+  at InkSim.Tests.EconomicPriceResolverTests.SetUp () [0x00053] in /Users/steven/Setup Guide In-Editor Tutorial/Assets/Tests/Editor/EconomicPriceResolverTests.cs:29 
+  at (wrapper managed-to-native) System.Reflection.RuntimeMethodInfo.InternalInvoke(System.Reflection.RuntimeMethodInfo,object,object[],System.Exception&)
+  at System.Reflection.RuntimeMethodInfo.Invoke (System.Object obj, System.Reflection.BindingFlags invokeAttr, System.Reflection.Binder binder, System.Object[] parameters, System.Globalization.CultureInfo culture) [0x0006a] in <032c206a1674455bacfc3546f1de5ef3>:0 ]]></stack-trace>
+              </failure>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1062" name="SpeciesFactionTests" fullname="InkSim.Tests.SpeciesFactionTests" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" testcasecount="25" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.026558" total="25" passed="25" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1075" name="EnemyAI_RetaliationTarget_ClearedWhenFactionBecomesFriendly" fullname="InkSim.Tests.SpeciesFactionTests.EnemyAI_RetaliationTarget_ClearedWhenFactionBecomesFriendly" methodname="EnemyAI_RetaliationTarget_ClearedWhenFactionBecomesFriendly" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="1837957777" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.008296" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[GhostEnemy] Clearing retaliation target - no longer hostile
+]]></output>
+            </test-case>
+            <test-case id="1077" name="EnemyAI_RetaliationTarget_NotClearedIfStillHostile" fullname="InkSim.Tests.SpeciesFactionTests.EnemyAI_RetaliationTarget_NotClearedIfStillHostile" methodname="EnemyAI_RetaliationTarget_NotClearedIfStillHostile" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="512938881" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000404" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+]]></output>
+            </test-case>
+            <test-case id="1076" name="EnemyAI_StopsChasing_WhenReputationImproves" fullname="InkSim.Tests.SpeciesFactionTests.EnemyAI_StopsChasing_WhenReputationImproves" methodname="EnemyAI_StopsChasing_WhenReputationImproves" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="1474141291" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000480" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+]]></output>
+            </test-case>
+            <test-case id="1080" name="FactionMember_CrossSpeciesMember_UsedForHostilityChecks" fullname="InkSim.Tests.SpeciesFactionTests.FactionMember_CrossSpeciesMember_UsedForHostilityChecks" methodname="FactionMember_CrossSpeciesMember_UsedForHostilityChecks" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="2015721761" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.001459" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[FactionRegistry] Created runtime faction 'GhostTestFaction'
+[FactionRegistry] Created runtime faction 'SnakeTestFaction'
+]]></output>
+            </test-case>
+            <test-case id="1082" name="FactionMember_DifferentSpecies_SameFaction_NotHostile" fullname="InkSim.Tests.SpeciesFactionTests.FactionMember_DifferentSpecies_SameFaction_NotHostile" methodname="FactionMember_DifferentSpecies_SameFaction_NotHostile" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="1309459475" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000544" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[FactionRegistry] Created runtime faction 'GrandAlliance'
+]]></output>
+            </test-case>
+            <test-case id="1083" name="FactionMember_ExplicitFaction_NotOverriddenBySpecies" fullname="InkSim.Tests.SpeciesFactionTests.FactionMember_ExplicitFaction_NotOverriddenBySpecies" methodname="FactionMember_ExplicitFaction_NotOverriddenBySpecies" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="1007433953" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.001130" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[SpeciesMember] Auto-assigned faction 'Slime' to species 'Slime'
+[Levelable] SlimeInDeerFaction has no LevelProfile assigned!
+]]></output>
+            </test-case>
+            <test-case id="1078" name="FactionMember_ExplicitFaction_NotOverwrittenBySpecies" fullname="InkSim.Tests.SpeciesFactionTests.FactionMember_ExplicitFaction_NotOverwrittenBySpecies" methodname="FactionMember_ExplicitFaction_NotOverwrittenBySpecies" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="1527923861" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000623" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[SpeciesMember] Auto-assigned faction 'Slime' to species 'Slime'
+]]></output>
+            </test-case>
+            <test-case id="1072" name="FactionMember_InheritsFactionFromSpecies" fullname="InkSim.Tests.SpeciesFactionTests.FactionMember_InheritsFactionFromSpecies" methodname="FactionMember_InheritsFactionFromSpecies" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="2122575689" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000788" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[FactionRegistry] Created runtime faction 'ZetaCreature'
+[SpeciesMember] Auto-assigned faction 'ZetaCreature' to species 'ZetaCreature'
+[Levelable] TestEntity has no LevelProfile assigned!
+]]></output>
+            </test-case>
+            <test-case id="1081" name="FactionMember_SameSpecies_DifferentFactions_CanBeHostile" fullname="InkSim.Tests.SpeciesFactionTests.FactionMember_SameSpecies_DifferentFactions_CanBeHostile" methodname="FactionMember_SameSpecies_DifferentFactions_CanBeHostile" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="2039174113" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000654" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[FactionRegistry] Created runtime faction 'LoyalistSlimes'
+[FactionRegistry] Created runtime faction 'DefectorSlimes'
+]]></output>
+            </test-case>
+            <test-case id="1079" name="FactionMember_SetFaction_CanChangeToDifferentFactionThanSpecies" fullname="InkSim.Tests.SpeciesFactionTests.FactionMember_SetFaction_CanChangeToDifferentFactionThanSpecies" methodname="FactionMember_SetFaction_CanChangeToDifferentFactionThanSpecies" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="1665559043" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.001039" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[FactionRegistry] Created runtime faction 'SlimeDefector'
+[SpeciesMember] Auto-assigned faction 'SlimeDefector' to species 'SlimeDefector'
+[Levelable] DefectorSlime has no LevelProfile assigned!
+[FactionMember] DefectorSlime entering CALM.
+]]></output>
+            </test-case>
+            <test-case id="1084" name="FactionMember_SetFaction_ChangesToDifferentFaction" fullname="InkSim.Tests.SpeciesFactionTests.FactionMember_SetFaction_ChangesToDifferentFaction" methodname="FactionMember_SetFaction_ChangesToDifferentFaction" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="40038645" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.001139" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[FactionRegistry] Created runtime faction 'SlimeCreature'
+[SpeciesMember] Auto-assigned faction 'SlimeCreature' to species 'SlimeCreature'
+[Levelable] DefectingSlime has no LevelProfile assigned!
+[FactionMember] DefectingSlime entering CALM.
+[Levelable] DefectingSlime has no LevelProfile assigned!
+]]></output>
+            </test-case>
+            <test-case id="1068" name="FactionRegistry_GetOrCreate_CalledTwice_ReturnsSameInstance" fullname="InkSim.Tests.SpeciesFactionTests.FactionRegistry_GetOrCreate_CalledTwice_ReturnsSameInstance" methodname="FactionRegistry_GetOrCreate_CalledTwice_ReturnsSameInstance" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="906967184" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000378" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[FactionRegistry] Created runtime faction 'RepeatedSpecies'
+]]></output>
+            </test-case>
+            <test-case id="1064" name="FactionRegistry_GetOrCreate_CreatesRuntimeFaction" fullname="InkSim.Tests.SpeciesFactionTests.FactionRegistry_GetOrCreate_CreatesRuntimeFaction" methodname="FactionRegistry_GetOrCreate_CreatesRuntimeFaction" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="1220810973" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000378" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[FactionRegistry] Created runtime faction 'BrandNewSpecies'
+]]></output>
+            </test-case>
+            <test-case id="1063" name="FactionRegistry_GetOrCreate_ReturnsExistingFaction" fullname="InkSim.Tests.SpeciesFactionTests.FactionRegistry_GetOrCreate_ReturnsExistingFaction" methodname="FactionRegistry_GetOrCreate_ReturnsExistingFaction" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="1516616192" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000236" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+]]></output>
+            </test-case>
+            <test-case id="1066" name="FactionRegistry_GetOrCreate_RuntimeFactionHasCorrectDisplayName" fullname="InkSim.Tests.SpeciesFactionTests.FactionRegistry_GetOrCreate_RuntimeFactionHasCorrectDisplayName" methodname="FactionRegistry_GetOrCreate_RuntimeFactionHasCorrectDisplayName" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="2068105678" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000365" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[FactionRegistry] Created runtime faction 'TestSpeciesBeta'
+]]></output>
+            </test-case>
+            <test-case id="1065" name="FactionRegistry_GetOrCreate_RuntimeFactionHasCorrectId" fullname="InkSim.Tests.SpeciesFactionTests.FactionRegistry_GetOrCreate_RuntimeFactionHasCorrectId" methodname="FactionRegistry_GetOrCreate_RuntimeFactionHasCorrectId" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="686088420" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000387" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[FactionRegistry] Created runtime faction 'TestSpeciesAlpha'
+]]></output>
+            </test-case>
+            <test-case id="1067" name="FactionRegistry_GetOrCreate_RuntimeFactionIsRegistered" fullname="InkSim.Tests.SpeciesFactionTests.FactionRegistry_GetOrCreate_RuntimeFactionIsRegistered" methodname="FactionRegistry_GetOrCreate_RuntimeFactionIsRegistered" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="1422071157" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000393" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[FactionRegistry] Created runtime faction 'UniqueTestFaction'
+]]></output>
+            </test-case>
+            <test-case id="1073" name="Integration_EntityWithSpecies_AlwaysHasFaction" fullname="InkSim.Tests.SpeciesFactionTests.Integration_EntityWithSpecies_AlwaysHasFaction" methodname="Integration_EntityWithSpecies_AlwaysHasFaction" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="1682425950" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000802" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[FactionRegistry] Created runtime faction 'CompleteTestCreature'
+[SpeciesMember] Auto-assigned faction 'CompleteTestCreature' to species 'CompleteTestCreature'
+[Levelable] CompleteEntity has no LevelProfile assigned!
+]]></output>
+            </test-case>
+            <test-case id="1074" name="Integration_ExistingFactionUsed_WhenSpeciesMatchesFactionName" fullname="InkSim.Tests.SpeciesFactionTests.Integration_ExistingFactionUsed_WhenSpeciesMatchesFactionName" methodname="Integration_ExistingFactionUsed_WhenSpeciesMatchesFactionName" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="768917841" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000426" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[SpeciesMember] Auto-assigned faction 'Ghost' to species 'Ghost'
+]]></output>
+            </test-case>
+            <test-case id="1087" name="Integration_HostilityBasedOnFaction_NotSpecies" fullname="InkSim.Tests.SpeciesFactionTests.Integration_HostilityBasedOnFaction_NotSpecies" methodname="Integration_HostilityBasedOnFaction_NotSpecies" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="1808132843" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000809" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[Levelable] FriendlySlime has no LevelProfile assigned!
+[Levelable] HostileSlime has no LevelProfile assigned!
+]]></output>
+            </test-case>
+            <test-case id="1085" name="Integration_SpeciesAndFaction_IndependentIdentities" fullname="InkSim.Tests.SpeciesFactionTests.Integration_SpeciesAndFaction_IndependentIdentities" methodname="Integration_SpeciesAndFaction_IndependentIdentities" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="648877208" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000655" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[SpeciesMember] Auto-assigned faction 'Slime' to species 'Slime'
+[Levelable] SlimeWolfAlly has no LevelProfile assigned!
+]]></output>
+            </test-case>
+            <test-case id="1086" name="Integration_TwoEntitiesSameSpecies_DifferentFactions" fullname="InkSim.Tests.SpeciesFactionTests.Integration_TwoEntitiesSameSpecies_DifferentFactions" methodname="Integration_TwoEntitiesSameSpecies_DifferentFactions" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="1719500189" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000732" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[SpeciesMember] Auto-assigned faction 'Slime' to species 'Slime'
+[Levelable] DefectorSlime has no LevelProfile assigned!
+]]></output>
+            </test-case>
+            <test-case id="1070" name="SpeciesMember_EnsuresDefaultFaction_MatchesSpeciesDisplayName" fullname="InkSim.Tests.SpeciesFactionTests.SpeciesMember_EnsuresDefaultFaction_MatchesSpeciesDisplayName" methodname="SpeciesMember_EnsuresDefaultFaction_MatchesSpeciesDisplayName" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="1869925122" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000601" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[FactionRegistry] Created runtime faction 'DeltaCreature'
+[SpeciesMember] Auto-assigned faction 'DeltaCreature' to species 'DeltaCreature'
+]]></output>
+            </test-case>
+            <test-case id="1071" name="SpeciesMember_EnsuresDefaultFaction_PreservesExistingFaction" fullname="InkSim.Tests.SpeciesFactionTests.SpeciesMember_EnsuresDefaultFaction_PreservesExistingFaction" methodname="SpeciesMember_EnsuresDefaultFaction_PreservesExistingFaction" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="204335950" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000092" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1069" name="SpeciesMember_EnsuresDefaultFaction_WhenNull" fullname="InkSim.Tests.SpeciesFactionTests.SpeciesMember_EnsuresDefaultFaction_WhenNull" methodname="SpeciesMember_EnsuresDefaultFaction_WhenNull" classname="InkSim.Tests.SpeciesFactionTests" runstate="Runnable" seed="146510810" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.000608" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FactionRegistry] Loaded 8 factions.
+[FactionRegistry] Created runtime faction 'TestSpeciesGamma'
+[SpeciesMember] Auto-assigned faction 'TestSpeciesGamma' to species 'TestSpeciesGamma'
+]]></output>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1088" name="TerritoryDebugPanelTests" fullname="InkSim.Tests.TerritoryDebugPanelTests" classname="InkSim.Tests.TerritoryDebugPanelTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.005634" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1089" name="AdjustPatrol_ClampsAndRecomputesControl" fullname="InkSim.Tests.TerritoryDebugPanelTests.AdjustPatrol_ClampsAndRecomputesControl" methodname="AdjustPatrol_ClampsAndRecomputesControl" classname="InkSim.Tests.TerritoryDebugPanelTests" runstate="Runnable" seed="619434314" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.001370" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[TerritoryDebug] Patrol adjusted (pre-tick) District=Market Faction=F0 P 0.40 C 0.32 H 0.10
+]]></output>
+            </test-case>
+            <test-case id="1090" name="AdvanceDay_AppliesEditsCleanupAndLossStreak" fullname="InkSim.Tests.TerritoryDebugPanelTests.AdvanceDay_AppliesEditsCleanupAndLossStreak" methodname="AdvanceDay_AppliesEditsCleanupAndLossStreak" classname="InkSim.Tests.TerritoryDebugPanelTests" runstate="Runnable" seed="1496776560" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:29Z" duration="0.001339" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[TerritoryTick] Day 1 Faction=F0 District=Market -> C 0.12 P 0.31 H 0.17 (edits 1.00 cleanup 0.50)
+[TerritoryTick] Day 1 Faction=F1 District=Market -> C 0.41 P 0.27 H 0.12 (edits 1.00 cleanup 0.50)
+[TerritoryTick] AdvanceDay complete. CurrentDay=1
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+      <test-suite type="TestFixture" id="1014" name="LedgerTests" fullname="LedgerTests" classname="LedgerTests" runstate="Runnable" testcasecount="36" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:30Z" duration="1.080610" total="36" passed="36" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1018" name="AddRep_AddsDelta" fullname="LedgerTests.AddRep_AddsDelta" methodname="AddRep_AddsDelta" classname="LedgerTests" runstate="Runnable" seed="1651623277" result="Passed" start-time="2026-02-03 03:56:29Z" end-time="2026-02-03 03:56:30Z" duration="0.505916" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1037" name="ApplyButton_UpdatesListLabel" fullname="LedgerTests.ApplyButton_UpdatesListLabel" methodname="ApplyButton_UpdatesListLabel" classname="LedgerTests" runstate="Runnable" seed="1354136704" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.492333" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[Ledger] Player reputation with 'Ghosts' changed: -10 → 40 (Friendly)
+]]></output>
+        </test-case>
+        <test-case id="1027" name="ApplyButton_WritesToReputationSystem" fullname="LedgerTests.ApplyButton_WritesToReputationSystem" methodname="ApplyButton_WritesToReputationSystem" classname="LedgerTests" runstate="Runnable" seed="426354208" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.002047" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[Ledger] Player reputation with 'Ghosts' changed: -10 → 40 (Friendly)
+]]></output>
+        </test-case>
+        <test-case id="1032" name="ApplyFiresOnRepChangedEvent" fullname="LedgerTests.ApplyFiresOnRepChangedEvent" methodname="ApplyFiresOnRepChangedEvent" classname="LedgerTests" runstate="Runnable" seed="1988535289" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.002011" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[Ledger] Player reputation with 'Ghosts' changed: -10 → 15 (Neutral)
+]]></output>
+        </test-case>
+        <test-case id="1040" name="ApplyInterRep_WritesToSystem" fullname="LedgerTests.ApplyInterRep_WritesToSystem" methodname="ApplyInterRep_WritesToSystem" classname="LedgerTests" runstate="Runnable" seed="208722990" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.002066" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[[Ledger] Inter-faction reputation 'Ghosts' → 'Inkbound' changed: 0 → 35 (Friendly)
+]]></output>
+        </test-case>
+        <test-case id="1017" name="EnsureFaction_NoOverwriteExisting" fullname="LedgerTests.EnsureFaction_NoOverwriteExisting" methodname="EnsureFaction_NoOverwriteExisting" classname="LedgerTests" runstate="Runnable" seed="963832899" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001816" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1030" name="ExternalChangeUpdatesListLabelAndDetail" fullname="LedgerTests.ExternalChangeUpdatesListLabelAndDetail" methodname="ExternalChangeUpdatesListLabelAndDetail" classname="LedgerTests" runstate="Runnable" seed="515776350" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.002522" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1044" name="ExternalInterRepChange_UpdatesUI" fullname="LedgerTests.ExternalInterRepChange_UpdatesUI" methodname="ExternalInterRepChange_UpdatesUI" classname="LedgerTests" runstate="Runnable" seed="420255574" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001877" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1028" name="ExternalRepChange_UpdatesUI" fullname="LedgerTests.ExternalRepChange_UpdatesUI" methodname="ExternalRepChange_UpdatesUI" classname="LedgerTests" runstate="Runnable" seed="830496035" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001779" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1049" name="HostilityUsesInterRepWhenBothFactioned" fullname="LedgerTests.HostilityUsesInterRepWhenBothFactioned" methodname="HostilityUsesInterRepWhenBothFactioned" classname="LedgerTests" runstate="Runnable" seed="8475902" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001919" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1046" name="HostilityUsesUpdatedRep" fullname="LedgerTests.HostilityUsesUpdatedRep" methodname="HostilityUsesUpdatedRep" classname="LedgerTests" runstate="Runnable" seed="19966195" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001901" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1047" name="InscribableSurfaceRaisesHeat" fullname="LedgerTests.InscribableSurfaceRaisesHeat" methodname="InscribableSurfaceRaisesHeat" classname="LedgerTests" runstate="Runnable" seed="415068539" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001968" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1050" name="InterFactionHostility_NeutralByDefault" fullname="LedgerTests.InterFactionHostility_NeutralByDefault" methodname="InterFactionHostility_NeutralByDefault" classname="LedgerTests" runstate="Runnable" seed="896339426" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001825" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1025" name="InterRep_BidirectionalIndependent" fullname="LedgerTests.InterRep_BidirectionalIndependent" methodname="InterRep_BidirectionalIndependent" classname="LedgerTests" runstate="Runnable" seed="1297167009" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001848" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1021" name="InterRep_DefaultsToZero_WhenUnset" fullname="LedgerTests.InterRep_DefaultsToZero_WhenUnset" methodname="InterRep_DefaultsToZero_WhenUnset" classname="LedgerTests" runstate="Runnable" seed="2039335687" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001744" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1045" name="InterRep_EmptyFactions_NoCrash" fullname="LedgerTests.InterRep_EmptyFactions_NoCrash" methodname="InterRep_EmptyFactions_NoCrash" classname="LedgerTests" runstate="Runnable" seed="2008629892" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.003560" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1022" name="InterRep_FiresEventWithSourceAndTarget" fullname="LedgerTests.InterRep_FiresEventWithSourceAndTarget" methodname="InterRep_FiresEventWithSourceAndTarget" classname="LedgerTests" runstate="Runnable" seed="1511136801" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001771" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1024" name="InterRep_NullIdsIgnored_NoEvent" fullname="LedgerTests.InterRep_NullIdsIgnored_NoEvent" methodname="InterRep_NullIdsIgnored_NoEvent" classname="LedgerTests" runstate="Runnable" seed="2029907806" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001818" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1036" name="ListLabelsUpdateForAllFactions" fullname="LedgerTests.ListLabelsUpdateForAllFactions" methodname="ListLabelsUpdateForAllFactions" classname="LedgerTests" runstate="Runnable" seed="181202057" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.002044" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1034" name="NoSelection_ApplyRevertNoOp" fullname="LedgerTests.NoSelection_ApplyRevertNoOp" methodname="NoSelection_ApplyRevertNoOp" classname="LedgerTests" runstate="Runnable" seed="798834263" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.003303" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1019" name="NullFactionIdIgnored" fullname="LedgerTests.NullFactionIdIgnored" methodname="NullFactionIdIgnored" classname="LedgerTests" runstate="Runnable" seed="361169618" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001846" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1029" name="PresetButtons_SetExpectedValues" fullname="LedgerTests.PresetButtons_SetExpectedValues" methodname="PresetButtons_SetExpectedValues" classname="LedgerTests" runstate="Runnable" seed="32089277" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.002055" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1038" name="PresetButtons_UpdateLabelAndColor" fullname="LedgerTests.PresetButtons_UpdateLabelAndColor" methodname="PresetButtons_UpdateLabelAndColor" classname="LedgerTests" runstate="Runnable" seed="247188913" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001819" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1042" name="PreventSelfTarget_NoOp" fullname="LedgerTests.PreventSelfTarget_NoOp" methodname="PreventSelfTarget_NoOp" classname="LedgerTests" runstate="Runnable" seed="410451451" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001745" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1041" name="RevertInterRep_ReloadsExternalChange" fullname="LedgerTests.RevertInterRep_ReloadsExternalChange" methodname="RevertInterRep_ReloadsExternalChange" classname="LedgerTests" runstate="Runnable" seed="1444959676" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001724" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1033" name="RevertRestoresExternalValue" fullname="LedgerTests.RevertRestoresExternalValue" methodname="RevertRestoresExternalValue" classname="LedgerTests" runstate="Runnable" seed="821660906" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001818" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1048" name="ScrollContentSized" fullname="LedgerTests.ScrollContentSized" methodname="ScrollContentSized" classname="LedgerTests" runstate="Runnable" seed="1227681252" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.010152" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1026" name="SelectFaction_ShowsCurrentRep" fullname="LedgerTests.SelectFaction_ShowsCurrentRep" methodname="SelectFaction_ShowsCurrentRep" classname="LedgerTests" runstate="Runnable" seed="1119976932" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001941" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1039" name="SelectInterFactionPair_LoadsInterRep" fullname="LedgerTests.SelectInterFactionPair_LoadsInterRep" methodname="SelectInterFactionPair_LoadsInterRep" classname="LedgerTests" runstate="Runnable" seed="108452663" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001888" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1031" name="SelectsSecondFaction_ShowsSecondRep" fullname="LedgerTests.SelectsSecondFaction_ShowsSecondRep" methodname="SelectsSecondFaction_ShowsSecondRep" classname="LedgerTests" runstate="Runnable" seed="1142465129" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001859" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1023" name="SetInterRep_DoesNotAffectPlayerRep" fullname="LedgerTests.SetInterRep_DoesNotAffectPlayerRep" methodname="SetInterRep_DoesNotAffectPlayerRep" classname="LedgerTests" runstate="Runnable" seed="1466234895" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001790" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1020" name="SetInterRep_StoresValueAndGetInterRepReturns" fullname="LedgerTests.SetInterRep_StoresValueAndGetInterRepReturns" methodname="SetInterRep_StoresValueAndGetInterRepReturns" classname="LedgerTests" runstate="Runnable" seed="1375786395" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001789" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1016" name="SetRep_FiresEvent" fullname="LedgerTests.SetRep_FiresEvent" methodname="SetRep_FiresEvent" classname="LedgerTests" runstate="Runnable" seed="1282635553" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001822" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1015" name="SetRep_StoresValueAndGetRepReturns" fullname="LedgerTests.SetRep_StoresValueAndGetRepReturns" methodname="SetRep_StoresValueAndGetRepReturns" classname="LedgerTests" runstate="Runnable" seed="5752796" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001835" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1035" name="SliderWholeNumberClamp" fullname="LedgerTests.SliderWholeNumberClamp" methodname="SliderWholeNumberClamp" classname="LedgerTests" runstate="Runnable" seed="379493585" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.004966" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1043" name="SwitchingPairs_PreservesValuesPerPair" fullname="LedgerTests.SwitchingPairs_PreservesValuesPerPair" methodname="SwitchingPairs_PreservesValuesPerPair" classname="LedgerTests" runstate="Runnable" seed="245817086" result="Passed" start-time="2026-02-03 03:56:30Z" end-time="2026-02-03 03:56:30Z" duration="0.001836" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[<b><color=#2EA3FF>MCP-FOR-UNITY</color></b>: [TestRunnerNoThrottle] Restored Interaction Mode after test run.
+Saving results to: /Users/steven/Library/Application Support/DefaultCompany/Setup Guide In-Editor Tutorial/TestResults.xml
+]]></output>
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

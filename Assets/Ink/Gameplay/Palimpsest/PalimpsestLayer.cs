@@ -19,6 +19,10 @@ namespace InkSim
         public string allyFactionId;   // e.g., "faction_inkbound" or "PLAYER"
         public string huntFactionId;   // e.g., "faction_ghost"
 
+        // Economic modifiers (stubbed for TDD)
+        public float taxDelta = 0f;             // additive tax change (e.g., +0.05 = +5%)
+        public float priceMultiplier = 1f;      // multiplicative price bias (e.g., 0.9 = 10% cheaper)
+
         public List<string> tokens = new List<string>();
     }
 }
