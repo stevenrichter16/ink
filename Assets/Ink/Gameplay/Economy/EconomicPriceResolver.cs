@@ -8,6 +8,18 @@ namespace InkSim
     /// </summary>
     public static class EconomicPriceResolver
     {
+        public struct PriceBreakdown
+        {
+            public int baseValue;
+            public float merchantMultiplier;
+            public float priceMultiplier;
+            public float tax;
+            public float reputationMultiplier;
+            public float supplyMultiplier;
+            public float prosperityMultiplier;
+            public int finalPrice;
+        }
+
         /// <summary>
         /// Compute buy price (what the player pays). Currently returns base value * profile multiplier.
         /// </summary>
@@ -41,6 +53,57 @@ namespace InkSim
             price *= priceMult;
             price *= (1f + tax);
             return Mathf.Max(1, Mathf.RoundToInt(price));
+        }
+
+        public static PriceBreakdown GetBuyBreakdown(string itemId, MerchantProfile profile, Vector2Int position)
+        {
+            var data = ItemDatabase.Get(itemId);
+            PriceBreakdown bd = new PriceBreakdown
+            {
+                baseValue = data?.value ?? 0,
+                merchantMultiplier = profile?.buyMultiplier ?? 0f,
+                priceMultiplier = 1f,
+                tax = 0f,
+                reputationMultiplier = 1f,
+                supplyMultiplier = 1f,
+                prosperityMultiplier = 1f
+            };
+
+            if (data == null || profile == null)
+            {
+                bd.finalPrice = 0;
+                return bd;
+            }
+
+            var rules = OverlayResolver.GetRulesAt(position.x, position.y);
+            bd.priceMultiplier *= (rules.priceMultiplier == 0f ? 1f : rules.priceMultiplier);
+            bd.tax += rules.taxModifier;
+
+            var state = DistrictControlService.Instance?.GetStateByPosition(position.x, position.y);
+            if (state != null)
+            {
+                bd.prosperityMultiplier = Mathf.Max(0.01f, state.prosperity);
+                bd.priceMultiplier *= bd.prosperityMultiplier;
+                bd.tax += TaxRegistry.GetTax(state.Id);
+            }
+
+            bd.reputationMultiplier = GetReputationModifier(profile.factionId);
+            bd.priceMultiplier *= bd.reputationMultiplier;
+
+            bd.supplyMultiplier = GetSupplyModifier(position, itemId);
+            bd.priceMultiplier *= bd.supplyMultiplier;
+
+            float price = bd.baseValue;
+            price *= bd.merchantMultiplier;
+            price *= bd.priceMultiplier;
+            price *= (1f + bd.tax);
+            bd.finalPrice = Mathf.Max(1, Mathf.RoundToInt(price));
+            return bd;
+        }
+
+        public static string FormatBreakdown(PriceBreakdown bd)
+        {
+            return $"Base:{bd.baseValue} Merchant:{bd.merchantMultiplier:0.00}x Mult:{bd.priceMultiplier:0.00}x Tax:{bd.tax*100:+0;-0;0}% Final:{bd.finalPrice}";
         }
 
         /// <summary>

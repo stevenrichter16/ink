@@ -282,6 +282,36 @@ namespace InkSim
             Canvas.ForceUpdateCanvases();
         }
 
+        /// <summary>
+        /// Build a one-line price summary for a district and item id (debug only).
+        /// </summary>
+        public static string BuildPriceLine(DistrictState state, string itemId, MerchantProfile profile = null)
+        {
+            if (state == null) return "No district";
+            if (profile == null)
+            {
+                profile = ScriptableObject.CreateInstance<MerchantProfile>();
+                profile.buyMultiplier = 1f;
+                profile.sellMultiplier = 1f;
+            }
+            var center = new Vector2Int(state.Definition.minX, state.Definition.minY);
+            var bd = EconomicPriceResolver.GetBuyBreakdown(itemId, profile, center);
+            var text = EconomicPriceResolver.FormatBreakdown(bd);
+            return $"{state.Definition.displayName}: {text}";
+        }
+
+        /// <summary>
+        /// Build economy modifier summary (tax/supply/prosperity) for a district and item.
+        /// </summary>
+        public static string BuildEconomyLine(DistrictState state, string itemId)
+        {
+            if (state == null) return "No district";
+            float tax = TaxRegistry.GetTax(state.Id);
+            float supply = SupplyService.GetSupplyByDistrict(state.Id, itemId);
+            float pros = state.prosperity;
+            return $"Tax:{tax*100:+0;-0;0}%  Supply:{supply:0.00}x  Pros:{pros:0.00}x";
+        }
+
         private void AddDistrictBlock(DistrictState state, IReadOnlyList<FactionDefinition> factions, bool evenRow)
         {
             var block = new GameObject("District_" + state.Definition.displayName, typeof(Image), typeof(VerticalLayoutGroup));
@@ -299,6 +329,9 @@ namespace InkSim
             layout.childAlignment = TextAnchor.UpperLeft;
 
             AddLabel(block.transform, state.Definition.displayName, 18, FontStyle.Bold);
+            // Price line for debug item (potion)
+            AddLabel(block.transform, BuildPriceLine(state, "potion"), 14, FontStyle.Italic);
+            AddLabel(block.transform, BuildEconomyLine(state, "potion"), 13, FontStyle.Italic);
 
             for (int f = 0; f < factions.Count; f++)
             {

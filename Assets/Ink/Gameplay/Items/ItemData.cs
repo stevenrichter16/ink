@@ -28,6 +28,10 @@ namespace InkSim
         // Value (for selling, scoring)
         public int value;
 
+        // Economy extras
+        public ItemRarity rarity = ItemRarity.Common;
+        public float weight = 0f;
+
         public ItemData() { }
 
         public ItemData(string id, string name, ItemType type, int tileIndex)
