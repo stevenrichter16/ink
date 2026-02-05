@@ -618,7 +618,7 @@ private void CreateEnemy(int tileIndex, int x, int y, string lootTableId, int le
             _gridWorld.SetOccupant(x, y, enemy);
         }
 
-        private void CreateNPC(int tileIndex, int x, int y, NpcAI.AIBehavior behavior, string merchantId = null, FactionDefinition faction = null, string factionRankId = "low")
+        private void CreateNPC(int tileIndex, int x, int y, NpcAI.AIBehavior behavior, string merchantId = null, FactionDefinition faction = null, string factionRankId = "low", SpeciesDefinition species = null)
         {
             GameObject go = new GameObject($"NPC_{x}_{y}");
             go.transform.SetParent(_entityLayer);
@@ -644,10 +644,19 @@ private void CreateEnemy(int tileIndex, int x, int y, string lootTableId, int le
             DialogueRunner runner = go.AddComponent<DialogueRunner>();
             runner.questIdForStateSwitch = "quest_slime_hunt";
 
-            if (faction != null)
+            // Species & default faction handling
+            SpeciesMember speciesMember = null;
+            if (species != null)
+            {
+                speciesMember = go.GetComponent<SpeciesMember>() ?? go.AddComponent<SpeciesMember>();
+                speciesMember.species = species;
+                speciesMember.EnsureDefaultFaction();
+            }
+
+            if (faction != null || speciesMember != null)
             {
                 var member = go.AddComponent<FactionMember>();
-                member.faction = faction;
+                member.faction = faction ?? species?.defaultFaction;
                 member.rankId = factionRankId;
                 member.ApplyRank();
             }
