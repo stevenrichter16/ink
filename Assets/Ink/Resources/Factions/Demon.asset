@@ -1,0 +1,80 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0d5e1b4c1c94a2c8f49bb0c97c7a987, type: 3}
+  m_Name: Demon
+  m_EditorClassIdentifier:
+  id: faction_demon
+  displayName: Demon
+  defaultReputation: -25
+  defaultLevelProfile: {fileID: 11400000, guid: aef54a2f81dff4044b85a3078067d738, type: 2}
+  disposition: 1
+  rallyRadius: 8
+  alertDurationTurns: 4
+  repOnHit: -10
+  repOnKill: -150
+  ranks:
+  - rankId: low
+    displayName: Lesser Demon
+    level: 2
+    baseDefense: 3
+    baseSpeed: 5
+    levelProfileOverride: {fileID: 0}
+    spriteIndices:
+    - 28
+    weaponId:
+    armorId:
+    accessoryId:
+    neutralDialogue: {fileID: 0}
+    friendlyDialogue: {fileID: 0}
+    hostileDialogue: {fileID: 0}
+  - rankId: mid
+    displayName: Demon
+    level: 4
+    baseDefense: 5
+    baseSpeed: 6
+    levelProfileOverride: {fileID: 0}
+    spriteIndices:
+    - 28
+    weaponId:
+    armorId:
+    accessoryId:
+    neutralDialogue: {fileID: 0}
+    friendlyDialogue: {fileID: 0}
+    hostileDialogue: {fileID: 0}
+  - rankId: high
+    displayName: Greater Demon
+    level: 6
+    baseDefense: 7
+    baseSpeed: 7
+    levelProfileOverride: {fileID: 0}
+    spriteIndices:
+    - 28
+    weaponId:
+    armorId:
+    accessoryId:
+    neutralDialogue: {fileID: 0}
+    friendlyDialogue: {fileID: 0}
+    hostileDialogue: {fileID: 0}
+  - rankId: elder
+    displayName: Demon Lord
+    level: 8
+    baseDefense: 10
+    baseSpeed: 8
+    levelProfileOverride: {fileID: 0}
+    spriteIndices:
+    - 28
+    weaponId:
+    armorId:
+    accessoryId:
+    neutralDialogue: {fileID: 0}
+    friendlyDialogue: {fileID: 0}
+    hostileDialogue: {fileID: 0}

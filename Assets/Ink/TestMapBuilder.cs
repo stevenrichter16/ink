@@ -346,13 +346,15 @@ private void PlaceEntities()
             var inkboundFaction = Resources.Load<FactionDefinition>("Factions/Inkbound");
             var inkguardFaction = Resources.Load<FactionDefinition>("Factions/Inkguard");
             var ghostFaction = Resources.Load<FactionDefinition>("Factions/Ghost");
-            var snakeSpecies = Resources.Load<SpeciesDefinition>("Species/Snake");
+
+            // Load species
+            var humanSpecies = Resources.Load<SpeciesDefinition>("Species/Human");
 
             // === NPCs ===
-            // Merchant in forest clearing (left area with sign)
-            CreateNPC(Tiles.NPC1, 6, 18, NpcAI.AIBehavior.Stationary, "general_store", inkboundFaction, "low");
-            // Weaponsmith inside dungeon
-            CreateNPC(Tiles.NPC2, 32, 8, NpcAI.AIBehavior.Stationary, "weaponsmith", inkguardFaction, "mid");
+            // Merchant in forest clearing (left area with sign) - Human species, Inkbound faction
+            CreateNPC(Tiles.NPC1, 6, 18, NpcAI.AIBehavior.Stationary, "general_store", inkboundFaction, "low", humanSpecies);
+            // Weaponsmith inside dungeon - Human species, Inkguard faction
+            CreateNPC(Tiles.NPC2, 32, 8, NpcAI.AIBehavior.Stationary, "weaponsmith", inkguardFaction, "mid", humanSpecies);
             
             // === FOREST - DENSE TREE PLACEMENT ===
             // Upper left forest
@@ -431,9 +433,9 @@ private void PlaceEntities()
             CreateEnemy(Tiles.Slime, 10, 22, "slime", 1);
             CreateEnemy(Tiles.Slime, 3, 8, "slime", 1);
             CreateEnemy(Tiles.Goblin, 12, 18, "skeleton", 2);
-            CreateEnemy(Tiles.Snake, 9, 19, "snake", 1, snakeSpecies, null, "high");
-            CreateEnemy(Tiles.Snake, 11, 21, "snake", 1, snakeSpecies, null, "high");
-            CreateEnemy(Tiles.Snake, 13, 17, "snake", 1, snakeSpecies, null, "high");
+            CreateEnemy(Tiles.Snake, 9, 19, "snake", 1);
+            CreateEnemy(Tiles.Snake, 11, 21, "snake", 1);
+            CreateEnemy(Tiles.Snake, 13, 17, "snake", 1);
             
             // Enemies near dungeon
             CreateEnemy(Tiles.Ghost, 15, 14, "ghost", 3);
