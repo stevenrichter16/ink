@@ -22,6 +22,16 @@ namespace InkSim
         // Economic modifiers (stubbed for TDD)
         public float taxDelta = 0f;             // additive tax change (e.g., +0.05 = +5%)
         public float priceMultiplier = 1f;      // multiplicative price bias (e.g., 0.9 = 10% cheaper)
+        public float supplyModifier = 1f;
+        public float demandModifier = 1f;
+        public string targetItemId;
+        public string targetFactionId;
+        public bool enableBlackMarket;
+        public bool disableTaxEnforcement;
+        public bool blockTrade;
+        public List<string> tradeBannedFactions = new List<string>();
+        public List<string> taxExemptFactions = new List<string>();
+        public List<string> taxDoubleFactions = new List<string>();
 
         public List<string> tokens = new List<string>();
     }

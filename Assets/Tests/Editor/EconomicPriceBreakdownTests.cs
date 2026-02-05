@@ -31,6 +31,7 @@ namespace InkSim.Tests
             SupplyService.Clear();
             TaxRegistry.Clear();
             OverlayResolver.SetRegistry(null);
+            EconomicEventService.Clear();
         }
 
         [TearDown]
@@ -43,6 +44,7 @@ namespace InkSim.Tests
             SupplyService.Clear();
             TaxRegistry.Clear();
             OverlayResolver.SetRegistry(null);
+            EconomicEventService.Clear();
         }
 
         [Test]

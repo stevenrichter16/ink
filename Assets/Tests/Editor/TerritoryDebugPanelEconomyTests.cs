@@ -24,6 +24,9 @@ namespace InkSim.Tests
         public void TearDown()
         {
             if (_dcsGO != null) GameObject.DestroyImmediate(_dcsGO);
+            SupplyService.Clear();
+            TaxRegistry.Clear();
+            EconomicEventService.Clear();
         }
 
         [Test]

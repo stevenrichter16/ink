@@ -338,6 +338,14 @@ private void PlaceEntities()
             CreateTileCursor();
             CreateTileInfoPanel();
             CreateSpellSystem();
+            // Territory / economy systems & debug
+            var dcsGO = new GameObject("DistrictControlService");
+            dcsGO.transform.SetParent(transform, false);
+            dcsGO.AddComponent<DistrictControlService>();
+
+            var territoryDebugGO = new GameObject("TerritoryDebugPanel");
+            territoryDebugGO.transform.SetParent(transform, false);
+            territoryDebugGO.AddComponent<TerritoryDebugPanel>();
             
             // === TRAINING DUMMY ===
             CreateDummy(Tiles.Barrel, 10, 10);

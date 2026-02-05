@@ -37,6 +37,9 @@ namespace InkSim
             
             // Ground items
             state.groundItems = CollectGroundItems();
+
+            // Economy
+            state.economy = CollectEconomicData();
             
             Debug.Log($"[GameStateManager] Collected: Player({state.player.gridX},{state.player.gridY}), " +
                       $"{state.enemies.Count} enemies, {state.groundItems.Count} items");
@@ -124,6 +127,92 @@ private static PlayerSaveData CollectPlayerData(PlayerController player)
             
             return questLog.ToSaveData();
         }
+
+        private static EconomicSaveData CollectEconomicData()
+        {
+            var econ = new EconomicSaveData();
+
+            var policies = TaxRegistry.GetAllPolicies();
+            for (int i = 0; i < policies.Count; i++)
+            {
+                var p = policies[i];
+                econ.activeTaxPolicies.Add(new TaxPolicySaveData
+                {
+                    id = p.id,
+                    type = p.type,
+                    rate = p.rate,
+                    jurisdictionId = p.jurisdictionId,
+                    exemptFactions = p.exemptFactions != null ? new List<string>(p.exemptFactions) : new List<string>(),
+                    exemptItems = p.exemptItems != null ? new List<string>(p.exemptItems) : new List<string>(),
+                    targetItems = p.targetItems != null ? new List<string>(p.targetItems) : new List<string>(),
+                    turnsRemaining = p.turnsRemaining,
+                    sourceLayerId = p.sourceLayerId
+                });
+            }
+
+            var relations = TradeRelationRegistry.GetAll();
+            for (int i = 0; i < relations.Count; i++)
+            {
+                var r = relations[i];
+                if (r == null) continue;
+                econ.tradeRelations.Add(new TradeRelationSaveData
+                {
+                    sourceFactionId = r.sourceFactionId,
+                    targetFactionId = r.targetFactionId,
+                    status = r.status,
+                    tariffRate = r.tariffRate,
+                    bannedItems = r.bannedItems != null ? new List<string>(r.bannedItems) : new List<string>(),
+                    exclusiveItems = r.exclusiveItems != null ? new List<string>(r.exclusiveItems) : new List<string>()
+                });
+            }
+
+            var dcs = DistrictControlService.Instance;
+            if (dcs != null && dcs.States != null)
+            {
+                for (int i = 0; i < dcs.States.Count; i++)
+                {
+                    var s = dcs.States[i];
+                    var saved = new DistrictEconomicSaveData
+                    {
+                        districtId = s.Id,
+                        treasury = s.treasury,
+                        corruption = s.corruption,
+                        economicActivity = s.economicActivity
+                    };
+
+                    if (s.itemSupply != null)
+                    {
+                        foreach (var kvp in s.itemSupply)
+                            saved.itemSupply.Add(new ItemFloatPair(kvp.Key, kvp.Value));
+                    }
+                    if (s.itemDemand != null)
+                    {
+                        foreach (var kvp in s.itemDemand)
+                            saved.itemDemand.Add(new ItemFloatPair(kvp.Key, kvp.Value));
+                    }
+
+                    econ.districtEconomics.Add(saved);
+                }
+            }
+
+            var events = EconomicEventService.GetAllEvents();
+            for (int i = 0; i < events.Count; i++)
+            {
+                var ev = events[i];
+                if (ev == null) continue;
+                econ.activeEvents.Add(new DemandEventSaveData
+                {
+                    id = ev.id,
+                    itemId = ev.itemId,
+                    demandMultiplier = ev.demandMultiplier,
+                    durationDays = ev.durationDays,
+                    districtId = ev.districtId,
+                    description = ev.description
+                });
+            }
+
+            return econ;
+        }
         
         #endregion
         
@@ -158,8 +247,11 @@ private static PlayerSaveData CollectPlayerData(PlayerController player)
             
             // 4. Restore ground items
             RestoreGroundItems(state.groundItems);
+
+            // 5. Restore economy
+            ApplyEconomicData(state.economy);
             
-            // 5. Refresh UI
+            // 6. Refresh UI
             RefreshAllUI();
             
             Debug.Log("[GameStateManager] State applied successfully");
@@ -314,6 +406,119 @@ private static void RefreshAllUI()
         {
             // UIs use LateUpdate polling, so they'll auto-refresh next frame.
             // Nothing to do here - health, equipment, inventory UIs will update automatically.
+        }
+
+        private static void ApplyEconomicData(EconomicSaveData data)
+        {
+            TaxRegistry.Clear();
+            TradeRelationRegistry.Clear();
+            EconomicEventService.Clear();
+            SupplyService.Clear();
+
+            if (data == null) return;
+
+            if (data.activeTaxPolicies != null)
+            {
+                for (int i = 0; i < data.activeTaxPolicies.Count; i++)
+                {
+                    var p = data.activeTaxPolicies[i];
+                    if (p == null) continue;
+                    TaxRegistry.AddPolicy(new TaxPolicy
+                    {
+                        id = p.id,
+                        type = p.type,
+                        rate = p.rate,
+                        jurisdictionId = p.jurisdictionId,
+                        exemptFactions = p.exemptFactions != null ? new List<string>(p.exemptFactions) : new List<string>(),
+                        exemptItems = p.exemptItems != null ? new List<string>(p.exemptItems) : new List<string>(),
+                        targetItems = p.targetItems != null ? new List<string>(p.targetItems) : new List<string>(),
+                        turnsRemaining = p.turnsRemaining,
+                        sourceLayerId = p.sourceLayerId
+                    });
+                }
+            }
+
+            if (data.tradeRelations != null)
+            {
+                for (int i = 0; i < data.tradeRelations.Count; i++)
+                {
+                    var r = data.tradeRelations[i];
+                    if (r == null) continue;
+                    TradeRelationRegistry.SetRelation(new FactionTradeRelation
+                    {
+                        sourceFactionId = r.sourceFactionId,
+                        targetFactionId = r.targetFactionId,
+                        status = r.status,
+                        tariffRate = r.tariffRate,
+                        bannedItems = r.bannedItems != null ? new List<string>(r.bannedItems) : new List<string>(),
+                        exclusiveItems = r.exclusiveItems != null ? new List<string>(r.exclusiveItems) : new List<string>()
+                    });
+                }
+            }
+
+            var dcs = DistrictControlService.Instance;
+            if (dcs != null && dcs.States != null && data.districtEconomics != null)
+            {
+                for (int i = 0; i < data.districtEconomics.Count; i++)
+                {
+                    var saved = data.districtEconomics[i];
+                    if (saved == null || string.IsNullOrEmpty(saved.districtId)) continue;
+                    DistrictState state = null;
+                    for (int s = 0; s < dcs.States.Count; s++)
+                    {
+                        if (dcs.States[s].Id == saved.districtId)
+                        {
+                            state = dcs.States[s];
+                            break;
+                        }
+                    }
+                    if (state == null) continue;
+
+                    state.treasury = saved.treasury;
+                    state.corruption = saved.corruption;
+                    state.economicActivity = saved.economicActivity;
+
+                    if (state.itemSupply != null) state.itemSupply.Clear();
+                    if (state.itemDemand != null) state.itemDemand.Clear();
+
+                    if (saved.itemSupply != null)
+                    {
+                        for (int j = 0; j < saved.itemSupply.Count; j++)
+                        {
+                            var pair = saved.itemSupply[j];
+                            if (pair == null || string.IsNullOrEmpty(pair.itemId)) continue;
+                            SupplyService.SetSupply(saved.districtId, pair.itemId, pair.value);
+                        }
+                    }
+                    if (saved.itemDemand != null && state.itemDemand != null)
+                    {
+                        for (int j = 0; j < saved.itemDemand.Count; j++)
+                        {
+                            var pair = saved.itemDemand[j];
+                            if (pair == null || string.IsNullOrEmpty(pair.itemId)) continue;
+                            state.itemDemand[pair.itemId] = pair.value;
+                        }
+                    }
+                }
+            }
+
+            if (data.activeEvents != null)
+            {
+                for (int i = 0; i < data.activeEvents.Count; i++)
+                {
+                    var ev = data.activeEvents[i];
+                    if (ev == null) continue;
+                    EconomicEventService.TriggerEvent(new DemandEvent
+                    {
+                        id = ev.id,
+                        itemId = ev.itemId,
+                        demandMultiplier = ev.demandMultiplier,
+                        durationDays = ev.durationDays,
+                        districtId = ev.districtId,
+                        description = ev.description
+                    });
+                }
+            }
         }
         
         #endregion

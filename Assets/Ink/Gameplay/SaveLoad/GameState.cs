@@ -11,7 +11,7 @@ namespace InkSim
     [Serializable]
     public class GameState
     {
-        public const int VERSION = 2;
+        public const int VERSION = 3;
         
         public int version = VERSION;
         public string timestamp;
@@ -21,6 +21,7 @@ namespace InkSim
         public List<EnemySaveData> enemies = new List<EnemySaveData>();
         public List<ItemPickupSaveData> groundItems = new List<ItemPickupSaveData>();
         public List<QuestSaveData> quests = new List<QuestSaveData>();
+        public EconomicSaveData economy;
         
         /// <summary>
         /// Create a new GameState with current timestamp.
@@ -144,6 +145,77 @@ namespace InkSim
             this.questId = questId;
             this.state = state;
             this.currentCount = currentCount;
+        }
+    }
+
+    [Serializable]
+    public class EconomicSaveData
+    {
+        public List<TaxPolicySaveData> activeTaxPolicies = new List<TaxPolicySaveData>();
+        public List<TradeRelationSaveData> tradeRelations = new List<TradeRelationSaveData>();
+        public List<DistrictEconomicSaveData> districtEconomics = new List<DistrictEconomicSaveData>();
+        public List<DemandEventSaveData> activeEvents = new List<DemandEventSaveData>();
+    }
+
+    [Serializable]
+    public class TaxPolicySaveData
+    {
+        public string id;
+        public TaxType type;
+        public float rate;
+        public string jurisdictionId;
+        public List<string> exemptFactions = new List<string>();
+        public List<string> exemptItems = new List<string>();
+        public List<string> targetItems = new List<string>();
+        public int turnsRemaining;
+        public string sourceLayerId;
+    }
+
+    [Serializable]
+    public class TradeRelationSaveData
+    {
+        public string sourceFactionId;
+        public string targetFactionId;
+        public TradeStatus status;
+        public float tariffRate;
+        public List<string> bannedItems = new List<string>();
+        public List<string> exclusiveItems = new List<string>();
+    }
+
+    [Serializable]
+    public class DistrictEconomicSaveData
+    {
+        public string districtId;
+        public float treasury;
+        public float corruption;
+        public float economicActivity;
+        public List<ItemFloatPair> itemSupply = new List<ItemFloatPair>();
+        public List<ItemFloatPair> itemDemand = new List<ItemFloatPair>();
+    }
+
+    [Serializable]
+    public class DemandEventSaveData
+    {
+        public string id;
+        public string itemId;
+        public float demandMultiplier;
+        public int durationDays;
+        public string districtId;
+        public string description;
+    }
+
+    [Serializable]
+    public class ItemFloatPair
+    {
+        public string itemId;
+        public float value;
+
+        public ItemFloatPair() { }
+
+        public ItemFloatPair(string itemId, float value)
+        {
+            this.itemId = itemId;
+            this.value = value;
         }
     }
 }

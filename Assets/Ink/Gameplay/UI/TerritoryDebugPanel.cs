@@ -10,7 +10,7 @@ namespace InkSim
     /// </summary>
     public class TerritoryDebugPanel : MonoBehaviour
     {
-        public Key toggleKey = Key.F8;
+        public Key toggleKey = Key.L;
         public float autoRefreshSeconds = 0.5f;
 
         private GameObject _root;
@@ -22,10 +22,12 @@ namespace InkSim
 
         private void Start()
         {
+            Debug.Log("[TerritoryDebugPanel] Start - building UI");
             BuildUI();
             Refresh();
             _root.SetActive(true);
             _refreshTimer = autoRefreshSeconds;
+            Debug.Log($"[TerritoryDebugPanel] Initialized with toggleKey={toggleKey}");
         }
 
         private void Update()
@@ -33,8 +35,13 @@ namespace InkSim
             var kb = Keyboard.current;
             if (kb != null && kb[toggleKey].wasPressedThisFrame)
             {
+                Debug.Log("[TerritoryDebugPanel] Toggle key pressed");
                 _root.SetActive(!_root.activeSelf);
                 if (_root.activeSelf) Refresh();
+            }
+            else if (kb == null)
+            {
+                Debug.LogWarning("[TerritoryDebugPanel] Keyboard.current is null (Input System inactive?)");
             }
 
             if (_root != null && _root.activeSelf)
@@ -306,7 +313,7 @@ namespace InkSim
         public static string BuildEconomyLine(DistrictState state, string itemId)
         {
             if (state == null) return "No district";
-            float tax = TaxRegistry.GetTax(state.Id);
+            float tax = TaxRegistry.GetTax(state.Id, null, itemId);
             float supply = SupplyService.GetSupplyByDistrict(state.Id, itemId);
             float pros = state.prosperity;
             return $"Tax:{tax*100:+0;-0;0}%  Supply:{supply:0.00}x  Pros:{pros:0.00}x";

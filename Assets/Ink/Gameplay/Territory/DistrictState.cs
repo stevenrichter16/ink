@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace InkSim
@@ -16,6 +17,12 @@ namespace InkSim
         public int[] lossStreak;
         // Economic runtime prosperity (1 = baseline). Stub for future economy systems.
         public float prosperity = 1f;
+        // Economic runtime fields (prerequisites for full system).
+        public float treasury;
+        public float corruption;
+        public Dictionary<string, float> itemSupply = new Dictionary<string, float>();
+        public Dictionary<string, float> itemDemand = new Dictionary<string, float>();
+        public float economicActivity;
 
         public DistrictState(DistrictDefinition def, int factionCount)
         {
@@ -24,6 +31,9 @@ namespace InkSim
             patrol = new float[factionCount];
             heat = new float[factionCount];
             lossStreak = new int[factionCount];
+            treasury = 0f;
+            corruption = 0f;
+            economicActivity = 0f;
         }
 
         public int ControllingFactionIndex

@@ -27,6 +27,9 @@ namespace InkSim
         public int repOnHit = -5;
         public int repOnKill = -100;
 
+        [Header("Economic Policy")]
+        public FactionEconomicPolicy economicPolicy;
+
         [Header("Ranks")]
         public List<RankDefinition> ranks = new List<RankDefinition>();
 

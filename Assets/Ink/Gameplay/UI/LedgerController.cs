@@ -15,7 +15,11 @@ namespace InkSim
         [Tooltip("Sorting order for the Ledger canvas so it renders above other UI.")]
         public int sortingOrder = 1000;
 
-        private LedgerPanel _panel;
+        public enum LedgerTab { Factions, Economy }
+
+        private LedgerPanel _factionPanel;
+        private LedgerEconomyPanel _economyPanel;
+        private LedgerTab _currentTab = LedgerTab.Factions;
 
         private void Awake()
         {
@@ -48,9 +52,13 @@ namespace InkSim
             {
                 Toggle();
             }
-            else if (kb.escapeKey.wasPressedThisFrame && _panel != null && _panel.IsVisible)
+            else if (kb.escapeKey.wasPressedThisFrame && IsVisible())
             {
                 Hide();
+            }
+            else if (kb.tabKey.wasPressedThisFrame && IsVisible())
+            {
+                SwitchTab();
             }
         }
 
@@ -66,26 +74,58 @@ namespace InkSim
             scaler.referenceResolution = new Vector2(1920, 1080);
             canvasGO.AddComponent<UnityEngine.UI.GraphicRaycaster>();
 
-            _panel = canvasGO.AddComponent<LedgerPanel>();
-            _panel.Initialize(Hide);
-            _panel.Hide();
+            _factionPanel = canvasGO.AddComponent<LedgerPanel>();
+            _factionPanel.Initialize(Hide);
+            _factionPanel.Hide();
+
+            _economyPanel = canvasGO.AddComponent<LedgerEconomyPanel>();
+            _economyPanel.Initialize(Hide);
+            _economyPanel.Hide();
         }
 
         private void Toggle()
         {
-            if (_panel == null) return;
-            if (_panel.IsVisible) Hide();
+            if (!IsReady()) return;
+            if (IsVisible()) Hide();
             else Show();
         }
 
         private void Show()
         {
-            _panel.Show();
+            ShowCurrentTab();
         }
 
         private void Hide()
         {
-            _panel.Hide();
+            if (_factionPanel != null) _factionPanel.Hide();
+            if (_economyPanel != null) _economyPanel.Hide();
+        }
+
+        private void SwitchTab()
+        {
+            _currentTab = _currentTab == LedgerTab.Factions ? LedgerTab.Economy : LedgerTab.Factions;
+            ShowCurrentTab();
+        }
+
+        private void ShowCurrentTab()
+        {
+            if (_factionPanel != null) _factionPanel.Hide();
+            if (_economyPanel != null) _economyPanel.Hide();
+
+            if (_currentTab == LedgerTab.Factions && _factionPanel != null)
+                _factionPanel.Show();
+            else if (_currentTab == LedgerTab.Economy && _economyPanel != null)
+                _economyPanel.Show();
+        }
+
+        private bool IsReady()
+        {
+            return _factionPanel != null || _economyPanel != null;
+        }
+
+        private bool IsVisible()
+        {
+            return (_factionPanel != null && _factionPanel.IsVisible) || (_economyPanel != null && _economyPanel.IsVisible);
         }
     }
 }

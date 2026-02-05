@@ -26,6 +26,8 @@ namespace InkSim.Tests
             _layerId2 = -1;
             OverlayResolver.SetRegistry(null);
             SupplyService.Clear();
+            TaxRegistry.Clear();
+            EconomicEventService.Clear();
 
             // Minimal DistrictControlService bootstrap for prosperity tests
             if (DistrictControlService.Instance == null)
@@ -53,6 +55,8 @@ namespace InkSim.Tests
             }
             OverlayResolver.SetRegistry(null);
             SupplyService.Clear();
+            TaxRegistry.Clear();
+            EconomicEventService.Clear();
         }
 
         [Test]
@@ -204,13 +208,13 @@ namespace InkSim.Tests
                 Assert.Inconclusive("No district state available for supply test.");
             var pos = new Vector2Int(state.Definition.minX, state.Definition.minY);
 
-            SupplyService.SetSupply(state.Id, "potion", 2f); // 2x supply should 2x price
+            SupplyService.SetSupply(state.Id, "potion", 2f); // surplus should reduce price
 
-            int buy = EconomicPriceResolver.ResolveBuyPrice("potion", _profile, pos); // base 15 *2
-            int sell = EconomicPriceResolver.ResolveSellPrice("potion", _profile, pos); // base 15 *0.5 *2
+            int buy = EconomicPriceResolver.ResolveBuyPrice("potion", _profile, pos); // base 15 *0.5 => 8
+            int sell = EconomicPriceResolver.ResolveSellPrice("potion", _profile, pos); // base 15 *0.5 *0.5 => 4
 
-            Assert.AreEqual(30, buy);
-            Assert.AreEqual(15, sell);
+            Assert.AreEqual(8, buy);
+            Assert.AreEqual(4, sell);
         }
 
         [Test]

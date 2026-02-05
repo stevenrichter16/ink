@@ -36,18 +36,30 @@ namespace InkSim
             {
                 var rules = OverlayResolver.GetRulesAt(position.Value.x, position.Value.y);
                 priceMult *= (rules.priceMultiplier == 0f ? 1f : rules.priceMultiplier);
-                tax += rules.taxModifier;
+                if (!rules.taxEnforcementDisabled)
+                    tax += rules.taxModifier;
 
                 var state = DistrictControlService.Instance?.GetStateByPosition(position.Value.x, position.Value.y);
                 if (state != null) priceMult *= Mathf.Max(0.01f, state.prosperity);
 
-                tax += TaxRegistry.GetTax(state?.Id);
+                if (!rules.taxEnforcementDisabled)
+                {
+                    var factionKey = string.IsNullOrEmpty(profile?.factionId) ? null : profile.factionId.ToLowerInvariant();
+                    float baseTax = TaxRegistry.GetTax(state?.Id, profile?.factionId, itemId);
+                    if (rules.taxExemptFactions != null && !string.IsNullOrEmpty(factionKey) &&
+                        rules.taxExemptFactions.Contains(factionKey))
+                        baseTax = 0f;
+                    if (rules.taxDoubleFactions != null && !string.IsNullOrEmpty(factionKey) &&
+                        rules.taxDoubleFactions.Contains(factionKey))
+                        baseTax *= 2f;
+                    tax += baseTax;
+                }
             }
 
             // Faction reputation modifier (friendlier = cheaper)
             priceMult *= GetReputationModifier(profile.factionId);
 
-            // Supply/demand placeholder (returns 1 until implemented)
+            // Supply/demand modifier
             priceMult *= GetSupplyModifier(position, itemId);
 
             price *= priceMult;
@@ -77,14 +89,26 @@ namespace InkSim
 
             var rules = OverlayResolver.GetRulesAt(position.x, position.y);
             bd.priceMultiplier *= (rules.priceMultiplier == 0f ? 1f : rules.priceMultiplier);
-            bd.tax += rules.taxModifier;
+            if (!rules.taxEnforcementDisabled)
+                bd.tax += rules.taxModifier;
 
             var state = DistrictControlService.Instance?.GetStateByPosition(position.x, position.y);
             if (state != null)
             {
                 bd.prosperityMultiplier = Mathf.Max(0.01f, state.prosperity);
                 bd.priceMultiplier *= bd.prosperityMultiplier;
-                bd.tax += TaxRegistry.GetTax(state.Id);
+                if (!rules.taxEnforcementDisabled)
+                {
+                    var factionKey = string.IsNullOrEmpty(profile?.factionId) ? null : profile.factionId.ToLowerInvariant();
+                    float baseTax = TaxRegistry.GetTax(state.Id, profile?.factionId, itemId);
+                    if (rules.taxExemptFactions != null && !string.IsNullOrEmpty(factionKey) &&
+                        rules.taxExemptFactions.Contains(factionKey))
+                        baseTax = 0f;
+                    if (rules.taxDoubleFactions != null && !string.IsNullOrEmpty(factionKey) &&
+                        rules.taxDoubleFactions.Contains(factionKey))
+                        baseTax *= 2f;
+                    bd.tax += baseTax;
+                }
             }
 
             bd.reputationMultiplier = GetReputationModifier(profile.factionId);
@@ -158,7 +182,28 @@ namespace InkSim
 
         private static float GetSupplyModifier(Vector2Int? position, string itemId)
         {
-            return SupplyService.GetSupply(position, itemId);
+            float supplyRatio = 1f;
+            float supplyModifier = 1f;
+            float demandModifier = 1f;
+            string districtId = null;
+
+            if (position.HasValue)
+            {
+                var pos = position.Value;
+                var rules = OverlayResolver.GetRulesAt(pos.x, pos.y);
+                supplyModifier = rules.supplyModifier == 0f ? 1f : rules.supplyModifier;
+                demandModifier = rules.demandModifier == 0f ? 1f : rules.demandModifier;
+
+                var state = DistrictControlService.Instance?.GetStateByPosition(pos.x, pos.y);
+                districtId = state?.Id;
+            }
+
+            supplyRatio = SupplyService.GetSupplyByDistrict(districtId, itemId);
+            supplyRatio = Mathf.Max(0.01f, supplyRatio * supplyModifier);
+            float supplyPrice = SupplyService.GetPriceModifierFromSupply(supplyRatio);
+            float demandPrice = EconomicEventService.GetDemandMultiplier(itemId, districtId);
+
+            return supplyPrice * demandModifier * demandPrice;
         }
     }
 }

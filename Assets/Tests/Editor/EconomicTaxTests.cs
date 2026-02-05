@@ -28,6 +28,7 @@ namespace InkSim.Tests
             }
             TaxRegistry.Clear();
             SupplyService.Clear();
+            EconomicEventService.Clear();
         }
 
         [TearDown]
@@ -39,6 +40,7 @@ namespace InkSim.Tests
                 GameObject.DestroyImmediate(_dcsGO);
             TaxRegistry.Clear();
             SupplyService.Clear();
+            EconomicEventService.Clear();
         }
 
         [Test]
