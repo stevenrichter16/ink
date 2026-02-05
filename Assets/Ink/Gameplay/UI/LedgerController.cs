@@ -56,7 +56,7 @@ namespace InkSim
             {
                 Hide();
             }
-            else if (kb.tabKey.wasPressedThisFrame && IsVisible())
+            else if ((kb.leftShiftKey.wasPressedThisFrame || kb.rightShiftKey.wasPressedThisFrame) && IsVisible())
             {
                 SwitchTab();
             }

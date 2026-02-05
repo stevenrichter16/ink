@@ -193,6 +193,9 @@ namespace InkSim
             string dim = ColorToHex(dimColor);
             
             int coins = _player.inventory?.CountItem("coin") ?? 0;
+            Vector2Int merchantPos = _merchant != null
+                ? new Vector2Int(Mathf.RoundToInt(_merchant.transform.position.x), Mathf.RoundToInt(_merchant.transform.position.y))
+                : Vector2Int.zero;
             
             // Header
             sb.AppendLine($"<color={cyan}>════════════════════════════════════════════════════════════</color>");
@@ -214,11 +217,11 @@ namespace InkSim
             
             if (_currentTab == Tab.Buy)
             {
-                RenderBuyTab(sb, coins, cyan, white, gold, green, red, dim);
+                RenderBuyTab(sb, coins, merchantPos, cyan, white, gold, green, red, dim);
             }
             else
             {
-                RenderSellTab(sb, cyan, white, gold, green, dim);
+                RenderSellTab(sb, merchantPos, cyan, white, gold, green, red, dim);
             }
             
             // Footer
@@ -229,7 +232,7 @@ namespace InkSim
             _mainText.text = sb.ToString();
         }
         
-        private void RenderBuyTab(StringBuilder sb, int coins, string cyan, string white, string gold, string green, string red, string dim)
+        private void RenderBuyTab(StringBuilder sb, int coins, Vector2Int merchantPos, string cyan, string white, string gold, string green, string red, string dim)
         {
             sb.AppendLine($"<color={cyan}>[ MERCHANT STOCK ]</color>");
             sb.AppendLine();
@@ -248,20 +251,22 @@ namespace InkSim
                 if (data == null) continue;
                 
                 bool isSelected = (i == _selectedIndex);
-                int price = _merchant.GetBuyPrice(entry.itemId);
-                bool canAfford = coins >= price;
+                bool tradeAllowed = EconomicPriceResolver.IsTradeAllowed(entry.itemId, _merchant.Profile, merchantPos);
+                int price = tradeAllowed ? _merchant.GetBuyPrice(entry.itemId) : 0;
+                bool canAfford = tradeAllowed && coins >= price;
                 
                 string prefix = isSelected ? $"<color={gold}>▶ </color>" : "  ";
                 string itemColor = isSelected ? gold : white;
-                string priceColor = canAfford ? green : red;
+                string priceColor = tradeAllowed ? (canAfford ? green : red) : red;
                 
                 string itemName = data.name.Length > 20 ? data.name.Substring(0, 17) + "..." : data.name.PadRight(20);
+                string priceLabel = GetPriceLabel(entry.itemId, _merchant.Profile, merchantPos, price, isSell: false);
                 
-                sb.AppendLine($"{prefix}<color={itemColor}>{itemName}</color> <color={dim}>x{entry.quantity}</color>  <color={priceColor}>{price} coins</color>");
+                sb.AppendLine($"{prefix}<color={itemColor}>{itemName}</color> <color={dim}>x{entry.quantity}</color>  <color={priceColor}>{priceLabel}</color>");
             }
         }
         
-        private void RenderSellTab(StringBuilder sb, string cyan, string white, string gold, string green, string dim)
+        private void RenderSellTab(StringBuilder sb, Vector2Int merchantPos, string cyan, string white, string gold, string green, string red, string dim)
         {
             sb.AppendLine($"<color={cyan}>[ YOUR ITEMS ]</color>");
             sb.AppendLine();
@@ -277,15 +282,18 @@ namespace InkSim
             {
                 var item = sellableItems[i];
                 bool isSelected = (i == _selectedIndex);
-                int price = _merchant.GetSellPrice(item.Id);
+                bool tradeAllowed = EconomicPriceResolver.IsTradeAllowed(item.Id, _merchant.Profile, merchantPos);
+                int price = tradeAllowed ? _merchant.GetSellPrice(item.Id) : 0;
                 
                 string prefix = isSelected ? $"<color={gold}>▶ </color>" : "  ";
                 string itemColor = isSelected ? gold : white;
+                string priceColor = tradeAllowed ? green : red;
                 
                 string itemName = item.Name.Length > 20 ? item.Name.Substring(0, 17) + "..." : item.Name.PadRight(20);
                 string qtyStr = item.quantity > 1 ? $" x{item.quantity}" : "";
+                string priceLabel = GetPriceLabel(item.Id, _merchant.Profile, merchantPos, price, isSell: true);
                 
-                sb.AppendLine($"{prefix}<color={itemColor}>{itemName}</color><color={dim}>{qtyStr}</color>  <color={green}>+{price} coins</color>");
+                sb.AppendLine($"{prefix}<color={itemColor}>{itemName}</color><color={dim}>{qtyStr}</color>  <color={priceColor}>{priceLabel}</color>");
             }
         }
         
@@ -343,6 +351,13 @@ namespace InkSim
                     }
                 }
             }
+        }
+
+        public static string GetPriceLabel(string itemId, MerchantProfile profile, Vector2Int position, int price, bool isSell)
+        {
+            if (!EconomicPriceResolver.IsTradeAllowed(itemId, profile, position))
+                return "TRADE BLOCKED";
+            return isSell ? $"+{price} coins" : $"{price} coins";
         }
         
         private string ColorToHex(Color color)

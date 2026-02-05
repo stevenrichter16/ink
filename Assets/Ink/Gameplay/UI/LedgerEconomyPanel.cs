@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -111,6 +110,9 @@ namespace InkSim
             var inscribeBtn = CreateButton(footer.transform, "Inscribe Tax", OnInscribeTax);
             inscribeBtn.GetComponentInChildren<Text>().fontSize = 20;
 
+            var demandBtn = CreateButton(footer.transform, "Inscribe Demand", OnInscribeDemand);
+            demandBtn.GetComponentInChildren<Text>().fontSize = 20;
+
             var closeBtn = CreateButton(footer.transform, "Close (B/Esc)", OnCloseClicked);
             closeBtn.GetComponentInChildren<Text>().fontSize = 20;
 
@@ -200,6 +202,29 @@ namespace InkSim
             var rules = OverlayResolver.GetRulesAt(center.x, center.y);
             CreateText(_detailPane, $"Price {rules.priceMultiplier:0.00}x | Tax {rules.taxModifier*100:+0;-0;0}%", 18, FontStyle.Normal);
             CreateText(_detailPane, $"Supply {rules.supplyModifier:0.00}x | Demand {rules.demandModifier:0.00}x", 18, FontStyle.Normal);
+
+            CreateSectionHeader(_detailPane, "Active Demand Events");
+            var events = EconomicEventService.GetAllEvents();
+            bool anyEvent = false;
+            for (int i = 0; i < events.Count; i++)
+            {
+                var ev = events[i];
+                if (ev == null) continue;
+                bool isGlobal = string.IsNullOrEmpty(ev.districtId);
+                if (!isGlobal && !string.Equals(ev.districtId, state.Id, StringComparison.OrdinalIgnoreCase))
+                    continue;
+
+                var data = ItemDatabase.Get(ev.itemId);
+                string itemLabel = data != null ? $"{data.name} ({ev.itemId})" : ev.itemId;
+                string scope = isGlobal ? "global" : "local";
+                string desc = string.IsNullOrWhiteSpace(ev.description) ? "" : $" — {ev.description}";
+                CreateText(_detailPane, $"{itemLabel} x{ev.demandMultiplier:0.00} — {ev.durationDays} days — {scope}{desc}", 18, FontStyle.Normal);
+                anyEvent = true;
+            }
+            if (!anyEvent)
+            {
+                CreateText(_detailPane, "No active demand events.", 18, FontStyle.Italic);
+            }
         }
 
         public void SelectDistrict(int index)
@@ -223,19 +248,31 @@ namespace InkSim
 
             InscriptionDialog.Show(_root.transform, "Inscribe Tax", (rate, duration, radius) =>
             {
-                var center = GetDistrictCenter(state);
-                var layer = new PalimpsestLayer
-                {
-                    center = center,
-                    radius = radius,
-                    turnsRemaining = duration,
-                    priority = 0,
-                };
-                var token = $"TAX:{rate.ToString("0.00", CultureInfo.InvariantCulture)}";
-                layer.tokens.Add(token);
-                OverlayResolver.RegisterLayer(layer);
+                EconomicInscriptionService.InscribeTaxPolicy(state.Id, rate, duration);
                 BuildDetailPane();
             });
+        }
+
+        private void OnInscribeDemand()
+        {
+            if (_selectedIndex < 0 || _selectedIndex >= _districts.Count) return;
+            DemandInscriptionDialog.Show(_root.transform, "Inscribe Demand", (itemId, multiplier, duration) =>
+            {
+                InscribeDemandForSelectedDistrict(itemId, multiplier, duration);
+            });
+        }
+
+        public void InscribeDemandForSelectedDistrict(string itemId, float multiplier, int durationDays)
+        {
+            if (_selectedIndex < 0 || _selectedIndex >= _districts.Count) return;
+            if (string.IsNullOrWhiteSpace(itemId)) return;
+
+            var state = _districts[_selectedIndex];
+            var trimmed = itemId.Trim().ToLowerInvariant();
+            if (string.IsNullOrEmpty(trimmed)) return;
+
+            EconomicInscriptionService.InscribeDemandEvent(trimmed, multiplier, durationDays, state.Id, "Ledger demand inscription");
+            BuildDetailPane();
         }
 
         private Vector2Int GetDistrictCenter(DistrictState state)

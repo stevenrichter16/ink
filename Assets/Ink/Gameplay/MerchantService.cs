@@ -16,6 +16,13 @@ namespace InkSim
         {
             if (merchant == null || player == null || string.IsNullOrEmpty(itemId))
                 return false;
+
+            var buyPos = new Vector2Int(Mathf.RoundToInt(merchant.transform.position.x), Mathf.RoundToInt(merchant.transform.position.y));
+            if (!EconomicPriceResolver.IsTradeAllowed(itemId, merchant.Profile, buyPos))
+            {
+                Debug.Log($"[MerchantService] Buy blocked by trade restrictions: {itemId}");
+                return false;
+            }
             
             // Check merchant has stock
             if (!merchant.HasInStock(itemId, quantity))
@@ -61,6 +68,13 @@ namespace InkSim
         {
             if (merchant == null || player == null || string.IsNullOrEmpty(itemId))
                 return false;
+
+            var sellPos = new Vector2Int(Mathf.RoundToInt(merchant.transform.position.x), Mathf.RoundToInt(merchant.transform.position.y));
+            if (!EconomicPriceResolver.IsTradeAllowed(itemId, merchant.Profile, sellPos))
+            {
+                Debug.Log($"[MerchantService] Sell blocked by trade restrictions: {itemId}");
+                return false;
+            }
             
             // Don't allow selling coins or keys
             if (itemId == "coin" || itemId == "key")

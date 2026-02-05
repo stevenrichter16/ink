@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 namespace InkSim
@@ -27,6 +28,7 @@ namespace InkSim
         {
             var data = ItemDatabase.Get(itemId);
             if (data == null || profile == null) return 0;
+            if (!IsTradeAllowed(itemId, profile, position)) return 0;
             float price = data.value * profile.buyMultiplier;
 
             // Apply palimpsest modifiers if position is known
@@ -59,6 +61,9 @@ namespace InkSim
             // Faction reputation modifier (friendlier = cheaper)
             priceMult *= GetReputationModifier(profile.factionId);
 
+            // Trade relation modifier
+            priceMult *= GetTradeModifier(itemId, profile, position);
+
             // Supply/demand modifier
             priceMult *= GetSupplyModifier(position, itemId);
 
@@ -82,6 +87,11 @@ namespace InkSim
             };
 
             if (data == null || profile == null)
+            {
+                bd.finalPrice = 0;
+                return bd;
+            }
+            if (!IsTradeAllowed(itemId, profile, position))
             {
                 bd.finalPrice = 0;
                 return bd;
@@ -114,6 +124,8 @@ namespace InkSim
             bd.reputationMultiplier = GetReputationModifier(profile.factionId);
             bd.priceMultiplier *= bd.reputationMultiplier;
 
+            bd.priceMultiplier *= GetTradeModifier(itemId, profile, position);
+
             bd.supplyMultiplier = GetSupplyModifier(position, itemId);
             bd.priceMultiplier *= bd.supplyMultiplier;
 
@@ -145,6 +157,7 @@ namespace InkSim
         {
             var data = ItemDatabase.Get(itemId);
             if (data == null || profile == null) return 0;
+            if (!IsTradeAllowed(itemId, profile, position)) return 0;
             float price = data.value * profile.sellMultiplier;
 
             float priceMult = 1f;
@@ -158,6 +171,7 @@ namespace InkSim
             }
 
             priceMult *= GetReputationModifier(profile.factionId);
+            priceMult *= GetTradeModifier(itemId, profile, position);
             priceMult *= GetSupplyModifier(position, itemId);
 
             price *= priceMult;
@@ -204,6 +218,100 @@ namespace InkSim
             float demandPrice = EconomicEventService.GetDemandMultiplier(itemId, districtId);
 
             return supplyPrice * demandModifier * demandPrice;
+        }
+
+        /// <summary>
+        /// Check whether trade is allowed based on trade relations and palimpsest rules.
+        /// </summary>
+        public static bool IsTradeAllowed(string itemId, MerchantProfile profile, Vector2Int? position)
+        {
+            if (string.IsNullOrEmpty(itemId)) return true;
+            if (profile == null) return false;
+
+            string merchantFaction = profile.factionId;
+            if (string.IsNullOrEmpty(merchantFaction)) return true;
+
+            OverlayResolver.PalimpsestRules rules = default;
+            DistrictState state = null;
+            if (position.HasValue)
+            {
+                var pos = position.Value;
+                rules = OverlayResolver.GetRulesAt(pos.x, pos.y);
+                state = DistrictControlService.Instance?.GetStateByPosition(pos.x, pos.y);
+            }
+
+            if (rules.tradeBlocked) return false;
+            if (rules.tradeBannedFactions != null)
+            {
+                var merchantKey = merchantFaction.ToLowerInvariant();
+                if (rules.tradeBannedFactions.Contains(merchantKey))
+                    return false;
+                var districtFaction = GetControllingFactionId(state);
+                if (!string.IsNullOrEmpty(districtFaction) && rules.tradeBannedFactions.Contains(districtFaction.ToLowerInvariant()))
+                    return false;
+            }
+
+            string districtFactionId = GetControllingFactionId(state);
+            if (string.IsNullOrEmpty(districtFactionId) ||
+                string.Equals(districtFactionId, merchantFaction, StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            var relation = TradeRelationRegistry.GetRelation(merchantFaction, districtFactionId);
+            if (relation == null) return true;
+            if (relation.status == TradeStatus.Embargo) return false;
+            if (relation.bannedItems != null && relation.bannedItems.Contains(itemId)) return false;
+            if (relation.status == TradeStatus.Exclusive &&
+                relation.exclusiveItems != null &&
+                relation.exclusiveItems.Count > 0 &&
+                !relation.exclusiveItems.Contains(itemId))
+                return false;
+
+            return true;
+        }
+
+        private static float GetTradeModifier(string itemId, MerchantProfile profile, Vector2Int? position)
+        {
+            if (!IsTradeAllowed(itemId, profile, position)) return 0f;
+            if (profile == null) return 1f;
+
+            string merchantFaction = profile.factionId;
+            if (string.IsNullOrEmpty(merchantFaction)) return 1f;
+
+            DistrictState state = null;
+            if (position.HasValue)
+            {
+                var pos = position.Value;
+                state = DistrictControlService.Instance?.GetStateByPosition(pos.x, pos.y);
+            }
+            string districtFactionId = GetControllingFactionId(state);
+            if (string.IsNullOrEmpty(districtFactionId) ||
+                string.Equals(districtFactionId, merchantFaction, StringComparison.OrdinalIgnoreCase))
+                return 1f;
+
+            var relation = TradeRelationRegistry.GetRelation(merchantFaction, districtFactionId);
+            if (relation == null) return 1f;
+
+            float rate = Mathf.Max(0f, relation.tariffRate);
+            switch (relation.status)
+            {
+                case TradeStatus.Alliance:
+                case TradeStatus.Exclusive:
+                    return Mathf.Clamp(1f - rate, 0.1f, 2f);
+                case TradeStatus.Restricted:
+                case TradeStatus.Open:
+                default:
+                    return 1f + rate;
+            }
+        }
+
+        private static string GetControllingFactionId(DistrictState state)
+        {
+            if (state == null) return null;
+            var dcs = DistrictControlService.Instance;
+            if (dcs == null || dcs.Factions == null) return null;
+            int idx = state.ControllingFactionIndex;
+            if (idx < 0 || idx >= dcs.Factions.Count) return null;
+            return dcs.Factions[idx].id;
         }
     }
 }
