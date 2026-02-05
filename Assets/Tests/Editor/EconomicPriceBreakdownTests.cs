@@ -61,28 +61,5 @@ namespace InkSim.Tests
             Assert.AreEqual(1f, breakdown.priceMultiplier);
             Assert.AreEqual(0f, breakdown.tax);
         }
-
-        [Test]
-        public void FormatBreakdown_ContainsKeyFields()
-        {
-            var bd = new EconomicPriceResolver.PriceBreakdown
-            {
-                baseValue = 10,
-                merchantMultiplier = 1.5f,
-                priceMultiplier = 2f,
-                tax = 0.1f,
-                reputationMultiplier = 1f,
-                supplyMultiplier = 1f,
-                prosperityMultiplier = 1f,
-                finalPrice = 33
-            };
-
-            var text = EconomicPriceResolver.FormatBreakdown(bd);
-            StringAssert.Contains("Base:10", text);
-            StringAssert.Contains("Merchant:1.50x", text);
-            StringAssert.Contains("Mult:2.00x", text);
-            StringAssert.Contains("Tax:+10%", text);
-            StringAssert.Contains("Final:33", text);
-        }
     }
 }

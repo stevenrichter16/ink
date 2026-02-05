@@ -593,11 +593,19 @@ private void CreateEnemy(int tileIndex, int x, int y, string lootTableId, int le
             enemy.lootTableId = lootTableId;
             enemy.enemyId = lootTableId;
 
+
+            if (species == null)
+            {
+                species = EnemyFactory.GetDefaultSpeciesForEnemyId(lootTableId);
+            }
+
             if (species != null)
             {
                 var speciesMember = enemyGO.GetComponent<SpeciesMember>() ?? enemyGO.AddComponent<SpeciesMember>();
                 speciesMember.species = species;
-            }
+                speciesMember.EnsureDefaultFaction();
+}
+
 
             if (faction != null || species != null)
             {

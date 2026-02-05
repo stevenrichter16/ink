@@ -51,6 +51,7 @@ namespace InkSim
             var defaultSpecies = GetDefaultSpeciesForEnemyId(enemyId);
             if (defaultSpecies != null)
                 speciesMember.species = defaultSpecies;
+                speciesMember.EnsureDefaultFaction();
         }
         /// <summary>
         /// Spawn an enemy by type ID at the given grid position.
