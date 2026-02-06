@@ -128,6 +128,7 @@ private IEnumerator ProcessEnemyTurns()
             _processingEnemyTurns = false;
             OverlayResolver.TickDecay();
             TurnNumber++;
+            WorldSimulationService.Instance?.OnTurnComplete(TurnNumber);
 
             // Trigger economic day cycle
             if (turnsPerDay > 0 && TurnNumber > 0 && TurnNumber % turnsPerDay == 0)

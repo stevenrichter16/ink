@@ -349,6 +349,11 @@ private void PlaceEntities()
             territoryDebugGO.transform.SetParent(transform, false);
             territoryDebugGO.AddComponent<TerritoryDebugPanel>();
 
+            // World simulation layer (faction AI, dynamic spawning, NPC goals, etc.)
+            var simGO = new GameObject("WorldSimulationService");
+            simGO.transform.SetParent(transform, false);
+            simGO.AddComponent<WorldSimulationService>();
+
             // === TRAINING DUMMY ===
             CreateDummy(Tiles.Barrel, 10, 10);
 

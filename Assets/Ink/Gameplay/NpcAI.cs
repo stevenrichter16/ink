@@ -113,6 +113,10 @@ namespace InkSim
                 }
             }
 
+            // Check NPC goal system before default behavior
+            if (NpcGoalSystem.TryExecuteGoal(this))
+                return;
+
             switch (behavior)
             {
                 case AIBehavior.Stationary:
@@ -125,7 +129,7 @@ namespace InkSim
                     break;
 
                 case AIBehavior.Patrol:
-                    // TODO: Implement patrol waypoints
+                    // Handled by NpcGoalSystem patrol goals
                     break;
             }
         }

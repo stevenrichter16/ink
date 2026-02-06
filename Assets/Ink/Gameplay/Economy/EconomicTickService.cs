@@ -34,6 +34,9 @@ namespace InkSim
             }
 
             Debug.Log($"[EconomicTick] Economic day complete. Day={dcs.CurrentDay}");
+
+            // Trigger world simulation layer
+            WorldSimulationService.Instance?.OnEconomicDay(dcs.CurrentDay);
         }
 
         /// <summary>
