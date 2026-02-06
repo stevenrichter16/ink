@@ -211,11 +211,24 @@ private static PlayerSaveData CollectPlayerData(PlayerController player)
                 });
             }
 
+            // Faction reputation
+            var dcs2 = DistrictControlService.Instance;
+            if (dcs2 != null && dcs2.Factions != null)
+            {
+                for (int i = 0; i < dcs2.Factions.Count; i++)
+                {
+                    var faction = dcs2.Factions[i];
+                    if (faction == null || string.IsNullOrEmpty(faction.id)) continue;
+                    int rep = ReputationSystem.GetRep(faction.id);
+                    econ.factionReputation.Add(new FactionRepSaveData(faction.id, rep));
+                }
+            }
+
             return econ;
         }
-        
+
         #endregion
-        
+
         #region Apply State
         
         /// <summary>
@@ -519,10 +532,21 @@ private static void RefreshAllUI()
                     });
                 }
             }
+
+            // Restore faction reputation
+            if (data.factionReputation != null)
+            {
+                for (int i = 0; i < data.factionReputation.Count; i++)
+                {
+                    var rep = data.factionReputation[i];
+                    if (rep == null || string.IsNullOrEmpty(rep.factionId)) continue;
+                    ReputationSystem.SetRep(rep.factionId, rep.reputation);
+                }
+            }
         }
-        
+
         #endregion
-        
+
         #region Convenience Methods
         
         /// <summary>

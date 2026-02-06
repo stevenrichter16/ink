@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ffbc2fb83ac40f7b3b7f05e1d4e9f0d, type: 3}
+  m_Name: Wilds
+  m_EditorClassIdentifier:
+  id: district_wilds
+  displayName: The Wilds
+  population: 0.3
+  economicValue: 0.4
+  minX: 13
+  maxX: 28
+  minY: 19
+  maxY: 27
+  producedGoods:
+  - potion
+  - leather_armor
+  - dagger
+  consumedGoods:
+  - sword
+  - steel_armor
+  - ring
+  productionRate: 0.10
+  consumptionRate: 0.04

@@ -155,6 +155,22 @@ namespace InkSim
         public List<TradeRelationSaveData> tradeRelations = new List<TradeRelationSaveData>();
         public List<DistrictEconomicSaveData> districtEconomics = new List<DistrictEconomicSaveData>();
         public List<DemandEventSaveData> activeEvents = new List<DemandEventSaveData>();
+        public List<FactionRepSaveData> factionReputation = new List<FactionRepSaveData>();
+    }
+
+    [Serializable]
+    public class FactionRepSaveData
+    {
+        public string factionId;
+        public int reputation;
+
+        public FactionRepSaveData() { }
+
+        public FactionRepSaveData(string factionId, int reputation)
+        {
+            this.factionId = factionId;
+            this.reputation = reputation;
+        }
     }
 
     [Serializable]

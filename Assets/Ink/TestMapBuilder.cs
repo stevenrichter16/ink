@@ -232,15 +232,17 @@ namespace InkSim
             return Tiles.FloorDirt;
         }
         
-        // Define dungeon bounds (L-shaped building)
+        // Define dungeon bounds (L-shaped building + Iron Keep outpost)
 private bool IsInsideDungeon(int x, int y)
         {
             // Main room: x=18-38, y=5-14
             bool inMainRoom = x >= 18 && x <= 38 && y >= 5 && y <= 14;
             // Upper wing: x=28-38, y=14-22
             bool inUpperWing = x >= 28 && x <= 38 && y >= 14 && y <= 22;
-            
-            return inMainRoom || inUpperWing;
+            // Iron Keep outpost: x=38-46, y=10-16
+            bool inOutpost = x >= 38 && x <= 46 && y >= 10 && y <= 16;
+
+            return inMainRoom || inUpperWing || inOutpost;
         }
 
 private void BuildWalls()
@@ -328,7 +330,7 @@ private void PlaceEntities()
 
             // === PLAYER (left side of map) ===
             _player = CreatePlayer(Tiles.HeroKnight, 8, 12);
-            
+
             // === UI SYSTEMS ===
             CreateHealthUI(_player);
             CreateXPUI(_player);
@@ -346,24 +348,44 @@ private void PlaceEntities()
             var territoryDebugGO = new GameObject("TerritoryDebugPanel");
             territoryDebugGO.transform.SetParent(transform, false);
             territoryDebugGO.AddComponent<TerritoryDebugPanel>();
-            
+
             // === TRAINING DUMMY ===
             CreateDummy(Tiles.Barrel, 10, 10);
 
             // Load factions
             var inkboundFaction = Resources.Load<FactionDefinition>("Factions/Inkbound");
+            var inkboundScribesFaction = Resources.Load<FactionDefinition>("Factions/InkboundScribes");
             var inkguardFaction = Resources.Load<FactionDefinition>("Factions/Inkguard");
             var ghostFaction = Resources.Load<FactionDefinition>("Factions/Ghost");
+            var goblinFaction = Resources.Load<FactionDefinition>("Factions/Goblin");
+            var skeletonFaction = Resources.Load<FactionDefinition>("Factions/Skeleton");
+            var demonFaction = Resources.Load<FactionDefinition>("Factions/Demon");
+            var snakeFaction = Resources.Load<FactionDefinition>("Factions/Snake");
+            var slimeFaction = Resources.Load<FactionDefinition>("Factions/Slime");
 
             // Load species
             var humanSpecies = Resources.Load<SpeciesDefinition>("Species/Human");
 
-            // === NPCs ===
-            // Merchant in forest clearing (left area with sign) - Human species, Inkbound faction
+            // === NPCs (Original) ===
+            // General Store — Market Row, Inkbound faction
             CreateNPC(Tiles.NPC1, 6, 18, NpcAI.AIBehavior.Stationary, "general_store", inkboundFaction, "low", humanSpecies);
-            // Weaponsmith inside dungeon - Human species, Inkguard faction
+            // Weaponsmith inside dungeon — Inkguard faction
             CreateNPC(Tiles.NPC2, 32, 8, NpcAI.AIBehavior.Stationary, "weaponsmith", inkguardFaction, "mid", humanSpecies);
-            
+
+            // === NPCs (New) ===
+            // Inkbound Scribe — Market Row
+            CreateNPC(Tiles.NPC1, 10, 20, NpcAI.AIBehavior.Stationary, "scribe_shop", inkboundScribesFaction ?? inkboundFaction, "mid", humanSpecies);
+            // Goblin Fence — Outer Slums
+            CreateNPC(Tiles.Goblin, 8, 6, NpcAI.AIBehavior.Stationary, "goblin_fence", goblinFaction, "high", null);
+            // Skeleton Armory — Iron Keep
+            CreateNPC(Tiles.Skeleton, 40, 12, NpcAI.AIBehavior.Stationary, "bone_armory", skeletonFaction, "high", null);
+            // Demon Broker — Boneyard
+            CreateNPC(Tiles.Demon, 43, 4, NpcAI.AIBehavior.Stationary, "demon_broker", demonFaction, "mid", null);
+            // Snake Herbalist — Wilds
+            CreateNPC(Tiles.Snake, 20, 24, NpcAI.AIBehavior.Stationary, "snake_herbalist", snakeFaction, "mid", null);
+            // Inkguard Patrol Captain — Quest Giver, Temple Ward
+            CreateNPC(Tiles.Wizard, 26, 14, NpcAI.AIBehavior.Stationary, null, inkguardFaction, "high", humanSpecies);
+
             // === FOREST - DENSE TREE PLACEMENT ===
             // Upper left forest
             PlaceTile(Tiles.TreeLarge, 2, 25, _entityLayer, 5);
@@ -374,7 +396,7 @@ private void PlaceEntities()
             PlaceTile(Tiles.TreeLarge, 14, 24, _entityLayer, 5);
             PlaceTile(Tiles.Mushroom, 6, 23, _entityLayer, 5);
             PlaceTile(Tiles.Mushroom, 12, 26, _entityLayer, 5);
-            
+
             // Left side forest (dense)
             PlaceTile(Tiles.TreeLarge, 1, 20, _entityLayer, 5);
             PlaceTile(Tiles.TreePine, 4, 18, _entityLayer, 5);
@@ -386,7 +408,7 @@ private void PlaceEntities()
             PlaceTile(Tiles.TreeSmall, 2, 6, _entityLayer, 5);
             PlaceTile(Tiles.Mushroom, 4, 14, _entityLayer, 5);
             PlaceTile(Tiles.Mushroom, 7, 11, _entityLayer, 5);
-            
+
             // Lower left forest
             PlaceTile(Tiles.TreeLarge, 1, 4, _entityLayer, 5);
             PlaceTile(Tiles.TreePine, 4, 2, _entityLayer, 5);
@@ -396,24 +418,34 @@ private void PlaceEntities()
             PlaceTile(Tiles.TreePine, 15, 2, _entityLayer, 5);
             PlaceTile(Tiles.Mushroom, 6, 1, _entityLayer, 5);
             PlaceTile(Tiles.Mushroom, 9, 4, _entityLayer, 5);
-            
+
             // Trees around dungeon entrance
             PlaceTile(Tiles.TreeLarge, 14, 12, _entityLayer, 5);
             PlaceTile(Tiles.TreePine, 16, 8, _entityLayer, 5);
             PlaceTile(Tiles.TreeMedium, 12, 6, _entityLayer, 5);
             PlaceTile(Tiles.Mushroom, 15, 10, _entityLayer, 5);
-            
+
             // Right side forest (sparse - near graveyard)
             PlaceTile(Tiles.TreeLarge, 42, 18, _entityLayer, 5);
             PlaceTile(Tiles.TreePine, 44, 22, _entityLayer, 5);
             PlaceTile(Tiles.TreeMedium, 40, 24, _entityLayer, 5);
             PlaceTile(Tiles.TreeSmall, 46, 20, _entityLayer, 5);
-            
+
             // Bottom center trees
             PlaceTile(Tiles.TreeLarge, 20, 2, _entityLayer, 5);
             PlaceTile(Tiles.TreePine, 25, 1, _entityLayer, 5);
             PlaceTile(Tiles.TreeMedium, 30, 3, _entityLayer, 5);
-            
+
+            // Wilds area trees (new — give the Wilds visual identity)
+            PlaceTile(Tiles.TreeLarge, 16, 22, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 18, 26, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 22, 25, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 24, 21, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 27, 23, _entityLayer, 5);
+            PlaceTile(Tiles.TreeLarge, 15, 20, _entityLayer, 5);
+            PlaceTile(Tiles.Mushroom, 17, 24, _entityLayer, 5);
+            PlaceTile(Tiles.Mushroom, 26, 22, _entityLayer, 5);
+
             // === GRAVEYARD (bottom right) ===
             PlaceTile(Tiles.Cross, 40, 4, _entityLayer, 5);
             PlaceTile(Tiles.Cross, 42, 3, _entityLayer, 5);
@@ -421,7 +453,12 @@ private void PlaceEntities()
             PlaceTile(Tiles.Tombstone, 41, 6, _entityLayer, 5);
             PlaceTile(Tiles.Cross, 45, 2, _entityLayer, 5);
             PlaceTile(Tiles.Tombstone, 43, 7, _entityLayer, 5);
-            
+            // Extended Boneyard graveyard props
+            PlaceTile(Tiles.Cross, 37, 1, _entityLayer, 5);
+            PlaceTile(Tiles.Tombstone, 38, 5, _entityLayer, 5);
+            PlaceTile(Tiles.CrossLarge, 46, 3, _entityLayer, 5);
+            PlaceTile(Tiles.Cross, 39, 7, _entityLayer, 5);
+
             // === DUNGEON INTERIOR DECORATIONS ===
             // Main room furniture
             PlaceTile(Tiles.Barrel, 20, 7, _entityLayer, 8);
@@ -433,39 +470,96 @@ private void PlaceEntities()
             PlaceTile(Tiles.ChestBig, 36, 20, _entityLayer, 8);
             PlaceTile(Tiles.Candle, 30, 16, _entityLayer, 8);
             PlaceTile(Tiles.Barrel, 34, 16, _entityLayer, 8);
-            
-            // === ENEMIES ===
+
+            // === IRON KEEP OUTPOST (east side, x=38-46, y=10-16) ===
+            // Bottom wall
+            PlaceWall(Tiles.WallCornerBL, 38, 10);
+            for (int x = 39; x < 46; x++)
+                PlaceWall(Tiles.WallBottom, x, 10);
+            PlaceWall(Tiles.WallCornerBR, 46, 10);
+            // Top wall
+            PlaceWall(Tiles.WallCornerTL, 38, 16);
+            for (int x = 39; x < 46; x++)
+                PlaceWall(Tiles.WallTop, x, 16);
+            PlaceWall(Tiles.WallCornerTR, 46, 16);
+            // Left wall with door
+            for (int y = 11; y < 16; y++)
+            {
+                if (y == 13)
+                    PlaceTile(Tiles.DoorWood, 38, y, _wallLayer, 1); // Door on west side
+                else
+                    PlaceWall(Tiles.WallLeft, 38, y);
+            }
+            // Right wall
+            for (int y = 11; y < 16; y++)
+                PlaceWall(Tiles.WallRight, 46, y);
+            // Interior decorations
+            PlaceTile(Tiles.Barrel, 40, 11, _entityLayer, 8);
+            PlaceTile(Tiles.Barrel, 41, 11, _entityLayer, 8);
+            PlaceTile(Tiles.Candle, 42, 15, _entityLayer, 8);
+            PlaceTile(Tiles.ChestClosed, 45, 14, _entityLayer, 8);
+
+            // === ENEMIES (Original — with bug fixes) ===
             // Forest enemies (left/upper area)
             CreateEnemy(Tiles.Ghost, 5, 20, "ghost", 3);
             CreateEnemy(Tiles.Ghost, 8, 14, "ghost", 2);
             CreateEnemy(Tiles.Slime, 10, 22, "slime", 1);
             CreateEnemy(Tiles.Slime, 3, 8, "slime", 1);
-            CreateEnemy(Tiles.Goblin, 12, 18, "skeleton", 2);
+            CreateEnemy(Tiles.Goblin, 12, 18, "goblin", 2);  // BUG FIX: was "skeleton"
             CreateEnemy(Tiles.Snake, 9, 19, "snake", 1);
             CreateEnemy(Tiles.Snake, 11, 21, "snake", 1);
             CreateEnemy(Tiles.Snake, 13, 17, "snake", 1);
-            
+
             // Enemies near dungeon
             CreateEnemy(Tiles.Ghost, 15, 14, "ghost", 3);
             CreateEnemy(Tiles.Slime, 14, 6, "slime", 1);
-            
+
             // Inside dungeon
             CreateEnemy(Tiles.Skeleton, 22, 8, "skeleton", 2);
             CreateEnemy(Tiles.Skeleton, 28, 12, "skeleton", 2);
-            CreateEnemy(Tiles.Ghost, 34, 8, "skeleton", 3);
+            CreateEnemy(Tiles.Ghost, 34, 8, "ghost", 3);    // BUG FIX: was "skeleton"
             CreateEnemy(Tiles.Ghost, 32, 19, "ghost", 4);
-            
+
             // Graveyard skeletons
             CreateEnemy(Tiles.Skeleton, 42, 5, "skeleton", 2);
             CreateEnemy(Tiles.Skeleton, 45, 4, "skeleton", 3);
-            CreateEnemy(Tiles.Ghost, 40, 8, "skeleton", 4);
-            
-            // === PICKUPABLE ITEMS ===
+            CreateEnemy(Tiles.Ghost, 40, 8, "ghost", 4);     // BUG FIX: was "skeleton"
+
+            // === ENEMIES (New) ===
+            // Wilds (upper forest, y=19-27)
+            CreateEnemy(Tiles.Goblin, 16, 24, "goblin", 2);
+            CreateEnemy(Tiles.Goblin, 22, 22, "goblin", 2);
+            CreateEnemy(Tiles.Snake, 19, 26, "snake", 2);
+            CreateEnemy(Tiles.Snake, 25, 20, "snake", 1);
+
+            // Iron Keep (east side, x=33-47, y=9-22)
+            CreateEnemy(Tiles.Skeleton, 36, 12, "skeleton", 3);
+            CreateEnemy(Tiles.Skeleton, 40, 16, "skeleton", 3);
+            CreateEnemy(Tiles.Ghost, 38, 20, "ghost", 4);
+            CreateEnemy(Tiles.Goblin, 42, 14, "goblin", 3);
+            CreateEnemy(Tiles.Demon, 44, 18, "demon", 5);
+
+            // Boneyard (bottom-right, x=36-47, y=0-8)
+            CreateEnemy(Tiles.Demon, 38, 3, "demon", 4);
+            CreateEnemy(Tiles.Skeleton, 44, 2, "skeleton", 3);
+            CreateEnemy(Tiles.Ghost, 46, 6, "ghost", 5);
+            CreateEnemy(Tiles.Goblin, 40, 1, "goblin", 2);
+
+            // Dungeon Interior — new additions
+            CreateEnemy(Tiles.Goblin, 25, 11, "goblin", 2);
+            CreateEnemy(Tiles.Demon, 35, 18, "demon", 6);    // Boss-tier demon in upper wing
+
+            // Outer Slums — new additions
+            CreateEnemy(Tiles.Goblin, 6, 5, "goblin", 1);
+            CreateEnemy(Tiles.Snake, 8, 2, "snake", 1);
+            CreateEnemy(Tiles.Slime, 11, 10, "slime", 2);
+
+            // === PICKUPABLE ITEMS (Original) ===
             // Forest items
             CreateItemPickup("potion", Tiles.Potion, 7, 16, 1);
             CreateItemPickup("coin", Tiles.Coin, 4, 10, 5);
             CreateItemPickup("sword", Tiles.Sword, 11, 4, 1);
-            
+
             // Dungeon items
             CreateItemPickup("potion", Tiles.Potion, 23, 7, 1);
             CreateItemPickup("coin", Tiles.Coin, 30, 8, 10);
@@ -473,10 +567,152 @@ private void PlaceEntities()
             CreateItemPickup("gem", Tiles.Gem, 36, 19, 1);
             CreateItemPickup("leather_armor", Tiles.Armor, 20, 12, 1);
             CreateItemPickup("iron_armor", Tiles.Armor, 32, 16, 1);
-            
+
             // Graveyard loot
             CreateItemPickup("potion", Tiles.Potion, 44, 6, 2);
             CreateItemPickup("coin", Tiles.Coin, 41, 3, 15);
+
+            // === PICKUPABLE ITEMS (New — missing item types) ===
+            CreateItemPickup("dagger", Tiles.Sword, 17, 22, 1);         // Wilds
+            CreateItemPickup("shield", Tiles.Armor, 37, 15, 1);         // Iron Keep
+            CreateItemPickup("ring", Tiles.Gem, 29, 20, 1);             // Upper wing area
+            CreateItemPickup("potion_large", Tiles.Potion, 41, 7, 1);   // Boneyard
+            CreateItemPickup("ink", Tiles.Candle, 24, 16, 3);           // Temple Ward
+            CreateItemPickup("steel_armor", Tiles.Armor, 45, 16, 1);    // Iron Keep outpost
+            CreateItemPickup("gem", Tiles.Gem, 39, 2, 2);               // Boneyard
+            CreateItemPickup("coin", Tiles.Coin, 15, 23, 8);            // Wilds
+            CreateItemPickup("potion", Tiles.Potion, 34, 14, 2);        // Iron Keep approach
+
+            // === PALIMPSEST INSCRIPTIONS ===
+            BootstrapInscriptions();
+
+            // === TRADE RELATIONS ===
+            BootstrapTradeRelations();
+
+            // === DEMAND EVENTS ===
+            BootstrapDemandEvents();
+        }
+
+        private void BootstrapInscriptions()
+        {
+            // Register palimpsest layers directly (using grid coordinates for correct distance checks)
+            // Market Row — CHEAP zone (prices lower near general store)
+            RegisterPalimpsestLayer(6, 18, new List<string> { "DEFLATE:0.2" }, radius: 4, turns: -1);
+            // Iron Keep — TAX_HEAVY zone (military taxation)
+            RegisterPalimpsestLayer(40, 14, new List<string> { "TAX:+0.15" }, radius: 5, turns: -1);
+            // Boneyard — SCARCITY + EXPENSIVE zone (harsh economy)
+            RegisterPalimpsestLayer(43, 4, new List<string> { "INFLATE:0.3", "SCARCITY:gem" }, radius: 4, turns: -1);
+            // Wilds — FREE_TRADE zone (no taxes, no restrictions)
+            RegisterPalimpsestLayer(20, 24, new List<string> { "FREE_TRADE" }, radius: 5, turns: -1);
+            // Temple Ward — TRUCE zone (no combat near the temple)
+            RegisterPalimpsestLayer(26, 14, new List<string> { "TRUCE", "TAX_BREAK:0.05" }, radius: 4, turns: -1);
+        }
+
+        private void RegisterPalimpsestLayer(int gridX, int gridY, List<string> tokens, int radius = 5, int turns = -1, int priority = 0)
+        {
+            var layer = new PalimpsestLayer
+            {
+                center = new Vector2Int(gridX, gridY),
+                radius = radius,
+                priority = priority,
+                turnsRemaining = turns,
+                tokens = new List<string>(tokens)
+            };
+            OverlayResolver.RegisterLayer(layer);
+        }
+
+        private void BootstrapTradeRelations()
+        {
+            // Inkguard vs Skeleton — Mortal enemies, no trade
+            TradeRelationRegistry.SetRelation(new FactionTradeRelation
+            {
+                sourceFactionId = "faction_inkguard",
+                targetFactionId = "faction_skeleton",
+                status = TradeStatus.Embargo,
+                tariffRate = 0f,
+                bannedItems = new List<string>(),
+                exclusiveItems = new List<string>()
+            });
+
+            // Inkbound vs Ghost — Restricted trade, ghosts ban potions
+            TradeRelationRegistry.SetRelation(new FactionTradeRelation
+            {
+                sourceFactionId = "faction_inkbound",
+                targetFactionId = "faction_ghost",
+                status = TradeStatus.Restricted,
+                tariffRate = 0.25f,
+                bannedItems = new List<string> { "potion" },
+                exclusiveItems = new List<string>()
+            });
+
+            // Goblin + Demon — Criminal alliance, cheap trade
+            TradeRelationRegistry.SetRelation(new FactionTradeRelation
+            {
+                sourceFactionId = "faction_goblin",
+                targetFactionId = "faction_demon",
+                status = TradeStatus.Alliance,
+                tariffRate = 0.05f,
+                bannedItems = new List<string>(),
+                exclusiveItems = new List<string>()
+            });
+
+            // Inkguard + Inkbound — Human faction alliance
+            TradeRelationRegistry.SetRelation(new FactionTradeRelation
+            {
+                sourceFactionId = "faction_inkguard",
+                targetFactionId = "faction_inkbound",
+                status = TradeStatus.Alliance,
+                tariffRate = 0.02f,
+                bannedItems = new List<string>(),
+                exclusiveItems = new List<string>()
+            });
+
+            // Skeleton + Ghost — Undead alliance
+            TradeRelationRegistry.SetRelation(new FactionTradeRelation
+            {
+                sourceFactionId = "faction_skeleton",
+                targetFactionId = "faction_ghost",
+                status = TradeStatus.Alliance,
+                tariffRate = 0f,
+                bannedItems = new List<string>(),
+                exclusiveItems = new List<string>()
+            });
+        }
+
+        private void BootstrapDemandEvents()
+        {
+            // Iron Keep garrison needs supplies
+            EconomicEventService.TriggerEvent(new DemandEvent
+            {
+                id = "startup_potion_demand",
+                itemId = "potion",
+                demandMultiplier = 1.5f,
+                durationDays = 10,
+                districtId = "district_ironkeep",
+                description = "Garrison needs supplies"
+            });
+
+            // Necromantic rituals in the Boneyard drive gem demand
+            EconomicEventService.TriggerEvent(new DemandEvent
+            {
+                id = "startup_gem_demand",
+                itemId = "gem",
+                demandMultiplier = 2.0f,
+                durationDays = 8,
+                districtId = "district_boneyard",
+                description = "Necromantic rituals"
+            });
+
+            // Scribes need ink in the Temple Ward
+            EconomicEventService.TriggerEvent(new DemandEvent
+            {
+                id = "startup_ink_demand",
+                itemId = "ink",
+                demandMultiplier = 1.8f,
+                durationDays = 12,
+                districtId = "district_temple",
+                description = "Scribes need ink"
+            });
         }
 
 private PlayerController CreatePlayer(int tileIndex, int x, int y)

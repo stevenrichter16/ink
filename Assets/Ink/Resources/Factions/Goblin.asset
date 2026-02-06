@@ -86,8 +86,13 @@ MonoBehaviour:
     producedItems:
     - dagger
     - leather_armor
+    - shiv
+    - scrap_armor
+    - lucky_tooth
     desiredItems:
     - gem
     - potion_large
+    - spectral_blade
+    - antivenom
     bannedItems:
     - steel_armor

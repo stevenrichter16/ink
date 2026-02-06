@@ -83,9 +83,14 @@ MonoBehaviour:
     preferredTaxRate: 0.35
     importTariffRate: 0.3
     exportTariffRate: 0.05
-    producedItems: []
+    producedItems:
+    - spectral_blade
+    - wraith_cloak
+    - soul_gem
     desiredItems:
     - gem
     - ring
+    - focus_crystal
+    - infernal_eye
     bannedItems:
     - potion

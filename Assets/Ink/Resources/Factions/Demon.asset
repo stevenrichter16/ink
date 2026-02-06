@@ -85,7 +85,12 @@ MonoBehaviour:
     exportTariffRate: 0.15
     producedItems:
     - ring
+    - hellfire_brand
+    - demon_plate
+    - brimstone
     desiredItems:
     - steel_armor
     - ink
+    - soul_gem
+    - focus_crystal
     bannedItems: []

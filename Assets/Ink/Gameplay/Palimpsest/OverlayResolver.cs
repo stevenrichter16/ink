@@ -13,6 +13,15 @@ namespace InkSim
         private static int _nextId = 1;
         private static PalimpsestTokenRegistry _registry;
 
+        // Pooled HashSets — reused across GetRulesAt() calls to avoid GC pressure.
+        private static readonly HashSet<string> _poolBanned = new HashSet<string>();
+        private static readonly HashSet<string> _poolExempt = new HashSet<string>();
+        private static readonly HashSet<string> _poolDouble = new HashSet<string>();
+
+        /// <summary>Reasonable bounds for the combined price multiplier from overlapping layers.</summary>
+        private const float MinPriceMultiplier = 0.1f;
+        private const float MaxPriceMultiplier = 5f;
+
         public struct PalimpsestRules
         {
             public bool truce;
@@ -63,9 +72,12 @@ namespace InkSim
             rules.priceMultiplier = 1f;
             rules.supplyModifier = 1f;
             rules.demandModifier = 1f;
-            rules.tradeBannedFactions = new HashSet<string>();
-            rules.taxExemptFactions = new HashSet<string>();
-            rules.taxDoubleFactions = new HashSet<string>();
+            _poolBanned.Clear();
+            _poolExempt.Clear();
+            _poolDouble.Clear();
+            rules.tradeBannedFactions = _poolBanned;
+            rules.taxExemptFactions = _poolExempt;
+            rules.taxDoubleFactions = _poolDouble;
             int bestPriority = int.MinValue;
 
             for (int i = 0; i < _layers.Count; i++)
@@ -108,6 +120,9 @@ namespace InkSim
                     bestPriority = l.priority;
                 }
             }
+
+            // BUG-8 fix: clamp combined price multiplier to prevent extreme values from stacking layers.
+            rules.priceMultiplier = Mathf.Clamp(rules.priceMultiplier, MinPriceMultiplier, MaxPriceMultiplier);
 
             return rules;
         }

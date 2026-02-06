@@ -9,9 +9,18 @@ namespace InkSim
     {
         public const string InkItemId = "ink";
 
+        private static PlayerController _cachedPlayer;
+
+        private static PlayerController GetPlayer()
+        {
+            if (_cachedPlayer == null)
+                _cachedPlayer = Object.FindObjectOfType<PlayerController>();
+            return _cachedPlayer;
+        }
+
         public static int GetInkBalance()
         {
-            var player = Object.FindObjectOfType<PlayerController>();
+            var player = GetPlayer();
             if (player == null || player.inventory == null) return 0;
             return player.inventory.CountItem(InkItemId);
         }
@@ -19,7 +28,7 @@ namespace InkSim
         public static bool TrySpend(int amount)
         {
             if (amount <= 0) return true;
-            var player = Object.FindObjectOfType<PlayerController>();
+            var player = GetPlayer();
             if (player == null || player.inventory == null) return false;
 
             int current = player.inventory.CountItem(InkItemId);

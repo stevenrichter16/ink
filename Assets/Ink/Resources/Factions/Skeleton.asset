@@ -86,8 +86,13 @@ MonoBehaviour:
     producedItems:
     - sword
     - shield
+    - bone_blade
+    - bone_plate
+    - skull_talisman
     desiredItems:
     - iron_armor
     - steel_armor
+    - halberd
+    - demon_plate
     bannedItems:
     - potion

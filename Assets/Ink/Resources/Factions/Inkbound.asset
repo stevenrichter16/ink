@@ -78,7 +78,12 @@ MonoBehaviour:
     producedItems:
     - ink
     - potion
+    - ink_quill
+    - ink_vial
+    - scribe_robes
     desiredItems:
     - gem
     - ring
+    - focus_crystal
+    - soul_gem
     bannedItems: []

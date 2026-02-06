@@ -34,10 +34,16 @@ namespace InkSim
             }
         }
 
+        /// <summary>Maximum combined demand multiplier to prevent exponential price spikes.</summary>
+        private const float MaxDemandMultiplier = 5f;
+
         public static float GetDemandMultiplier(string itemId, string districtId = null)
         {
             if (string.IsNullOrEmpty(itemId)) return 1f;
-            float mult = 1f;
+
+            // Additive stacking: each event contributes (multiplier - 1) to avoid
+            // exponential blowup. Two 2x events = 3x (not 4x).
+            float bonus = 0f;
 
             for (int i = 0; i < _events.Count; i++)
             {
@@ -47,11 +53,17 @@ namespace InkSim
 
                 if (string.IsNullOrEmpty(ev.districtId) || string.Equals(ev.districtId, districtId))
                 {
-                    mult *= ev.demandMultiplier <= 0f ? 1f : ev.demandMultiplier;
+                    float m = ev.demandMultiplier <= 0f ? 1f : ev.demandMultiplier;
+                    bonus += (m - 1f);
                 }
             }
 
-            return mult;
+            // Clamp to [1/MaxDemandMultiplier, MaxDemandMultiplier] so demand events
+            // never drive prices to zero or infinity.
+            float result = 1f + bonus;
+            return result < (1f / MaxDemandMultiplier) ? (1f / MaxDemandMultiplier)
+                 : result > MaxDemandMultiplier ? MaxDemandMultiplier
+                 : result;
         }
 
         public static List<DemandEvent> GetAllEvents()

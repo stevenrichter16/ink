@@ -83,7 +83,12 @@ MonoBehaviour:
     exportTariffRate: 0.15
     producedItems:
     - dagger
+    - venom_fang
+    - snakeskin_vest
+    - antivenom
     desiredItems:
     - potion
     - potion_large
+    - scribe_robes
+    - lucky_tooth
     bannedItems: []

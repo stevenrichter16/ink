@@ -73,7 +73,12 @@ MonoBehaviour:
     - sword
     - iron_armor
     - shield
+    - halberd
+    - tower_shield
+    - ration_pack
     desiredItems:
     - potion
     - ink
+    - captain_signet
+    - brimstone
     bannedItems: []

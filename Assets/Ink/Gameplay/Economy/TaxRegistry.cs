@@ -80,8 +80,8 @@ namespace InkSim
                 {
                     var p = factionPolicies[i];
                     if (p.turnsRemaining == 0) continue;
-                    if (p.exemptFactions != null && p.exemptFactions.Contains(factionId))
-                        continue;
+                    // Faction-scoped policies always apply to the faction itself.
+                    // Exempt checks only apply at the district level (above).
                     result.Add(p);
                 }
             }

@@ -27,9 +27,13 @@ namespace InkSim
                 _rep[factionId] = defaultValue;
         }
 
+        public const int MinRep = -100;
+        public const int MaxRep = 100;
+
         public static void SetRep(string factionId, int value)
         {
             if (string.IsNullOrEmpty(factionId)) return;
+            value = value < MinRep ? MinRep : (value > MaxRep ? MaxRep : value);
             _rep[factionId] = value;
             OnRepChanged?.Invoke(factionId, value);
         }
@@ -52,6 +56,7 @@ namespace InkSim
         public static void SetInterRep(string srcFactionId, string dstFactionId, int value)
         {
             if (string.IsNullOrEmpty(srcFactionId) || string.IsNullOrEmpty(dstFactionId)) return;
+            value = value < MinRep ? MinRep : (value > MaxRep ? MaxRep : value);
             _interRep[(srcFactionId, dstFactionId)] = value;
             OnInterRepChanged?.Invoke(srcFactionId, dstFactionId, value);
         }

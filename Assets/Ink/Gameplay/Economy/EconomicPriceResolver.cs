@@ -72,6 +72,7 @@ namespace InkSim
             priceMult *= GetSupplyModifier(position, itemId);
 
             price *= priceMult;
+            tax = Mathf.Clamp(tax, -0.9f, 1f); // Cap tax: -90% discount to +100% surcharge
             price *= (1f + tax);
             return Mathf.Max(1, Mathf.RoundToInt(price));
         }
@@ -139,6 +140,7 @@ namespace InkSim
             float price = bd.baseValue;
             price *= bd.merchantMultiplier;
             price *= bd.priceMultiplier;
+            bd.tax = Mathf.Clamp(bd.tax, -0.9f, 1f); // Cap tax: -90% discount to +100% surcharge
             price *= (1f + bd.tax);
             bd.finalPrice = Mathf.Max(1, Mathf.RoundToInt(price));
             return bd;

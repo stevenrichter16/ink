@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ffbc2fb83ac40f7b3b7f05e1d4e9f0d, type: 3}
+  m_Name: Boneyard
+  m_EditorClassIdentifier:
+  id: district_boneyard
+  displayName: The Boneyard
+  population: 0.2
+  economicValue: 0.3
+  minX: 36
+  maxX: 47
+  minY: 0
+  maxY: 8
+  producedGoods:
+  - gem
+  - dagger
+  consumedGoods:
+  - steel_armor
+  - ring
+  productionRate: 0.06
+  consumptionRate: 0.10

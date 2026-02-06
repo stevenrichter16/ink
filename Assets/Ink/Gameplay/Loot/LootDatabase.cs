@@ -24,6 +24,7 @@ namespace InkSim
             Register(new LootTable("slime", guaranteedDrops: 0, maxDrops: 2)
                 .Add("coin", 0.8f, 1, 3)
                 .Add("potion", 0.1f, 1, 1)
+                .Add("ink_vial", 0.15f, 1, 1) // slimes produce ink byproduct
             );
 
             // === SKELETON ===
@@ -32,6 +33,9 @@ namespace InkSim
                 .Add("dagger", 0.15f, 1, 1)
                 .Add("key", 0.05f, 1, 1)
                 .Add("potion", 0.2f, 1, 1)
+                .Add("bone_blade", 0.12f, 1, 1)
+                .Add("bone_plate", 0.05f, 1, 1)
+                .Add("skull_talisman", 0.03f, 1, 1)
             );
 
             // === DEMON ===
@@ -42,6 +46,35 @@ namespace InkSim
                 .Add("iron_armor", 0.1f, 1, 1)
                 .Add("sword", 0.1f, 1, 1)
                 .Add("gem", 0.3f, 1, 2)
+                .Add("hellfire_brand", 0.05f, 1, 1)
+                .Add("demon_plate", 0.03f, 1, 1)
+                .Add("brimstone", 0.2f, 1, 2)
+                .Add("infernal_eye", 0.02f, 1, 1)
+            );
+
+            // === GHOST ===
+            Register(new LootTable("ghost", guaranteedDrops: 1, maxDrops: 2)
+                .Add("coin", 0.7f, 1, 3)
+                .Add("soul_gem", 0.15f, 1, 1)
+                .Add("spectral_blade", 0.05f, 1, 1)
+                .Add("wraith_cloak", 0.03f, 1, 1)
+            );
+
+            // === SNAKE ===
+            Register(new LootTable("snake", guaranteedDrops: 0, maxDrops: 2)
+                .Add("coin", 0.6f, 1, 2)
+                .Add("antivenom", 0.2f, 1, 1)
+                .Add("venom_fang", 0.08f, 1, 1)
+                .Add("snakeskin_vest", 0.03f, 1, 1)
+            );
+
+            // === GOBLIN ===
+            Register(new LootTable("goblin", guaranteedDrops: 1, maxDrops: 3)
+                .Add("coin", 0.85f, 2, 4)
+                .Add("shiv", 0.15f, 1, 1)
+                .Add("scrap_armor", 0.08f, 1, 1)
+                .Add("lucky_tooth", 0.03f, 1, 1)
+                .Add("potion", 0.15f, 1, 1)
             );
 
             // === GENERIC (fallback) ===
