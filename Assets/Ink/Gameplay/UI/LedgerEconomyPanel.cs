@@ -16,6 +16,8 @@ namespace InkSim
         private RectTransform _detailPane;
         private Text _titleText;
         private Dropdown _districtDropdown;
+        private Text _inkText;
+        private Text _feedbackText;
         private Action _onClose;
 
         private Font _font;
@@ -116,7 +118,21 @@ namespace InkSim
             var closeBtn = CreateButton(footer.transform, "Close (B/Esc)", OnCloseClicked);
             closeBtn.GetComponentInChildren<Text>().fontSize = 20;
 
+            _inkText = CreateText(footer.transform, "Ink: 0", 18, FontStyle.Bold);
+            _inkText.alignment = TextAnchor.MiddleLeft;
+            _inkText.color = new Color(0.9f, 0.85f, 0.45f, 1f);
+            var inkLe = _inkText.gameObject.AddComponent<LayoutElement>();
+            inkLe.minWidth = 120;
+
+            _feedbackText = CreateText(footer.transform, "", 16, FontStyle.Italic);
+            _feedbackText.alignment = TextAnchor.MiddleLeft;
+            _feedbackText.color = new Color(0.95f, 0.6f, 0.6f, 1f);
+            var feedbackLe = _feedbackText.gameObject.AddComponent<LayoutElement>();
+            feedbackLe.minWidth = 280;
+            feedbackLe.flexibleWidth = 1f;
+
             PopulateDistrictDropdown();
+            RefreshInkDisplay();
         }
 
         private void PopulateDistrictDropdown()
@@ -134,7 +150,13 @@ namespace InkSim
 
         private void BuildDetailPane()
         {
-            foreach (Transform child in _detailPane) Destroy(child.gameObject);
+            foreach (Transform child in _detailPane)
+            {
+                if (Application.isPlaying)
+                    Destroy(child.gameObject);
+                else
+                    DestroyImmediate(child.gameObject);
+            }
 
             if (_selectedIndex < 0 || _selectedIndex >= _districts.Count)
             {
@@ -158,7 +180,13 @@ namespace InkSim
                 {
                     var p = policies[i];
                     string duration = p.turnsRemaining < 0 ? "permanent" : $"{p.turnsRemaining} turns";
-                    CreateText(_detailPane, $"{p.type} {p.rate:P0} ({duration})", 18, FontStyle.Normal);
+                    CreateActionRow(
+                        _detailPane,
+                        $"{p.type} {p.rate:P0} ({duration})",
+                        "Edit",
+                        () => OnEditTaxPolicy(p),
+                        "Erase",
+                        () => RemoveTaxPolicyById(p.id));
                 }
             }
 
@@ -179,29 +207,81 @@ namespace InkSim
             }
 
             CreateSectionHeader(_detailPane, "Trade Relations");
-            var relations = TradeRelationRegistry.GetForFaction(state.ControllingFactionIndex >= 0 &&
-                DistrictControlService.Instance != null &&
-                DistrictControlService.Instance.Factions != null &&
-                state.ControllingFactionIndex < DistrictControlService.Instance.Factions.Count ?
-                DistrictControlService.Instance.Factions[state.ControllingFactionIndex].id : null);
-            if (relations.Count == 0)
+            string controllerFactionId = GetControllingFactionId(state);
+            var dcs = DistrictControlService.Instance;
+            if (string.IsNullOrEmpty(controllerFactionId) || dcs == null || dcs.Factions == null || dcs.Factions.Count == 0)
             {
                 CreateText(_detailPane, "No active trade relations.", 18, FontStyle.Italic);
             }
             else
             {
-                for (int i = 0; i < relations.Count; i++)
+                bool anyRows = false;
+                for (int i = 0; i < dcs.Factions.Count; i++)
                 {
-                    var r = relations[i];
-                    CreateText(_detailPane, $"{r.sourceFactionId} → {r.targetFactionId}: {r.status} (Tariff {r.tariffRate:P0})", 18, FontStyle.Normal);
+                    var faction = dcs.Factions[i];
+                    if (faction == null || string.IsNullOrEmpty(faction.id)) continue;
+                    if (string.Equals(faction.id, controllerFactionId, StringComparison.OrdinalIgnoreCase)) continue;
+
+                    var relation = TradeRelationRegistry.GetRelation(controllerFactionId, faction.id);
+                    string label = $"{faction.displayName}: {relation.status} (Tariff {relation.tariffRate:P0})";
+                    string targetFactionId = faction.id;
+                    CreateActionRow(
+                        _detailPane,
+                        label,
+                        "Modify",
+                        () => OnModifyTradeRelation(targetFactionId, relation),
+                        null,
+                        null);
+                    anyRows = true;
                 }
+
+                if (!anyRows)
+                    CreateText(_detailPane, "No active trade relations.", 18, FontStyle.Italic);
             }
 
-            CreateSectionHeader(_detailPane, "Active Economic Layers");
+            CreateSectionHeader(_detailPane, "Active Economic Effects");
             var center = GetDistrictCenter(state);
             var rules = OverlayResolver.GetRulesAt(center.x, center.y);
             CreateText(_detailPane, $"Price {rules.priceMultiplier:0.00}x | Tax {rules.taxModifier*100:+0;-0;0}%", 18, FontStyle.Normal);
             CreateText(_detailPane, $"Supply {rules.supplyModifier:0.00}x | Demand {rules.demandModifier:0.00}x", 18, FontStyle.Normal);
+
+            CreateSectionHeader(_detailPane, "Active Edicts");
+            bool anyEdicts = false;
+            for (int i = 0; i < policies.Count; i++)
+            {
+                var p = policies[i];
+                string duration = p.turnsRemaining < 0 ? "permanent" : $"{p.turnsRemaining} turns";
+                CreateActionRow(
+                    _detailPane,
+                    $"Tax {p.type} {p.rate:P0} ({duration})",
+                    "Erase",
+                    () => RemoveTaxPolicyById(p.id),
+                    null,
+                    null);
+                anyEdicts = true;
+            }
+
+            var allEvents = EconomicEventService.GetAllEvents();
+            for (int i = 0; i < allEvents.Count; i++)
+            {
+                var ev = allEvents[i];
+                if (ev == null) continue;
+                bool isGlobal = string.IsNullOrEmpty(ev.districtId);
+                if (!isGlobal && !string.Equals(ev.districtId, state.Id, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                string scope = isGlobal ? "global" : "local";
+                CreateActionRow(
+                    _detailPane,
+                    $"Demand {ev.itemId} x{ev.demandMultiplier:0.00} ({ev.durationDays} days, {scope})",
+                    "Erase",
+                    () => RemoveDemandEventById(ev.id),
+                    null,
+                    null);
+                anyEdicts = true;
+            }
+
+            if (!anyEdicts)
+                CreateText(_detailPane, "No active economic edicts.", 18, FontStyle.Italic);
 
             CreateSectionHeader(_detailPane, "Active Demand Events");
             var events = EconomicEventService.GetAllEvents();
@@ -225,6 +305,8 @@ namespace InkSim
             {
                 CreateText(_detailPane, "No active demand events.", 18, FontStyle.Italic);
             }
+
+            RefreshInkDisplay();
         }
 
         public void SelectDistrict(int index)
@@ -244,12 +326,10 @@ namespace InkSim
         private void OnInscribeTax()
         {
             if (_selectedIndex < 0 || _selectedIndex >= _districts.Count) return;
-            var state = _districts[_selectedIndex];
 
             InscriptionDialog.Show(_root.transform, "Inscribe Tax", (rate, duration, radius) =>
             {
-                EconomicInscriptionService.InscribeTaxPolicy(state.Id, rate, duration);
-                BuildDetailPane();
+                TryInscribeTaxForSelectedDistrict(rate, duration, radius);
             });
         }
 
@@ -258,8 +338,41 @@ namespace InkSim
             if (_selectedIndex < 0 || _selectedIndex >= _districts.Count) return;
             DemandInscriptionDialog.Show(_root.transform, "Inscribe Demand", (itemId, multiplier, duration) =>
             {
-                InscribeDemandForSelectedDistrict(itemId, multiplier, duration);
+                TryInscribeDemandForSelectedDistrict(itemId, multiplier, duration);
             });
+        }
+
+        private void OnEditTaxPolicy(TaxPolicy policy)
+        {
+            int defaultDuration = policy.turnsRemaining <= 0 ? 5 : policy.turnsRemaining;
+            InscriptionDialog.Show(
+                _root.transform,
+                $"Edit {policy.type} Tax",
+                (rate, duration, radius) =>
+                {
+                    EditTaxPolicyForSelectedDistrict(policy.id, rate, duration);
+                },
+                null,
+                policy.rate,
+                defaultDuration,
+                3);
+        }
+
+        private void OnModifyTradeRelation(string targetFactionId, FactionTradeRelation relation)
+        {
+            if (string.IsNullOrEmpty(targetFactionId)) return;
+            if (relation == null)
+                relation = new FactionTradeRelation { status = TradeStatus.Open, tariffRate = 0f };
+
+            TradeRelationDialog.Show(
+                _root.transform,
+                $"Modify Trade: {targetFactionId}",
+                relation.status,
+                relation.tariffRate,
+                (status, tariff) =>
+                {
+                    SetTradeRelationForSelectedDistrict(targetFactionId, status, tariff);
+                });
         }
 
         public void InscribeDemandForSelectedDistrict(string itemId, float multiplier, int durationDays)
@@ -273,6 +386,149 @@ namespace InkSim
 
             EconomicInscriptionService.InscribeDemandEvent(trimmed, multiplier, durationDays, state.Id, "Ledger demand inscription");
             BuildDetailPane();
+        }
+
+        public bool TryInscribeTaxForSelectedDistrict(float rate, int durationTurns, int radius)
+        {
+            if (_selectedIndex < 0 || _selectedIndex >= _districts.Count) return false;
+            var state = _districts[_selectedIndex];
+
+            var cost = EconomicInkCostCalculator.CalculateTaxBreakdown(rate, durationTurns, radius);
+            int balance = EconomicInkService.GetInkBalance();
+            if (balance < cost.totalCost || !EconomicInkService.TrySpend(cost.totalCost))
+            {
+                SetFeedback($"Not enough ink ({balance}/{cost.totalCost}).", true);
+                return false;
+            }
+
+            EconomicInscriptionService.InscribeTaxPolicy(state.Id, rate, durationTurns);
+            RefreshInkDisplay();
+            SetFeedback($"Tax edict inscribed. -{cost.totalCost} ink.", false);
+            BuildDetailPane();
+            return true;
+        }
+
+        public bool TryInscribeDemandForSelectedDistrict(string itemId, float multiplier, int durationDays)
+        {
+            if (_selectedIndex < 0 || _selectedIndex >= _districts.Count) return false;
+            if (string.IsNullOrWhiteSpace(itemId)) return false;
+
+            var cost = EconomicInkCostCalculator.CalculateDemandBreakdown(multiplier, durationDays);
+            int balance = EconomicInkService.GetInkBalance();
+            if (balance < cost.totalCost || !EconomicInkService.TrySpend(cost.totalCost))
+            {
+                SetFeedback($"Not enough ink ({balance}/{cost.totalCost}).", true);
+                return false;
+            }
+
+            var state = _districts[_selectedIndex];
+            string trimmed = itemId.Trim().ToLowerInvariant();
+            if (string.IsNullOrEmpty(trimmed)) return false;
+
+            EconomicInscriptionService.InscribeDemandEvent(trimmed, multiplier, durationDays, state.Id, "Ledger demand inscription");
+            RefreshInkDisplay();
+            SetFeedback($"Demand edict inscribed. -{cost.totalCost} ink.", false);
+            BuildDetailPane();
+            return true;
+        }
+
+        public bool EditTaxPolicyForSelectedDistrict(string policyId, float newRate, int durationTurns)
+        {
+            var state = GetSelectedDistrictState();
+            if (state == null || string.IsNullOrEmpty(policyId)) return false;
+
+            var policies = TaxRegistry.GetPoliciesFor(state.Id);
+            int index = policies.FindIndex(p => p.id == policyId);
+            if (index < 0) return false;
+
+            var policy = policies[index];
+            if (!TaxRegistry.RemovePolicy(policyId, state.Id))
+                return false;
+
+            policy.rate = Mathf.Clamp01(newRate);
+            policy.turnsRemaining = durationTurns;
+            TaxRegistry.AddPolicy(policy);
+            BuildDetailPane();
+            return true;
+        }
+
+        public bool SetTradeRelationForSelectedDistrict(string targetFactionId, TradeStatus status, float tariffRate)
+        {
+            if (string.IsNullOrEmpty(targetFactionId)) return false;
+
+            var state = GetSelectedDistrictState();
+            string controllerFactionId = GetControllingFactionId(state);
+            if (string.IsNullOrEmpty(controllerFactionId)) return false;
+            if (string.Equals(controllerFactionId, targetFactionId, StringComparison.OrdinalIgnoreCase)) return false;
+
+            var relation = TradeRelationRegistry.GetRelation(controllerFactionId, targetFactionId);
+            if (relation == null)
+            {
+                relation = new FactionTradeRelation
+                {
+                    sourceFactionId = controllerFactionId,
+                    targetFactionId = targetFactionId,
+                    bannedItems = new List<string>(),
+                    exclusiveItems = new List<string>()
+                };
+            }
+
+            relation.sourceFactionId = controllerFactionId;
+            relation.targetFactionId = targetFactionId;
+            relation.status = status;
+            relation.tariffRate = Mathf.Max(0f, tariffRate);
+            if (relation.bannedItems == null) relation.bannedItems = new List<string>();
+            if (relation.exclusiveItems == null) relation.exclusiveItems = new List<string>();
+
+            TradeRelationRegistry.SetRelation(relation);
+            BuildDetailPane();
+            return true;
+        }
+
+        public bool RemoveTaxPolicyById(string policyId)
+        {
+            if (string.IsNullOrEmpty(policyId)) return false;
+            bool removed = false;
+
+            var state = GetSelectedDistrictState();
+            if (state != null)
+                removed = TaxRegistry.RemovePolicy(policyId, state.Id);
+            if (!removed)
+                removed = TaxRegistry.RemovePolicy(policyId);
+
+            if (removed)
+            {
+                RefreshInkDisplay();
+                BuildDetailPane();
+            }
+            return removed;
+        }
+
+        public bool RemoveDemandEventById(string eventId)
+        {
+            bool removed = EconomicEventService.RemoveEvent(eventId);
+            if (removed)
+            {
+                RefreshInkDisplay();
+                BuildDetailPane();
+            }
+            return removed;
+        }
+
+        private DistrictState GetSelectedDistrictState()
+        {
+            if (_selectedIndex < 0 || _selectedIndex >= _districts.Count) return null;
+            return _districts[_selectedIndex];
+        }
+
+        private string GetControllingFactionId(DistrictState state)
+        {
+            if (state == null) return null;
+            var dcs = DistrictControlService.Instance;
+            if (dcs == null || dcs.Factions == null) return null;
+            int index = state.ControllingFactionIndex;
+            if (index < 0 || index >= dcs.Factions.Count) return null;
+            return dcs.Factions[index].id;
         }
 
         private Vector2Int GetDistrictCenter(DistrictState state)
@@ -303,12 +559,29 @@ namespace InkSim
                 _selectedIndex = -1;
                 BuildDetailPane();
             }
+            RefreshInkDisplay();
+            SetFeedback("", false);
             _root.SetActive(true);
         }
 
         public void Hide()
         {
             _root.SetActive(false);
+        }
+
+        private void RefreshInkDisplay()
+        {
+            if (_inkText == null) return;
+            _inkText.text = $"Ink: {EconomicInkService.GetInkBalance()}";
+        }
+
+        private void SetFeedback(string message, bool isError)
+        {
+            if (_feedbackText == null) return;
+            _feedbackText.text = message ?? "";
+            _feedbackText.color = isError
+                ? new Color(0.95f, 0.6f, 0.6f, 1f)
+                : new Color(0.6f, 0.9f, 0.65f, 1f);
         }
 
         private Text CreateText(Transform parent, string content, int size, FontStyle style)
@@ -329,6 +602,49 @@ namespace InkSim
         {
             var header = CreateText(parent, title, 20, FontStyle.Bold);
             header.color = new Color(0.8f, 0.9f, 1f);
+        }
+
+        private void CreateActionRow(
+            Transform parent,
+            string content,
+            string primaryLabel,
+            Action onPrimary,
+            string secondaryLabel,
+            Action onSecondary)
+        {
+            var row = new GameObject("ActionRow", typeof(RectTransform)).GetComponent<RectTransform>();
+            row.SetParent(parent, false);
+            var layout = row.gameObject.AddComponent<HorizontalLayoutGroup>();
+            layout.spacing = 8;
+            layout.childForceExpandHeight = false;
+            layout.childForceExpandWidth = false;
+            layout.childAlignment = TextAnchor.MiddleLeft;
+
+            var text = CreateText(row, content, 18, FontStyle.Normal);
+            var textLe = text.gameObject.AddComponent<LayoutElement>();
+            textLe.flexibleWidth = 1f;
+
+            if (!string.IsNullOrEmpty(primaryLabel))
+            {
+                var button = CreateButton(row, primaryLabel, onPrimary);
+                var le = button.GetComponent<LayoutElement>();
+                if (le != null)
+                {
+                    le.minWidth = 90;
+                    le.minHeight = 30;
+                }
+            }
+
+            if (!string.IsNullOrEmpty(secondaryLabel))
+            {
+                var button = CreateButton(row, secondaryLabel, onSecondary);
+                var le = button.GetComponent<LayoutElement>();
+                if (le != null)
+                {
+                    le.minWidth = 90;
+                    le.minHeight = 30;
+                }
+            }
         }
 
         private Image CreateImage(Transform parent, Color color)

@@ -11,6 +11,7 @@ namespace InkSim
     public class LedgerController : MonoBehaviour
     {
         public static LedgerController Instance { get; private set; }
+        public bool IsLedgerVisible => IsVisible();
 
         [Tooltip("Sorting order for the Ledger canvas so it renders above other UI.")]
         public int sortingOrder = 1000;
@@ -20,6 +21,7 @@ namespace InkSim
         private LedgerPanel _factionPanel;
         private LedgerEconomyPanel _economyPanel;
         private LedgerTab _currentTab = LedgerTab.Factions;
+        private bool _shiftWasDown;
 
         private void Awake()
         {
@@ -47,6 +49,9 @@ namespace InkSim
         {
             var kb = Keyboard.current;
             if (kb == null) return;
+            bool shiftDown = kb.leftShiftKey.isPressed || kb.rightShiftKey.isPressed;
+            bool shiftPressed = shiftDown && !_shiftWasDown;
+            _shiftWasDown = shiftDown;
 
             if (kb.bKey.wasPressedThisFrame)
             {
@@ -56,7 +61,7 @@ namespace InkSim
             {
                 Hide();
             }
-            else if ((kb.leftShiftKey.wasPressedThisFrame || kb.rightShiftKey.wasPressedThisFrame) && IsVisible())
+            else if (shiftPressed && IsVisible())
             {
                 SwitchTab();
             }

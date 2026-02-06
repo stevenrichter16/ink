@@ -59,6 +59,13 @@ namespace InkSim
             return new List<DemandEvent>(_events);
         }
 
+        public static bool RemoveEvent(string eventId)
+        {
+            if (string.IsNullOrEmpty(eventId)) return false;
+            int removed = _events.RemoveAll(e => e != null && e.id == eventId);
+            return removed > 0;
+        }
+
         public static void Clear()
         {
             _events.Clear();

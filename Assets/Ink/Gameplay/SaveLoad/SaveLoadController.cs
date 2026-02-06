@@ -69,7 +69,8 @@ namespace InkSim
             // Tab toggles menu (unless inventory is open)
             if (keyboard.tabKey.wasPressedThisFrame)
             {
-                if (!InventoryUI.IsOpen)
+                bool ledgerVisible = LedgerController.Instance != null && LedgerController.Instance.IsLedgerVisible;
+                if (!InventoryUI.IsOpen && !ledgerVisible)
                 {
                     menu.Toggle();
                 }

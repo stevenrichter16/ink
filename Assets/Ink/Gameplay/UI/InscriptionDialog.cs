@@ -20,26 +20,40 @@ namespace InkSim
         private Text _durationValue;
         private Text _radiusValue;
         private Text _costText;
+        private Text _costBreakdown;
 
-        public static InscriptionDialog Show(Transform parent, string title, Action<float, int, int> onConfirm, Action onCancel = null)
+        public static InscriptionDialog Show(
+            Transform parent,
+            string title,
+            Action<float, int, int> onConfirm,
+            Action onCancel = null,
+            float defaultRate = 0.1f,
+            int defaultDuration = 5,
+            int defaultRadius = 5)
         {
             var go = new GameObject("InscriptionDialog", typeof(RectTransform));
             go.transform.SetParent(parent, false);
             var dialog = go.AddComponent<InscriptionDialog>();
-            dialog.Initialize(title, onConfirm, onCancel);
+            dialog.Initialize(title, onConfirm, onCancel, defaultRate, defaultDuration, defaultRadius);
             return dialog;
         }
 
-        private void Initialize(string title, Action<float, int, int> onConfirm, Action onCancel)
+        private void Initialize(
+            string title,
+            Action<float, int, int> onConfirm,
+            Action onCancel,
+            float defaultRate,
+            int defaultDuration,
+            int defaultRadius)
         {
             _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             _onConfirm = onConfirm;
             _onCancel = onCancel;
-            BuildUI(title);
+            BuildUI(title, defaultRate, defaultDuration, defaultRadius);
             UpdateCost();
         }
 
-        private void BuildUI(string title)
+        private void BuildUI(string title, float defaultRate, int defaultDuration, int defaultRadius)
         {
             var root = gameObject.GetComponent<RectTransform>();
             root.anchorMin = Vector2.zero;
@@ -77,12 +91,17 @@ namespace InkSim
             layout.spacing = 10;
             layout.padding = new RectOffset(8, 8, 8, 8);
 
-            CreateLabeledSlider(content, "Rate", -0.5f, 0.5f, 0.1f, false, out _rateSlider, out _rateValue);
-            CreateLabeledSlider(content, "Duration (days)", 1f, 20f, 5f, true, out _durationSlider, out _durationValue);
-            CreateLabeledSlider(content, "Radius", 1f, 12f, 5f, true, out _radiusSlider, out _radiusValue);
+            float clampedRate = Mathf.Clamp(defaultRate, -0.5f, 0.5f);
+            int clampedDuration = Mathf.Clamp(defaultDuration, 1, 20);
+            int clampedRadius = Mathf.Clamp(defaultRadius, 1, 12);
+            CreateLabeledSlider(content, "Rate", -0.5f, 0.5f, clampedRate, false, out _rateSlider, out _rateValue);
+            CreateLabeledSlider(content, "Duration (days)", 1f, 20f, clampedDuration, true, out _durationSlider, out _durationValue);
+            CreateLabeledSlider(content, "Radius", 1f, 12f, clampedRadius, true, out _radiusSlider, out _radiusValue);
 
             _costText = CreateText(content, "Ink Cost: 0", 20, FontStyle.Bold);
             _costText.alignment = TextAnchor.MiddleLeft;
+            _costBreakdown = CreateText(content, "", 14, FontStyle.Normal);
+            _costBreakdown.alignment = TextAnchor.UpperLeft;
 
             var footer = new GameObject("Footer", typeof(RectTransform)).GetComponent<RectTransform>();
             footer.SetParent(panel.transform, false);
@@ -128,8 +147,9 @@ namespace InkSim
             if (_durationValue != null) _durationValue.text = duration.ToString();
             if (_radiusValue != null) _radiusValue.text = radius.ToString();
 
-            int cost = Mathf.RoundToInt(Mathf.Abs(rate) * 100f + duration + radius);
-            if (_costText != null) _costText.text = $"Ink Cost: {cost}";
+            var cost = EconomicInkCostCalculator.CalculateTaxBreakdown(rate, duration, radius);
+            if (_costText != null) _costText.text = $"Ink Cost: {cost.totalCost}";
+            if (_costBreakdown != null) _costBreakdown.text = EconomicInkCostCalculator.FormatMultiline(cost);
         }
 
         private void OnConfirmClicked()

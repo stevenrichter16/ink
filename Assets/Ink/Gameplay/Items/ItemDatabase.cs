@@ -99,6 +99,13 @@ namespace InkSim
                 value = 50
             });
 
+            Register(new ItemData("ink", "Ink", ItemType.Currency, 140)
+            {
+                stackable = true,
+                maxStack = 999,
+                value = 0
+            });
+
             // === KEY ITEMS ===
             Register(new ItemData("key", "Key", ItemType.KeyItem, 87)
             {

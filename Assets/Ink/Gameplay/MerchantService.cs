@@ -119,7 +119,10 @@ namespace InkSim
         /// </summary>
         public static bool CanSell(string itemId)
         {
-            return !string.IsNullOrEmpty(itemId) && itemId != "coin" && itemId != "key";
+            return !string.IsNullOrEmpty(itemId) &&
+                   itemId != "coin" &&
+                   itemId != "key" &&
+                   itemId != EconomicInkService.InkItemId;
         }
     }
 }

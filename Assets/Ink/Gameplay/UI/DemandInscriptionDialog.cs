@@ -21,6 +21,7 @@ namespace InkSim
         private Text _multiplierValue;
         private Text _durationValue;
         private Text _costText;
+        private Text _costBreakdown;
 
         public static DemandInscriptionDialog Show(Transform parent, string title, Action<string, float, int> onConfirm, string defaultItemId = "potion", Action onCancel = null)
         {
@@ -100,6 +101,8 @@ namespace InkSim
 
             _costText = CreateText(content, "Ink Cost: 0", 20, FontStyle.Bold);
             _costText.alignment = TextAnchor.MiddleLeft;
+            _costBreakdown = CreateText(content, "", 14, FontStyle.Normal);
+            _costBreakdown.alignment = TextAnchor.UpperLeft;
 
             var footer = new GameObject("Footer", typeof(RectTransform)).GetComponent<RectTransform>();
             footer.SetParent(panel.transform, false);
@@ -247,8 +250,9 @@ namespace InkSim
             if (_multiplierValue != null) _multiplierValue.text = mult.ToString("0.00");
             if (_durationValue != null) _durationValue.text = duration.ToString();
 
-            int cost = Mathf.RoundToInt(Mathf.Max(0f, mult - 1f) * 50f + duration * 2f);
-            if (_costText != null) _costText.text = $"Ink Cost: {cost}";
+            var cost = EconomicInkCostCalculator.CalculateDemandBreakdown(mult, duration);
+            if (_costText != null) _costText.text = $"Ink Cost: {cost.totalCost}";
+            if (_costBreakdown != null) _costBreakdown.text = EconomicInkCostCalculator.FormatMultiline(cost);
         }
 
         private void OnConfirmClicked()
