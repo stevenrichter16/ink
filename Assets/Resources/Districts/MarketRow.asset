@@ -20,3 +20,13 @@ MonoBehaviour:
   maxX: 14
   minY: 16
   maxY: 26
+  producedGoods:
+  - potion
+  - gem
+  - ring
+  consumedGoods:
+  - potion
+  - sword
+  - iron_armor
+  productionRate: 0.15
+  consumptionRate: 0.08

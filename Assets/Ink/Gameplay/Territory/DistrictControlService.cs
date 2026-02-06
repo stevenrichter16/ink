@@ -81,6 +81,24 @@ namespace InkSim
             CurrentDay = 0;
         }
 
+        /// <summary>Bootstrap for editor tests (no DontDestroyOnLoad).</summary>
+        public void InitializeForTests()
+        {
+            if (Instance != null && Instance != this)
+            {
+                DestroyImmediate(gameObject);
+                return;
+            }
+            Instance = this;
+            Bootstrap();
+        }
+
+        /// <summary>Clear the singleton Instance. Call in test TearDown after DestroyImmediate.</summary>
+        public static void ClearInstanceForTests()
+        {
+            Instance = null;
+        }
+
         /// <summary>Flag that a palimpsest edit occurred in a district this day.</summary>
         public void ApplyPalimpsestEdit(string districtId, float magnitude = 1f)
         {

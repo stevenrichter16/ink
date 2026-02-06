@@ -64,3 +64,16 @@ MonoBehaviour:
     neutralDialogue: {fileID: 11400000, guid: 51c47b8d1a4b45f8be5a4451d949ea6b, type: 2}
     friendlyDialogue: {fileID: 11400000, guid: b2f14618e1bf456dafea4cc270a3e305, type: 2}
     hostileDialogue: {fileID: 11400000, guid: e780bea1ccd54b2983dec4b30cf6bf56, type: 2}
+  economicPolicy:
+    philosophy: 1
+    preferredTaxRate: 0.2
+    importTariffRate: 0.15
+    exportTariffRate: 0.1
+    producedItems:
+    - sword
+    - iron_armor
+    - shield
+    desiredItems:
+    - potion
+    - ink
+    bannedItems: []

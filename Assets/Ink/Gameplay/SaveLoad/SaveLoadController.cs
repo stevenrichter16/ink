@@ -16,9 +16,14 @@ namespace InkSim
         [Header("Settings")]
         public bool autoSaveOnStart = true;
         public bool autoLoadOnDeath = true;
+
+        [Header("Debug")]
+        [Tooltip("Logs save/load input handling and suppression reasons.")]
+        public bool debugInputLogs = true;
         
         private PlayerController _player;
         private bool _wasPlayerDead;
+        private bool _loggedMissingKeyboard;
         
         private void Start()
         {
@@ -64,21 +69,50 @@ namespace InkSim
         private void HandleInput()
         {
             var keyboard = Keyboard.current;
-            if (keyboard == null) return;
+            if (keyboard == null)
+            {
+                if (debugInputLogs && !_loggedMissingKeyboard)
+                {
+                    Debug.LogWarning("[SaveLoadController] Keyboard.current is null; input events are unavailable.");
+                    _loggedMissingKeyboard = true;
+                }
+                return;
+            }
+
+            if (_loggedMissingKeyboard && debugInputLogs)
+            {
+                Debug.Log("[SaveLoadController] Keyboard.current restored.");
+                _loggedMissingKeyboard = false;
+            }
             
             // Tab toggles menu (unless inventory is open)
             if (keyboard.tabKey.wasPressedThisFrame)
             {
                 bool ledgerVisible = LedgerController.Instance != null && LedgerController.Instance.IsLedgerVisible;
+                if (debugInputLogs)
+                {
+                    Debug.Log($"[SaveLoadController] Tab pressed. inventoryOpen={InventoryUI.IsOpen} ledgerVisible={ledgerVisible} saveLoadOpen={SaveLoadMenu.IsOpen}");
+                }
                 if (!InventoryUI.IsOpen && !ledgerVisible)
                 {
+                    if (debugInputLogs)
+                        Debug.Log("[SaveLoadController] Toggling save/load menu.");
                     menu.Toggle();
+                }
+                else if (debugInputLogs)
+                {
+                    string reason = InventoryUI.IsOpen
+                        ? "inventory is open"
+                        : "ledger is visible";
+                    Debug.Log($"[SaveLoadController] Ignored Tab because {reason}.");
                 }
             }
             
             // Escape closes menu if open
             if (keyboard.escapeKey.wasPressedThisFrame && SaveLoadMenu.IsOpen)
             {
+                if (debugInputLogs)
+                    Debug.Log("[SaveLoadController] Escape pressed while save/load menu open. Hiding menu.");
                 menu.Hide();
             }
         }

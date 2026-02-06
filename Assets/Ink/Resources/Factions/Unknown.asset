@@ -35,3 +35,11 @@ MonoBehaviour:
     neutralDialogue: {fileID: 0}
     friendlyDialogue: {fileID: 0}
     hostileDialogue: {fileID: 0}
+  economicPolicy:
+    philosophy: 3
+    preferredTaxRate: 0.1
+    importTariffRate: 0.1
+    exportTariffRate: 0.1
+    producedItems: []
+    desiredItems: []
+    bannedItems: []

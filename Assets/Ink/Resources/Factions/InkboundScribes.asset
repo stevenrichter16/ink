@@ -64,3 +64,14 @@ MonoBehaviour:
     neutralDialogue: {fileID: 11400000, guid: 79a6083175764859ba679aa0222dc072, type: 2}
     friendlyDialogue: {fileID: 11400000, guid: 79a6083175764859ba679aa0222dc072, type: 2}
     hostileDialogue: {fileID: 11400000, guid: 56bd91fd88114f1da569b23ff4152bda, type: 2}
+  economicPolicy:
+    philosophy: 0
+    preferredTaxRate: 0.08
+    importTariffRate: 0.03
+    exportTariffRate: 0.03
+    producedItems:
+    - ink
+    desiredItems:
+    - ring
+    - gem
+    bannedItems: []

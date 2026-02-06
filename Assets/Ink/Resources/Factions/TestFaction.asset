@@ -35,3 +35,13 @@ MonoBehaviour:
     neutralDialogue: {fileID: 0}
     friendlyDialogue: {fileID: 0}
     hostileDialogue: {fileID: 0}
+  economicPolicy:
+    philosophy: 0
+    preferredTaxRate: 0.1
+    importTariffRate: 0.05
+    exportTariffRate: 0.05
+    producedItems:
+    - potion
+    desiredItems:
+    - sword
+    bannedItems: []

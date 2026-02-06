@@ -78,3 +78,16 @@ MonoBehaviour:
     neutralDialogue: {fileID: 0}
     friendlyDialogue: {fileID: 0}
     hostileDialogue: {fileID: 0}
+  economicPolicy:
+    philosophy: 2
+    preferredTaxRate: 0.3
+    importTariffRate: 0.25
+    exportTariffRate: 0.1
+    producedItems:
+    - sword
+    - shield
+    desiredItems:
+    - iron_armor
+    - steel_armor
+    bannedItems:
+    - potion

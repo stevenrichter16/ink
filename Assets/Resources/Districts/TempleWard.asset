@@ -20,3 +20,11 @@ MonoBehaviour:
   maxX: 32
   minY: 8
   maxY: 18
+  producedGoods:
+  - ink
+  - potion_large
+  consumedGoods:
+  - gem
+  - ring
+  productionRate: 0.1
+  consumptionRate: 0.05

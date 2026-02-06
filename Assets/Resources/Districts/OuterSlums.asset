@@ -20,3 +20,11 @@ MonoBehaviour:
   maxX: 12
   minY: 0
   maxY: 14
+  producedGoods:
+  - dagger
+  - leather_armor
+  consumedGoods:
+  - potion
+  - potion_large
+  productionRate: 0.08
+  consumptionRate: 0.12

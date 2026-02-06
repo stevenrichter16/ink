@@ -78,3 +78,15 @@ MonoBehaviour:
     neutralDialogue: {fileID: 0}
     friendlyDialogue: {fileID: 0}
     hostileDialogue: {fileID: 0}
+  economicPolicy:
+    philosophy: 4
+    preferredTaxRate: 0.4
+    importTariffRate: 0.4
+    exportTariffRate: 0
+    producedItems:
+    - potion
+    desiredItems:
+    - gem
+    bannedItems:
+    - sword
+    - iron_armor

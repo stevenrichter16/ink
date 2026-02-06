@@ -15,6 +15,10 @@ namespace InkSim
         public float enemyTurnDelay = 0.02f;  // Delay between enemy actions
         public float turnTransitionDelay = 0.01f;  // Delay between player/enemy phases
 
+        [Header("Day Cycle")]
+        [Tooltip("Number of turns per in-game day. Economic tick fires each day.")]
+        public int turnsPerDay = 20;
+
         public bool IsPlayerTurn { get; private set; } = true;
         public int TurnNumber { get; private set; } = 0;
 
@@ -124,6 +128,13 @@ private IEnumerator ProcessEnemyTurns()
             _processingEnemyTurns = false;
             OverlayResolver.TickDecay();
             TurnNumber++;
+
+            // Trigger economic day cycle
+            if (turnsPerDay > 0 && TurnNumber > 0 && TurnNumber % turnsPerDay == 0)
+            {
+                EconomicTickService.AdvanceEconomicDay();
+            }
+
             IsPlayerTurn = true;
         }
 

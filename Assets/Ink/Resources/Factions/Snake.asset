@@ -76,3 +76,14 @@ MonoBehaviour:
     neutralDialogue: {fileID: 0}
     friendlyDialogue: {fileID: 0}
     hostileDialogue: {fileID: 0}
+  economicPolicy:
+    philosophy: 1
+    preferredTaxRate: 0.25
+    importTariffRate: 0.2
+    exportTariffRate: 0.15
+    producedItems:
+    - dagger
+    desiredItems:
+    - potion
+    - potion_large
+    bannedItems: []

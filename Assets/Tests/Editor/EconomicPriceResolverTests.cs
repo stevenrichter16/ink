@@ -1,6 +1,5 @@
 using NUnit.Framework;
 using UnityEngine;
-using System.Reflection;
 
 namespace InkSim.Tests
 {
@@ -34,9 +33,7 @@ namespace InkSim.Tests
             {
                 _dcsGO = new GameObject("DistrictControlService");
                 var dcs = _dcsGO.AddComponent<DistrictControlService>();
-                // Manually invoke Awake to populate states in EditMode
-                var awake = typeof(DistrictControlService).GetMethod("Awake", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                awake?.Invoke(dcs, null);
+                dcs.InitializeForTests();
             }
         }
 
@@ -52,6 +49,7 @@ namespace InkSim.Tests
             if (_dcsGO != null)
             {
                 GameObject.DestroyImmediate(_dcsGO);
+                DistrictControlService.ClearInstanceForTests();
             }
             OverlayResolver.SetRegistry(null);
             SupplyService.Clear();
@@ -267,6 +265,78 @@ namespace InkSim.Tests
             // base 15 *0.8 =12 ; tax +10% -> 13.2 => 13
             int price = EconomicPriceResolver.ResolveBuyPrice("potion", _profile, Vector2Int.zero);
             Assert.AreEqual(13, price);
+        }
+
+        [Test]
+        public void FactionPolicy_ProducedItemDiscount()
+        {
+            // The controlling faction should discount items it produces (0.7x).
+            var dcs = DistrictControlService.Instance;
+            if (dcs == null || dcs.States == null || dcs.States.Count == 0)
+                Assert.Inconclusive("No DistrictControlService states available.");
+
+            var state = dcs.States[0];
+            var pos = new Vector2Int(state.Definition.minX, state.Definition.minY);
+
+            // Find a faction that has produced items and make it the controlling faction
+            int targetIdx = -1;
+            for (int i = 0; i < dcs.Factions.Count; i++)
+            {
+                var f = dcs.Factions[i];
+                if (f.economicPolicy != null && f.economicPolicy.producedItems != null &&
+                    f.economicPolicy.producedItems.Count > 0 &&
+                    ItemDatabase.Get(f.economicPolicy.producedItems[0]) != null)
+                {
+                    targetIdx = i;
+                    break;
+                }
+            }
+            if (targetIdx < 0)
+                Assert.Inconclusive("No faction with valid produced items found.");
+
+            // Set the target faction's control higher than all others so it becomes the controller
+            for (int i = 0; i < state.control.Length; i++)
+                state.control[i] = 0.1f;
+            state.control[targetIdx] = 0.9f;
+
+            var faction = dcs.Factions[targetIdx];
+            string producedItem = faction.economicPolicy.producedItems[0];
+            var itemData = ItemDatabase.Get(producedItem);
+
+            int price = EconomicPriceResolver.ResolveBuyPrice(producedItem, _profile, pos);
+            int basePrice = Mathf.RoundToInt(itemData.value * _profile.buyMultiplier);
+
+            // Price should be discounted by 30% due to produced item policy
+            Assert.Less(price, basePrice, "Produced items should be discounted by controlling faction's economic policy");
+        }
+
+        [Test]
+        public void RegistryToken_AppliesSupplyAndDemandModifiers()
+        {
+            // Register an ABUNDANCE token with supplyModifier = 2.0 via registry
+            var registry = ScriptableObject.CreateInstance<PalimpsestTokenRegistry>();
+            var rule = new PalimpsestTokenRegistry.TokenRule
+            {
+                token = "ABUNDANCE_TEST",
+                priceMultiplier = 1f,
+                supplyModifier = 2f,
+                demandModifier = 1f
+            };
+            registry.ClearAndAddRule(rule);
+            OverlayResolver.SetRegistry(registry);
+
+            var layer = new PalimpsestLayer
+            {
+                center = Vector2Int.zero,
+                radius = 5,
+                tokens = { "ABUNDANCE_TEST" }
+            };
+            _layerId = OverlayResolver.RegisterLayer(layer);
+
+            // Check that the overlay rules reflect the supply modifier
+            var rules = OverlayResolver.GetRulesAt(0, 0);
+            Assert.AreEqual(2f, rules.supplyModifier, 0.001f,
+                "Registry token ABUNDANCE_TEST should set supply modifier to 2.0");
         }
     }
 }

@@ -78,3 +78,14 @@ MonoBehaviour:
     neutralDialogue: {fileID: 0}
     friendlyDialogue: {fileID: 0}
     hostileDialogue: {fileID: 0}
+  economicPolicy:
+    philosophy: 4
+    preferredTaxRate: 0.45
+    importTariffRate: 0.35
+    exportTariffRate: 0.15
+    producedItems:
+    - ring
+    desiredItems:
+    - steel_armor
+    - ink
+    bannedItems: []

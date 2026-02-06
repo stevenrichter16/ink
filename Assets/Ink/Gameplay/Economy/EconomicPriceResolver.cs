@@ -18,6 +18,7 @@ namespace InkSim
             public float reputationMultiplier;
             public float supplyMultiplier;
             public float prosperityMultiplier;
+            public float factionPolicyMultiplier;
             public int finalPrice;
         }
 
@@ -60,6 +61,9 @@ namespace InkSim
 
             // Faction reputation modifier (friendlier = cheaper)
             priceMult *= GetReputationModifier(profile.factionId);
+
+            // Faction economic policy modifier (produced = cheaper, desired = premium)
+            priceMult *= GetFactionPolicyModifier(itemId, position);
 
             // Trade relation modifier
             priceMult *= GetTradeModifier(itemId, profile, position);
@@ -124,6 +128,9 @@ namespace InkSim
             bd.reputationMultiplier = GetReputationModifier(profile.factionId);
             bd.priceMultiplier *= bd.reputationMultiplier;
 
+            bd.factionPolicyMultiplier = GetFactionPolicyModifier(itemId, (Vector2Int?)position);
+            bd.priceMultiplier *= bd.factionPolicyMultiplier;
+
             bd.priceMultiplier *= GetTradeModifier(itemId, profile, position);
 
             bd.supplyMultiplier = GetSupplyModifier(position, itemId);
@@ -171,6 +178,7 @@ namespace InkSim
             }
 
             priceMult *= GetReputationModifier(profile.factionId);
+            priceMult *= GetFactionPolicyModifier(itemId, position);
             priceMult *= GetTradeModifier(itemId, profile, position);
             priceMult *= GetSupplyModifier(position, itemId);
 
@@ -312,6 +320,31 @@ namespace InkSim
             int idx = state.ControllingFactionIndex;
             if (idx < 0 || idx >= dcs.Factions.Count) return null;
             return dcs.Factions[idx].id;
+        }
+
+        /// <summary>
+        /// Applies the controlling faction's economic policy: produced items are cheaper (0.7x),
+        /// desired items are more expensive (1.3x).
+        /// </summary>
+        private static float GetFactionPolicyModifier(string itemId, Vector2Int? position)
+        {
+            if (string.IsNullOrEmpty(itemId) || !position.HasValue) return 1f;
+
+            var state = DistrictControlService.Instance?.GetStateByPosition(position.Value.x, position.Value.y);
+            string controllingFactionId = GetControllingFactionId(state);
+            if (string.IsNullOrEmpty(controllingFactionId)) return 1f;
+
+            var faction = FactionRegistry.GetById(controllingFactionId);
+            if (faction == null || faction.economicPolicy == null) return 1f;
+
+            var policy = faction.economicPolicy;
+            if (policy.producedItems != null && policy.producedItems.Contains(itemId))
+                return 0.7f; // 30% discount — produced locally
+
+            if (policy.desiredItems != null && policy.desiredItems.Contains(itemId))
+                return 1.3f; // 30% premium — high demand
+
+            return 1f;
         }
     }
 }

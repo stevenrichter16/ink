@@ -22,6 +22,15 @@ namespace InkSim
             public float taxModifier;
             [Tooltip("Price multiplier (1 = no change, 0.9 = 10% cheaper)")]
             public float priceMultiplier = 1f;
+            [Tooltip("Supply multiplier (1 = no change, 2 = double supply)")]
+            public float supplyModifier = 1f;
+            [Tooltip("Demand multiplier (1 = no change, 2 = double demand)")]
+            public float demandModifier = 1f;
+            public bool blockTrade;
+            public bool enableBlackMarket;
+            public bool disableTaxEnforcement;
+            [Tooltip("Clear all trade bans and blockades (FREE_TRADE effect)")]
+            public bool clearTradeRestrictions;
         }
 
         [SerializeField] private List<TokenRule> rules = new List<TokenRule>();

@@ -20,8 +20,7 @@ namespace InkSim.Tests
             {
                 _dcsGO = new GameObject("DistrictControlService");
                 var dcs = _dcsGO.AddComponent<DistrictControlService>();
-                var awake = typeof(DistrictControlService).GetMethod("Awake", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-                awake?.Invoke(dcs, null);
+                dcs.InitializeForTests();
             }
         }
 
@@ -29,7 +28,11 @@ namespace InkSim.Tests
         public void TearDown()
         {
             if (_profile != null) ScriptableObject.DestroyImmediate(_profile);
-            if (_dcsGO != null) GameObject.DestroyImmediate(_dcsGO);
+            if (_dcsGO != null)
+            {
+                GameObject.DestroyImmediate(_dcsGO);
+                DistrictControlService.ClearInstanceForTests();
+            }
         }
 
         [Test]

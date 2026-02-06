@@ -70,3 +70,15 @@ MonoBehaviour:
     neutralDialogue: {fileID: 11400000, guid: e83b0c703f364b499e97e5a5f5ccd1c3, type: 2}
     friendlyDialogue: {fileID: 11400000, guid: d8ededc4167b49ca9626c55f1928f6ff, type: 2}
     hostileDialogue: {fileID: 11400000, guid: 2bc25fb1a5c247d9a472cab70bd62e2e, type: 2}
+  economicPolicy:
+    philosophy: 3
+    preferredTaxRate: 0.05
+    importTariffRate: 0.05
+    exportTariffRate: 0.02
+    producedItems:
+    - ink
+    - potion
+    desiredItems:
+    - gem
+    - ring
+    bannedItems: []

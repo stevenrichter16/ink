@@ -150,6 +150,21 @@ namespace InkSim
                     layer.taxDelta += rule.taxModifier;
                     if (rule.priceMultiplier > 0f)
                         layer.priceMultiplier *= rule.priceMultiplier;
+                    if (rule.supplyModifier != 1f)
+                        layer.supplyModifier *= rule.supplyModifier;
+                    if (rule.demandModifier != 1f)
+                        layer.demandModifier *= rule.demandModifier;
+                    if (rule.blockTrade)
+                        layer.blockTrade = true;
+                    if (rule.enableBlackMarket)
+                        layer.enableBlackMarket = true;
+                    if (rule.disableTaxEnforcement)
+                        layer.disableTaxEnforcement = true;
+                    if (rule.clearTradeRestrictions)
+                    {
+                        layer.blockTrade = false;
+                        layer.tradeBannedFactions.Clear();
+                    }
                     continue;
                 }
 

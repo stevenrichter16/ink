@@ -11,21 +11,197 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4f1f9c529b1b4a4fa57a58c9b6e0d58e, type: 3}
   m_Name: PalimpsestTokenRegistry
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier:
   rules:
   - token: TRUCE
     truce: 1
-    allyFactionId: 
-    huntFactionId: 
+    allyFactionId:
+    huntFactionId:
+    taxModifier: 0
+    priceMultiplier: 1
+    supplyModifier: 1
+    demandModifier: 1
+    blockTrade: 0
+    enableBlackMarket: 0
+    disableTaxEnforcement: 0
+    clearTradeRestrictions: 0
   - token: ALLY:PLAYER
     truce: 0
     allyFactionId: player
-    huntFactionId: 
+    huntFactionId:
+    taxModifier: 0
+    priceMultiplier: 1
+    supplyModifier: 1
+    demandModifier: 1
+    blockTrade: 0
+    enableBlackMarket: 0
+    disableTaxEnforcement: 0
+    clearTradeRestrictions: 0
   - token: HUNT:FACTION_GHOST
     truce: 0
-    allyFactionId: 
+    allyFactionId:
     huntFactionId: faction_ghost
+    taxModifier: 0
+    priceMultiplier: 1
+    supplyModifier: 1
+    demandModifier: 1
+    blockTrade: 0
+    enableBlackMarket: 0
+    disableTaxEnforcement: 0
+    clearTradeRestrictions: 0
   - token: HUNT:FACTION_SLIME
     truce: 0
-    allyFactionId: 
+    allyFactionId:
     huntFactionId: faction_slime
+    taxModifier: 0
+    priceMultiplier: 1
+    supplyModifier: 1
+    demandModifier: 1
+    blockTrade: 0
+    enableBlackMarket: 0
+    disableTaxEnforcement: 0
+    clearTradeRestrictions: 0
+  - token: TAX_LIGHT
+    truce: 0
+    allyFactionId:
+    huntFactionId:
+    taxModifier: 0.05
+    priceMultiplier: 1
+    supplyModifier: 1
+    demandModifier: 1
+    blockTrade: 0
+    enableBlackMarket: 0
+    disableTaxEnforcement: 0
+    clearTradeRestrictions: 0
+  - token: TAX_HEAVY
+    truce: 0
+    allyFactionId:
+    huntFactionId:
+    taxModifier: 0.2
+    priceMultiplier: 1
+    supplyModifier: 1
+    demandModifier: 1
+    blockTrade: 0
+    enableBlackMarket: 0
+    disableTaxEnforcement: 0
+    clearTradeRestrictions: 0
+  - token: TAX_BREAK
+    truce: 0
+    allyFactionId:
+    huntFactionId:
+    taxModifier: -0.1
+    priceMultiplier: 1
+    supplyModifier: 1
+    demandModifier: 1
+    blockTrade: 0
+    enableBlackMarket: 0
+    disableTaxEnforcement: 0
+    clearTradeRestrictions: 0
+  - token: CHEAP
+    truce: 0
+    allyFactionId:
+    huntFactionId:
+    taxModifier: 0
+    priceMultiplier: 0.8
+    supplyModifier: 1
+    demandModifier: 1
+    blockTrade: 0
+    enableBlackMarket: 0
+    disableTaxEnforcement: 0
+    clearTradeRestrictions: 0
+  - token: EXPENSIVE
+    truce: 0
+    allyFactionId:
+    huntFactionId:
+    taxModifier: 0
+    priceMultiplier: 1.3
+    supplyModifier: 1
+    demandModifier: 1
+    blockTrade: 0
+    enableBlackMarket: 0
+    disableTaxEnforcement: 0
+    clearTradeRestrictions: 0
+  - token: ABUNDANCE
+    truce: 0
+    allyFactionId:
+    huntFactionId:
+    taxModifier: 0
+    priceMultiplier: 1
+    supplyModifier: 2
+    demandModifier: 1
+    blockTrade: 0
+    enableBlackMarket: 0
+    disableTaxEnforcement: 0
+    clearTradeRestrictions: 0
+  - token: SCARCITY
+    truce: 0
+    allyFactionId:
+    huntFactionId:
+    taxModifier: 0
+    priceMultiplier: 1
+    supplyModifier: 0.5
+    demandModifier: 1
+    blockTrade: 0
+    enableBlackMarket: 0
+    disableTaxEnforcement: 0
+    clearTradeRestrictions: 0
+  - token: DEMAND_SPIKE
+    truce: 0
+    allyFactionId:
+    huntFactionId:
+    taxModifier: 0
+    priceMultiplier: 1
+    supplyModifier: 1
+    demandModifier: 2
+    blockTrade: 0
+    enableBlackMarket: 0
+    disableTaxEnforcement: 0
+    clearTradeRestrictions: 0
+  - token: DEMAND_DROP
+    truce: 0
+    allyFactionId:
+    huntFactionId:
+    taxModifier: 0
+    priceMultiplier: 1
+    supplyModifier: 1
+    demandModifier: 0.5
+    blockTrade: 0
+    enableBlackMarket: 0
+    disableTaxEnforcement: 0
+    clearTradeRestrictions: 0
+  - token: BLOCKADE
+    truce: 0
+    allyFactionId:
+    huntFactionId:
+    taxModifier: 0
+    priceMultiplier: 1
+    supplyModifier: 1
+    demandModifier: 1
+    blockTrade: 1
+    enableBlackMarket: 0
+    disableTaxEnforcement: 0
+    clearTradeRestrictions: 0
+  - token: FREE_TRADE
+    truce: 0
+    allyFactionId:
+    huntFactionId:
+    taxModifier: 0
+    priceMultiplier: 1
+    supplyModifier: 1
+    demandModifier: 1
+    blockTrade: 0
+    enableBlackMarket: 0
+    disableTaxEnforcement: 1
+    clearTradeRestrictions: 1
+  - token: BLACK_MARKET
+    truce: 0
+    allyFactionId:
+    huntFactionId:
+    taxModifier: 0
+    priceMultiplier: 1
+    supplyModifier: 1
+    demandModifier: 1
+    blockTrade: 0
+    enableBlackMarket: 1
+    disableTaxEnforcement: 0
+    clearTradeRestrictions: 0

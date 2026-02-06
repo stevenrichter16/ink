@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace InkSim
@@ -18,6 +19,19 @@ namespace InkSim
         public int maxX = 10;
         public int minY;
         public int maxY = 10;
+
+        [Header("Economic Configuration")]
+        [Tooltip("Items naturally produced by this district's economy")]
+        public List<string> producedGoods = new List<string>();
+
+        [Tooltip("Items consumed daily by population")]
+        public List<string> consumedGoods = new List<string>();
+
+        [Tooltip("Daily supply generation rate for produced goods (0-1)")]
+        [Range(0f, 1f)] public float productionRate = 0.1f;
+
+        [Tooltip("Daily consumption rate for consumed goods (0-1)")]
+        [Range(0f, 1f)] public float consumptionRate = 0.05f;
 
         public bool Contains(int x, int y)
         {
