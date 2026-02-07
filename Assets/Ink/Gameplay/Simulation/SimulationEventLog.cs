@@ -164,6 +164,16 @@ namespace InkSim
         }
 
         /// <summary>
+        /// Log an event without showing a toast or banner. Used for ambient events
+        /// like NPC conversations that don't need visual indicators.
+        /// </summary>
+        public static void LogSilent(string message)
+        {
+            if (Instance == null) return;
+            Instance.LogEvent(message);
+        }
+
+        /// <summary>
         /// Get recent event messages for display/debug.
         /// </summary>
         public static IReadOnlyList<string> RecentEvents => Instance?._recentEvents;

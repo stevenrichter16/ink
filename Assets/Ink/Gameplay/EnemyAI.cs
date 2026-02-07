@@ -96,6 +96,8 @@ namespace InkSim
             if (target == null)
             {
                 state = AIState.Idle;
+                // Idle enemies may converse with nearby faction mates
+                ConversationManager.Instance?.TryInitiateConversation(this);
                 return;
             }
 

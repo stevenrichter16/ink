@@ -108,6 +108,10 @@ private IEnumerator ProcessEnemyTurns()
                     npc.TakeTurn();
             }
 
+            // Tick autonomous NPC-to-NPC conversations
+            if (ConversationManager.Instance != null)
+                ConversationManager.Instance.TickConversations(TurnNumber);
+
             // Wait for all movement to complete (minimum 0.1s for consistent pacing)
             float minWait = 0.1f;
             float elapsed = 0f;

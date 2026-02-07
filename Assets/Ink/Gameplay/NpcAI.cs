@@ -117,6 +117,13 @@ namespace InkSim
             if (NpcGoalSystem.TryExecuteGoal(this))
                 return;
 
+            // Idle NPCs may attempt conversation with nearby entities
+            if (hostileTarget == null && ConversationManager.Instance != null)
+            {
+                if (ConversationManager.Instance.TryInitiateConversation(this))
+                    return;
+            }
+
             switch (behavior)
             {
                 case AIBehavior.Stationary:

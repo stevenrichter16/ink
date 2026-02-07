@@ -1,0 +1,142 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace InkSim
+{
+    /// <summary>
+    /// Static registry that loads all ConversationTemplate assets from Resources/Conversations
+    /// and provides filtered lookups by topic and faction relationship.
+    /// </summary>
+    public static class ConversationDatabase
+    {
+        private static bool _initialized;
+        private static readonly List<ConversationTemplate> _all = new List<ConversationTemplate>();
+        private static readonly Dictionary<ConversationTopicTag, List<ConversationTemplate>> _byTopic
+            = new Dictionary<ConversationTopicTag, List<ConversationTemplate>>();
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            _initialized = false;
+            _all.Clear();
+            _byTopic.Clear();
+        }
+
+        public static void EnsureInitialized()
+        {
+            if (_initialized) return;
+            _initialized = true;
+
+            // Load from Resources (for designer-authored .asset files)
+            var assets = Resources.LoadAll<ConversationTemplate>("Conversations");
+            foreach (var t in assets)
+                Register(t);
+
+            // Seed from code (built-in authored content)
+            var seeded = ConversationContentSeeder.Seed();
+            if (seeded != null)
+            {
+                foreach (var t in seeded)
+                    Register(t);
+            }
+
+            Debug.Log($"[ConversationDatabase] Loaded {_all.Count} conversation templates across {_byTopic.Count} topics.");
+        }
+
+        private static void Register(ConversationTemplate t)
+        {
+            if (t == null) return;
+            _all.Add(t);
+            if (!_byTopic.ContainsKey(t.topic))
+                _byTopic[t.topic] = new List<ConversationTemplate>();
+            _byTopic[t.topic].Add(t);
+        }
+
+        /// <summary>
+        /// Get all templates for a given topic.
+        /// </summary>
+        public static List<ConversationTemplate> GetByTopic(ConversationTopicTag topic)
+        {
+            EnsureInitialized();
+            if (_byTopic.TryGetValue(topic, out var list))
+                return list;
+            return null;
+        }
+
+        /// <summary>
+        /// Find a valid conversation template for two entities given their topic and faction relationship.
+        /// Returns null if no valid template is found.
+        /// </summary>
+        public static ConversationTemplate FindTemplate(
+            FactionMember initiator,
+            FactionMember responder,
+            ConversationTopicTag topic)
+        {
+            EnsureInitialized();
+
+            if (!_byTopic.TryGetValue(topic, out var candidates) || candidates.Count == 0)
+                return null;
+
+            bool sameFaction = HostilityService.AreSameFaction(
+                initiator.GetComponent<GridEntity>(),
+                responder.GetComponent<GridEntity>());
+
+            int interRep = 0;
+            if (!sameFaction && initiator.faction != null && responder.faction != null)
+                interRep = ReputationSystem.GetInterRep(initiator.faction.id, responder.faction.id);
+
+            // Build filtered list
+            var valid = new List<ConversationTemplate>();
+            for (int i = 0; i < candidates.Count; i++)
+            {
+                var t = candidates[i];
+
+                // Same/cross faction filter
+                if (t.sameFactionOnly && !sameFaction) continue;
+                if (t.crossFactionOnly && sameFaction) continue;
+
+                // Inter-rep range filter (cross-faction only)
+                if (!sameFaction)
+                {
+                    if (interRep < t.minInterRep || interRep > t.maxInterRep)
+                        continue;
+                }
+
+                // Rank difference filter (same-faction only)
+                if (t.requireRankDifference && sameFaction)
+                {
+                    if (!HasRankDifference(initiator, responder))
+                        continue;
+                }
+
+                valid.Add(t);
+            }
+
+            if (valid.Count == 0) return null;
+            return valid[Random.Range(0, valid.Count)];
+        }
+
+        /// <summary>
+        /// Check if the initiator outranks the responder.
+        /// Rank hierarchy: high > mid > low.
+        /// </summary>
+        private static bool HasRankDifference(FactionMember a, FactionMember b)
+        {
+            int rankA = RankToInt(a.rankId);
+            int rankB = RankToInt(b.rankId);
+            return rankA > rankB;
+        }
+
+        private static int RankToInt(string rankId)
+        {
+            if (string.IsNullOrEmpty(rankId)) return 0;
+            switch (rankId)
+            {
+                case "high": return 3;
+                case "mid": return 2;
+                case "low": return 1;
+                default: return 0;
+            }
+        }
+    }
+}

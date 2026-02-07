@@ -154,6 +154,11 @@ namespace InkSim
             var enemy = GetComponent<EnemyAI>();
             if (enemy != null && target != null)
                 enemy.SetRetaliationTarget(target);
+
+            // Interrupt any active conversation
+            var ge = GetComponent<GridEntity>();
+            if (ge != null)
+                ConversationManager.Instance?.InterruptConversation(ge);
         }
 
         public void EnterCalm()

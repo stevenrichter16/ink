@@ -355,6 +355,11 @@ private void PlaceEntities()
             simGO.AddComponent<WorldSimulationService>();
             simGO.AddComponent<SimulationEventLog>();
 
+            // NPC conversation system (speech bubbles above entity heads)
+            simGO.AddComponent<ConversationManager>();
+            simGO.AddComponent<SpeechBubblePool>();
+            simGO.AddComponent<ConversationLogPanel>();
+
             // === TRAINING DUMMY ===
             CreateDummy(Tiles.Barrel, 10, 10);
 
@@ -419,6 +424,27 @@ private void PlaceEntities()
 
             // Demon wardens — Boneyard
             CreateNPC(Tiles.Demon, 40, 2, NpcAI.AIBehavior.Wander, null, demonFaction, "mid", null);
+
+            // === CROSS-FACTION BORDER PATROLS ===
+            // These pairs are placed near faction borders so they can converse.
+            // Entities from rival factions within conversation range (4 tiles) will
+            // exchange threats, wary dialogue, or alliance chat depending on inter-rep.
+
+            // Market Row / Outer Slums border — Inkbound meets Goblin (interRep -15, tense)
+            CreateNPC(Tiles.NPC1, 10, 16, NpcAI.AIBehavior.Wander, null, inkboundFaction, "low", humanSpecies);
+            CreateNPC(Tiles.Goblin, 10, 13, NpcAI.AIBehavior.Wander, null, goblinFaction, "low", null);
+
+            // Temple Ward / Wilds border — Inkguard meets Snake (interRep -24 to -10, tense)
+            CreateNPC(Tiles.NPC2, 20, 18, NpcAI.AIBehavior.Wander, null, inkguardFaction, "low", humanSpecies);
+            CreateNPC(Tiles.Snake, 20, 21, NpcAI.AIBehavior.Wander, null, snakeFaction, "low", null);
+
+            // Iron Keep / Boneyard border — Skeleton meets Demon (interRep +35, allied)
+            CreateNPC(Tiles.Skeleton, 40, 9, NpcAI.AIBehavior.Wander, null, skeletonFaction, "low", null);
+            CreateNPC(Tiles.Demon, 40, 6, NpcAI.AIBehavior.Wander, null, demonFaction, "low", null);
+
+            // Wilds / Market Row border — Ghost meets Goblin (interRep -10, tense)
+            CreateNPC(Tiles.Ghost, 14, 20, NpcAI.AIBehavior.Wander, null, ghostFaction, "low", null);
+            CreateNPC(Tiles.Goblin, 16, 20, NpcAI.AIBehavior.Wander, null, goblinFaction, "low", null);
 
             // === FOREST - DENSE TREE PLACEMENT ===
             // Upper left forest
@@ -623,6 +649,9 @@ private void PlaceEntities()
             // === TRADE RELATIONS ===
             BootstrapTradeRelations();
 
+            // === INTER-FACTION REPUTATION ===
+            BootstrapInterFactionRep();
+
             // === DEMAND EVENTS ===
             BootstrapDemandEvents();
         }
@@ -711,6 +740,57 @@ private void PlaceEntities()
                 bannedItems = new List<string>(),
                 exclusiveItems = new List<string>()
             });
+        }
+
+        private void BootstrapInterFactionRep()
+        {
+            // Allies: start with positive inter-rep so friendly cross-faction conversations fire
+            ReputationSystem.SetInterRep("faction_inkguard", "faction_inkbound", 40);
+            ReputationSystem.SetInterRep("faction_inkbound", "faction_inkguard", 40);
+            ReputationSystem.SetInterRep("faction_goblin", "faction_demon", 35);
+            ReputationSystem.SetInterRep("faction_demon", "faction_goblin", 35);
+            ReputationSystem.SetInterRep("faction_skeleton", "faction_ghost", 30);
+            ReputationSystem.SetInterRep("faction_ghost", "faction_skeleton", 30);
+
+            // Enemies: start with negative inter-rep so hostile cross-faction conversations fire
+            ReputationSystem.SetInterRep("faction_inkguard", "faction_skeleton", -50);
+            ReputationSystem.SetInterRep("faction_skeleton", "faction_inkguard", -50);
+            ReputationSystem.SetInterRep("faction_inkguard", "faction_goblin", -30);
+            ReputationSystem.SetInterRep("faction_goblin", "faction_inkguard", -30);
+            ReputationSystem.SetInterRep("faction_inkbound", "faction_skeleton", -35);
+            ReputationSystem.SetInterRep("faction_skeleton", "faction_inkbound", -35);
+
+            // Neutral/wary: small negative or near-zero for factions that don't like each other but aren't at war
+            ReputationSystem.SetInterRep("faction_inkbound", "faction_goblin", -15);
+            ReputationSystem.SetInterRep("faction_goblin", "faction_inkbound", -15);
+            ReputationSystem.SetInterRep("faction_inkguard", "faction_demon", -40);
+            ReputationSystem.SetInterRep("faction_demon", "faction_inkguard", -40);
+            ReputationSystem.SetInterRep("faction_inkbound", "faction_demon", -20);
+            ReputationSystem.SetInterRep("faction_demon", "faction_inkbound", -20);
+
+            // Ghost vs human factions — uneasy, the Inkbound restrict their trade
+            ReputationSystem.SetInterRep("faction_ghost", "faction_inkguard", -24);
+            ReputationSystem.SetInterRep("faction_inkguard", "faction_ghost", -24);
+            ReputationSystem.SetInterRep("faction_ghost", "faction_inkbound", -15);
+            ReputationSystem.SetInterRep("faction_inkbound", "faction_ghost", -15);
+            ReputationSystem.SetInterRep("faction_ghost", "faction_goblin", -10);
+            ReputationSystem.SetInterRep("faction_goblin", "faction_ghost", -10);
+            ReputationSystem.SetInterRep("faction_ghost", "faction_demon", 10);
+            ReputationSystem.SetInterRep("faction_demon", "faction_ghost", 10);
+
+            // Snake (faction_snake) — hostile to most, wary of goblins
+            ReputationSystem.SetInterRep("faction_snake", "faction_inkguard", -45);
+            ReputationSystem.SetInterRep("faction_inkguard", "faction_snake", -45);
+            ReputationSystem.SetInterRep("faction_snake", "faction_inkbound", -35);
+            ReputationSystem.SetInterRep("faction_inkbound", "faction_snake", -35);
+            ReputationSystem.SetInterRep("faction_snake", "faction_goblin", -10);
+            ReputationSystem.SetInterRep("faction_goblin", "faction_snake", -10);
+            ReputationSystem.SetInterRep("faction_snake", "faction_skeleton", -20);
+            ReputationSystem.SetInterRep("faction_skeleton", "faction_snake", -20);
+            ReputationSystem.SetInterRep("faction_snake", "faction_demon", -15);
+            ReputationSystem.SetInterRep("faction_demon", "faction_snake", -15);
+
+            Debug.Log("[TestMapBuilder] Seeded inter-faction reputation for 6 factions.");
         }
 
         private void BootstrapDemandEvents()
