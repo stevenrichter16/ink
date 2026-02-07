@@ -16,8 +16,8 @@ namespace InkSim
         public int pixelsPerUnit = 16;
 
         [Header("Map Size")]
-        public int mapWidth = 48;
-        public int mapHeight = 28;
+        public int mapWidth = 120;
+        public int mapHeight = 70;
 
         [Header("Debug")]
         public bool showTileCatalog = false;
@@ -31,7 +31,7 @@ namespace InkSim
             public const int FloorStone = 49;
             public const int FloorDirt = 68;
             public const int FloorDirtDark = 69;
-            
+
             // Walls - corners
             public const int WallCornerTL = 0;
             public const int WallTop = 1;
@@ -42,21 +42,21 @@ namespace InkSim
             public const int WallBottom = 145;
             public const int WallCornerBR = 146;
             public const int WallSolid = 17;
-            
+
             // Doors
             public const int DoorWood = 19;
-            
+
             // Trees
             public const int TreeSmall = 80;
             public const int TreeMedium = 81;
             public const int TreeLarge = 82;
             public const int TreePine = 83;
             public const int Mushroom = 84;
-            
+
             // Characters
             public const int HeroKnight = 6;
             public const int Wizard = 15;
-            
+
             // Enemies
             public const int Snake = 20;
             public const int Ghost = 25;
@@ -64,11 +64,11 @@ namespace InkSim
             public const int Goblin = 26;
             public const int Skeleton = 27;
             public const int Demon = 28;
-            
+
             // NPCs
             public const int NPC1 = 44;
             public const int NPC2 = 45;
-            
+
             // Items
             public const int Sword = 70;
             public const int Armor = 42;
@@ -82,15 +82,15 @@ namespace InkSim
             public const int Barrel = 38;
             public const int Ladder = 88;
             public const int Candle = 140;
-            
+
             // Buildings
             public const int Castle = 118;
-            
+
             // Graveyard
             public const int Cross = 103;
             public const int Tombstone = 104;
             public const int CrossLarge = 119;
-            
+
             // UI - Hearts
             public const int HeartFull = 100;
             public const int HeartHalf = 99;
@@ -109,13 +109,13 @@ namespace InkSim
         private void Start()
         {
             // Force correct map size (overrides any serialized Inspector values)
-            mapWidth = 48;
-            mapHeight = 28;
-            
+            mapWidth = 120;
+            mapHeight = 70;
+
             Debug.Log($"[TestMapBuilder] START - mapWidth={mapWidth}, mapHeight={mapHeight}");
-            
+
             LoadAllTiles();
-            
+
             if (showTileCatalog)
             {
                 ShowTileCatalog();
@@ -125,7 +125,7 @@ namespace InkSim
                 SetupGameplaySystems();
                 BuildMap();
             }
-                
+
             SetupCamera();
         }
 
@@ -153,7 +153,7 @@ namespace InkSim
             extraFiles.CopyTo(files, tileFiles.Count);
 
             _allSprites = new Sprite[files.Length];
-            
+
             for (int i = 0; i < files.Length; i++)
             {
                 byte[] data = File.ReadAllBytes(files[i]);
@@ -162,7 +162,7 @@ namespace InkSim
                 tex.filterMode = FilterMode.Point;
                 _allSprites[i] = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.one * 0.5f, pixelsPerUnit);
             }
-            
+
             Debug.Log($"[TestMapBuilder] Loaded {_allSprites.Length} tiles");
         }
 
@@ -188,14 +188,14 @@ namespace InkSim
         private void BuildMap()
         {
             Debug.Log($"[TestMapBuilder] BuildMap() - Creating {mapWidth}x{mapHeight} map");
-            
+
             // Create layer parents
             _floorLayer = new GameObject("FloorLayer").transform;
             _floorLayer.SetParent(transform);
-            
+
             _wallLayer = new GameObject("WallLayer").transform;
             _wallLayer.SetParent(transform);
-            
+
             _entityLayer = new GameObject("EntityLayer").transform;
             _entityLayer.SetParent(transform);
 
@@ -224,98 +224,102 @@ namespace InkSim
 
         private int GetFloorTile(int x, int y)
         {
-            // Dungeon interior uses stone floor
-            if (IsInsideDungeon(x, y))
+            // Building interiors use stone floor
+            if (IsInsideBuilding(x, y))
                 return Tiles.FloorStone;
-            
+
             // Everything else is dark dirt/grass
             return Tiles.FloorDirt;
         }
-        
-        // Define dungeon bounds (L-shaped building + Iron Keep outpost)
-private bool IsInsideDungeon(int x, int y)
-        {
-            // Main room: x=18-38, y=5-14
-            bool inMainRoom = x >= 18 && x <= 38 && y >= 5 && y <= 14;
-            // Upper wing: x=28-38, y=14-22
-            bool inUpperWing = x >= 28 && x <= 38 && y >= 14 && y <= 22;
-            // Iron Keep outpost: x=38-46, y=10-16
-            bool inOutpost = x >= 38 && x <= 46 && y >= 10 && y <= 16;
 
-            return inMainRoom || inUpperWing || inOutpost;
+        // Define building interiors across all territories
+        private bool IsInsideBuilding(int x, int y)
+        {
+            // Market Row Shop: x=10-20, y=50-58
+            if (x >= 10 && x <= 20 && y >= 50 && y <= 58) return true;
+            // Temple Ward Temple: x=50-62, y=50-58
+            if (x >= 50 && x <= 62 && y >= 50 && y <= 58) return true;
+            // Iron Keep Fortress: x=90-104, y=50-58
+            if (x >= 90 && x <= 104 && y >= 50 && y <= 58) return true;
+            // Outer Slums Shack: x=10-20, y=8-16
+            if (x >= 10 && x <= 20 && y >= 8 && y <= 16) return true;
+            // Boneyard Crypt: x=92-102, y=8-16
+            if (x >= 92 && x <= 102 && y >= 8 && y <= 16) return true;
+
+            return false;
         }
 
-private void BuildWalls()
+        private void BuildWalls()
         {
-            // === L-SHAPED DUNGEON COMPLEX ===
-            // Based on screenshot: dungeon in center-right of map
-            
-            // Main room bounds (lower large room)
-            int mainLeft = 18;
-            int mainRight = 38;
-            int mainBottom = 5;
-            int mainTop = 14;
-            
-            // Upper wing bounds (corridor + small room)
-            int upperLeft = 28;
-            int upperRight = 38;
-            int upperBottom = 14;
-            int upperTop = 22;
-            
-            // === MAIN ROOM (lower section) ===
+            // === MARKET ROW SHOP (NW territory, x=10-20, y=50-58) ===
+            BuildRectRoom(10, 20, 50, 58, "left", 54);
+
+            // === TEMPLE WARD TEMPLE (N-Center territory, x=50-62, y=50-58) ===
+            BuildRectRoom(50, 62, 50, 58, "bottom", 56);
+            // Internal divider
+            for (int x = 51; x < 57; x++)
+                PlaceWall(Tiles.WallSolid, x, 54);
+
+            // === IRON KEEP FORTRESS (NE territory, x=90-104, y=50-58) ===
+            BuildRectRoom(90, 104, 50, 58, "left", 54);
+            // Internal divider with gap
+            for (int x = 94; x < 101; x++)
+            {
+                if (x != 97) // Gap for passage
+                    PlaceWall(Tiles.WallSolid, x, 54);
+            }
+
+            // === OUTER SLUMS SHACK (SW territory, x=10-20, y=8-16) ===
+            BuildRectRoom(10, 20, 8, 16, "top", 15);
+
+            // === BONEYARD CRYPT (SE territory, x=92-102, y=8-16) ===
+            BuildRectRoom(92, 102, 8, 16, "left", 12);
+        }
+
+        /// <summary>
+        /// Builds a rectangular walled room with a single door.
+        /// </summary>
+        private void BuildRectRoom(int left, int right, int bottom, int top, string doorSide, int doorPos)
+        {
             // Bottom wall
-            PlaceWall(Tiles.WallCornerBL, mainLeft, mainBottom);
-            for (int x = mainLeft + 1; x < mainRight; x++)
-                PlaceWall(Tiles.WallBottom, x, mainBottom);
-            PlaceWall(Tiles.WallCornerBR, mainRight, mainBottom);
-            
-            // Left wall with door
-            int doorY = 10;
-            for (int y = mainBottom + 1; y < mainTop; y++)
+            PlaceWall(Tiles.WallCornerBL, left, bottom);
+            for (int x = left + 1; x < right; x++)
             {
-                if (y == doorY)
-                    PlaceTile(Tiles.DoorWood, mainLeft, y, _wallLayer, 1); // Door is walkable
+                if (doorSide == "bottom" && x == doorPos)
+                    PlaceTile(Tiles.DoorWood, x, bottom, _wallLayer, 1);
                 else
-                    PlaceWall(Tiles.WallLeft, mainLeft, y);
+                    PlaceWall(Tiles.WallBottom, x, bottom);
             }
-            
-            // Top wall of main room (partial - connects to upper wing)
-            PlaceWall(Tiles.WallCornerTL, mainLeft, mainTop);
-            for (int x = mainLeft + 1; x < upperLeft; x++)
-                PlaceWall(Tiles.WallTop, x, mainTop);
-            
-            // Right wall of main room (partial - connects to upper wing)
-            for (int y = mainBottom + 1; y < upperBottom; y++)
-                PlaceWall(Tiles.WallRight, mainRight, y);
-            
-            // === UPPER WING (corridor + room) ===
-            // Left wall of upper wing
-            for (int y = mainTop; y < upperTop; y++)
-                PlaceWall(Tiles.WallLeft, upperLeft, y);
-            PlaceWall(Tiles.WallCornerTL, upperLeft, upperTop);
-            
+            PlaceWall(Tiles.WallCornerBR, right, bottom);
+
             // Top wall
-            for (int x = upperLeft + 1; x < upperRight; x++)
-                PlaceWall(Tiles.WallTop, x, upperTop);
-            PlaceWall(Tiles.WallCornerTR, upperRight, upperTop);
-            
-            // Right wall
-            for (int y = mainBottom + 1; y < upperTop; y++)
-                PlaceWall(Tiles.WallRight, upperRight, y);
-            
-            // === INTERNAL WALLS ===
-            // Horizontal divider in main room
-            int dividerY = 10;
-            for (int x = mainLeft + 6; x < mainRight - 2; x++)
+            PlaceWall(Tiles.WallCornerTL, left, top);
+            for (int x = left + 1; x < right; x++)
             {
-                if (x != mainLeft + 10) // Gap for passage
-                    PlaceWall(Tiles.WallSolid, x, dividerY);
+                if (doorSide == "top" && x == doorPos)
+                    PlaceTile(Tiles.DoorWood, x, top, _wallLayer, 1);
+                else
+                    PlaceWall(Tiles.WallTop, x, top);
             }
-            
-            // Small room divider in upper wing
-            int smallRoomDivider = upperTop - 4;
-            for (int x = upperLeft + 1; x < upperRight - 4; x++)
-                PlaceWall(Tiles.WallSolid, x, smallRoomDivider);
+            PlaceWall(Tiles.WallCornerTR, right, top);
+
+            // Left wall
+            for (int y = bottom + 1; y < top; y++)
+            {
+                if (doorSide == "left" && y == doorPos)
+                    PlaceTile(Tiles.DoorWood, left, y, _wallLayer, 1);
+                else
+                    PlaceWall(Tiles.WallLeft, left, y);
+            }
+
+            // Right wall
+            for (int y = bottom + 1; y < top; y++)
+            {
+                if (doorSide == "right" && y == doorPos)
+                    PlaceTile(Tiles.DoorWood, right, y, _wallLayer, 1);
+                else
+                    PlaceWall(Tiles.WallRight, right, y);
+            }
         }
 
         private void PlaceWall(int tileIndex, int x, int y)
@@ -324,12 +328,12 @@ private void BuildWalls()
             _wallPositions.Add(new Vector2Int(x, y));
         }
 
-private void PlaceEntities()
+        private void PlaceEntities()
         {
-            Debug.Log($"[TestMapBuilder] PlaceEntities() - Creating entities based on reference screenshot");
+            Debug.Log($"[TestMapBuilder] PlaceEntities() - Creating entities across 6 isolated territories");
 
-            // === PLAYER (left side of map) ===
-            _player = CreatePlayer(Tiles.HeroKnight, 8, 12);
+            // === PLAYER (Market Row territory) ===
+            _player = CreatePlayer(Tiles.HeroKnight, 8, 55);
 
             // === UI SYSTEMS ===
             CreateHealthUI(_player);
@@ -360,8 +364,8 @@ private void PlaceEntities()
             simGO.AddComponent<SpeechBubblePool>();
             simGO.AddComponent<ConversationLogPanel>();
 
-            // === TRAINING DUMMY ===
-            CreateDummy(Tiles.Barrel, 10, 10);
+            // === TRAINING DUMMY (Market Row) ===
+            CreateDummy(Tiles.Barrel, 12, 55);
 
             // Load factions
             var inkboundFaction = Resources.Load<FactionDefinition>("Factions/Inkbound");
@@ -377,271 +381,345 @@ private void PlaceEntities()
             // Load species
             var humanSpecies = Resources.Load<SpeciesDefinition>("Species/Human");
 
-            // === NPCs (Original) ===
-            // General Store — Market Row, Inkbound faction
-            CreateNPC(Tiles.NPC1, 6, 18, NpcAI.AIBehavior.Stationary, "general_store", inkboundFaction, "low", humanSpecies);
-            // Weaponsmith inside dungeon — Inkguard faction
-            CreateNPC(Tiles.NPC2, 32, 8, NpcAI.AIBehavior.Stationary, "weaponsmith", inkguardFaction, "mid", humanSpecies);
+            // ================================================================
+            // TERRITORY 1: MARKET ROW (NW, x:3-30, y:44-66) — Inkbound/Scribes
+            // ================================================================
 
-            // === NPCs (New) ===
-            // Inkbound Scribe — Market Row
-            CreateNPC(Tiles.NPC1, 10, 20, NpcAI.AIBehavior.Stationary, "scribe_shop", inkboundScribesFaction ?? inkboundFaction, "mid", humanSpecies);
-            // Goblin Fence — Outer Slums
-            CreateNPC(Tiles.Goblin, 8, 6, NpcAI.AIBehavior.Stationary, "goblin_fence", goblinFaction, "high", null);
-            // Skeleton Armory — Iron Keep
-            CreateNPC(Tiles.Skeleton, 40, 12, NpcAI.AIBehavior.Stationary, "bone_armory", skeletonFaction, "high", null);
-            // Demon Broker — Boneyard
-            CreateNPC(Tiles.Demon, 43, 4, NpcAI.AIBehavior.Stationary, "demon_broker", demonFaction, "mid", null);
-            // Snake Herbalist — Wilds
-            CreateNPC(Tiles.Snake, 20, 24, NpcAI.AIBehavior.Stationary, "snake_herbalist", snakeFaction, "mid", null);
-            // Inkguard Patrol Captain — Quest Giver, Temple Ward
-            CreateNPC(Tiles.Wizard, 26, 14, NpcAI.AIBehavior.Stationary, null, inkguardFaction, "high", humanSpecies);
+            // Merchants
+            CreateNPC(Tiles.NPC1, 14, 52, NpcAI.AIBehavior.Stationary, "general_store", inkboundFaction, "low", humanSpecies);
+            CreateNPC(Tiles.NPC1, 18, 54, NpcAI.AIBehavior.Stationary, "scribe_shop", inkboundScribesFaction ?? inkboundFaction, "mid", humanSpecies);
 
-            // === FACTION SOLDIERS (Wandering NPCs — driven by NpcGoalSystem) ===
-            // These non-merchant NPCs patrol their faction's territory.
-            // The NpcGoalSystem upgrades their movement to patrol/guard goals each economic day.
+            // Inkbound sentinels — patrol Market Row
+            CreateNPC(Tiles.NPC1, 8, 60, NpcAI.AIBehavior.Wander, null, inkboundFaction, "mid", humanSpecies);
+            CreateNPC(Tiles.NPC1, 16, 48, NpcAI.AIBehavior.Wander, null, inkboundFaction, "low", humanSpecies);
 
-            // Inkguard soldiers — Temple Ward & Iron Keep
-            CreateNPC(Tiles.NPC2, 24, 10, NpcAI.AIBehavior.Wander, null, inkguardFaction, "mid", humanSpecies);
-            CreateNPC(Tiles.NPC2, 30, 16, NpcAI.AIBehavior.Wander, null, inkguardFaction, "mid", humanSpecies);
-            CreateNPC(Tiles.NPC1, 36, 14, NpcAI.AIBehavior.Wander, null, inkguardFaction, "low", humanSpecies);
+            // Market Row trees & vegetation
+            PlaceTile(Tiles.TreeLarge, 4, 64, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 7, 62, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 3, 58, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 24, 60, _entityLayer, 5);
+            PlaceTile(Tiles.TreeLarge, 26, 65, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 28, 48, _entityLayer, 5);
+            PlaceTile(Tiles.Mushroom, 5, 56, _entityLayer, 5);
+            PlaceTile(Tiles.Mushroom, 22, 46, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 4, 48, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 27, 56, _entityLayer, 5);
 
-            // Inkbound sentinels — Market Row
-            CreateNPC(Tiles.NPC1, 8, 22, NpcAI.AIBehavior.Wander, null, inkboundFaction, "mid", humanSpecies);
-            CreateNPC(Tiles.NPC1, 12, 20, NpcAI.AIBehavior.Wander, null, inkboundFaction, "low", humanSpecies);
+            // Market Row building interior decorations
+            PlaceTile(Tiles.Barrel, 12, 51, _entityLayer, 8);
+            PlaceTile(Tiles.Barrel, 13, 51, _entityLayer, 8);
+            PlaceTile(Tiles.ChestClosed, 19, 56, _entityLayer, 8);
+            PlaceTile(Tiles.Candle, 15, 57, _entityLayer, 8);
 
-            // Goblin scouts — Outer Slums & Wilds border
-            CreateNPC(Tiles.Goblin, 4, 4, NpcAI.AIBehavior.Wander, null, goblinFaction, "mid", null);
-            CreateNPC(Tiles.Goblin, 10, 8, NpcAI.AIBehavior.Wander, null, goblinFaction, "low", null);
+            // Market Row enemies
+            CreateEnemy(Tiles.Ghost, 6, 62, "ghost", 2);
+            CreateEnemy(Tiles.Ghost, 25, 60, "ghost", 3);
+            CreateEnemy(Tiles.Slime, 22, 48, "slime", 1);
+            CreateEnemy(Tiles.Slime, 5, 50, "slime", 1);
 
-            // Skeleton sentries — Iron Keep & Boneyard
-            CreateNPC(Tiles.Skeleton, 38, 10, NpcAI.AIBehavior.Wander, null, skeletonFaction, "mid", null);
-            CreateNPC(Tiles.Skeleton, 42, 4, NpcAI.AIBehavior.Wander, null, skeletonFaction, "low", null);
+            // Market Row items
+            CreateItemPickup("potion", Tiles.Potion, 10, 46, 1);
+            CreateItemPickup("coin", Tiles.Coin, 20, 56, 5);
+            CreateItemPickup("leather_armor", Tiles.Armor, 15, 52, 1);
 
-            // Snake rangers — Wilds
-            CreateNPC(Tiles.Snake, 18, 22, NpcAI.AIBehavior.Wander, null, snakeFaction, "mid", null);
-            CreateNPC(Tiles.Snake, 24, 26, NpcAI.AIBehavior.Wander, null, snakeFaction, "low", null);
+            // ================================================================
+            // TERRITORY 2: TEMPLE WARD (N-Center, x:44-70, y:44-66) — Inkguard
+            // ================================================================
 
-            // Demon wardens — Boneyard
-            CreateNPC(Tiles.Demon, 40, 2, NpcAI.AIBehavior.Wander, null, demonFaction, "mid", null);
+            // Merchants & quest givers
+            CreateNPC(Tiles.NPC2, 54, 52, NpcAI.AIBehavior.Stationary, "weaponsmith", inkguardFaction, "mid", humanSpecies);
+            CreateNPC(Tiles.Wizard, 58, 56, NpcAI.AIBehavior.Stationary, null, inkguardFaction, "high", humanSpecies);
 
-            // === CROSS-FACTION BORDER PATROLS ===
-            // These pairs are placed near faction borders so they can converse.
-            // Entities from rival factions within conversation range (4 tiles) will
-            // exchange threats, wary dialogue, or alliance chat depending on inter-rep.
+            // Inkguard soldiers — patrol Temple Ward
+            CreateNPC(Tiles.NPC2, 48, 58, NpcAI.AIBehavior.Wander, null, inkguardFaction, "mid", humanSpecies);
+            CreateNPC(Tiles.NPC2, 64, 48, NpcAI.AIBehavior.Wander, null, inkguardFaction, "mid", humanSpecies);
+            CreateNPC(Tiles.NPC1, 56, 62, NpcAI.AIBehavior.Wander, null, inkguardFaction, "low", humanSpecies);
 
-            // Market Row / Outer Slums border — Inkbound meets Goblin (interRep -15, tense)
-            CreateNPC(Tiles.NPC1, 10, 16, NpcAI.AIBehavior.Wander, null, inkboundFaction, "low", humanSpecies);
-            CreateNPC(Tiles.Goblin, 10, 13, NpcAI.AIBehavior.Wander, null, goblinFaction, "low", null);
+            // Temple Ward trees
+            PlaceTile(Tiles.TreeLarge, 46, 64, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 68, 62, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 45, 48, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 69, 46, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 50, 64, _entityLayer, 5);
+            PlaceTile(Tiles.TreeLarge, 66, 60, _entityLayer, 5);
 
-            // Temple Ward / Wilds border — Inkguard meets Snake (interRep -24 to -10, tense)
-            CreateNPC(Tiles.NPC2, 20, 18, NpcAI.AIBehavior.Wander, null, inkguardFaction, "low", humanSpecies);
-            CreateNPC(Tiles.Snake, 20, 21, NpcAI.AIBehavior.Wander, null, snakeFaction, "low", null);
+            // Temple Ward building interior
+            PlaceTile(Tiles.Candle, 52, 56, _entityLayer, 8);
+            PlaceTile(Tiles.Candle, 60, 56, _entityLayer, 8);
+            PlaceTile(Tiles.ChestBig, 61, 52, _entityLayer, 8);
+            PlaceTile(Tiles.Barrel, 51, 52, _entityLayer, 8);
 
-            // Iron Keep / Boneyard border — Skeleton meets Demon (interRep +35, allied)
-            CreateNPC(Tiles.Skeleton, 40, 9, NpcAI.AIBehavior.Wander, null, skeletonFaction, "low", null);
-            CreateNPC(Tiles.Demon, 40, 6, NpcAI.AIBehavior.Wander, null, demonFaction, "low", null);
+            // Temple Ward enemies
+            CreateEnemy(Tiles.Skeleton, 50, 48, "skeleton", 2);
+            CreateEnemy(Tiles.Goblin, 62, 60, "goblin", 2);
+            CreateEnemy(Tiles.Ghost, 66, 64, "ghost", 3);
+            CreateEnemy(Tiles.Goblin, 68, 52, "goblin", 3);
 
-            // Wilds / Market Row border — Ghost meets Goblin (interRep -10, tense)
-            CreateNPC(Tiles.Ghost, 14, 20, NpcAI.AIBehavior.Wander, null, ghostFaction, "low", null);
-            CreateNPC(Tiles.Goblin, 16, 20, NpcAI.AIBehavior.Wander, null, goblinFaction, "low", null);
+            // Temple Ward items
+            CreateItemPickup("ink", Tiles.Candle, 55, 56, 3);
+            CreateItemPickup("key", Tiles.Key, 60, 53, 1);
+            CreateItemPickup("iron_armor", Tiles.Armor, 52, 52, 1);
 
-            // === FOREST - DENSE TREE PLACEMENT ===
-            // Upper left forest
-            PlaceTile(Tiles.TreeLarge, 2, 25, _entityLayer, 5);
-            PlaceTile(Tiles.TreePine, 5, 24, _entityLayer, 5);
-            PlaceTile(Tiles.TreeMedium, 8, 26, _entityLayer, 5);
-            PlaceTile(Tiles.TreeSmall, 3, 22, _entityLayer, 5);
-            PlaceTile(Tiles.TreePine, 10, 25, _entityLayer, 5);
-            PlaceTile(Tiles.TreeLarge, 14, 24, _entityLayer, 5);
-            PlaceTile(Tiles.Mushroom, 6, 23, _entityLayer, 5);
-            PlaceTile(Tiles.Mushroom, 12, 26, _entityLayer, 5);
+            // ================================================================
+            // TERRITORY 3: IRON KEEP (NE, x:84-112, y:44-66) — Skeleton/Ghost
+            // ================================================================
 
-            // Left side forest (dense)
-            PlaceTile(Tiles.TreeLarge, 1, 20, _entityLayer, 5);
-            PlaceTile(Tiles.TreePine, 4, 18, _entityLayer, 5);
-            PlaceTile(Tiles.TreeMedium, 2, 15, _entityLayer, 5);
-            PlaceTile(Tiles.TreeSmall, 6, 16, _entityLayer, 5);
-            PlaceTile(Tiles.TreeLarge, 3, 12, _entityLayer, 5);
-            PlaceTile(Tiles.TreePine, 1, 9, _entityLayer, 5);
-            PlaceTile(Tiles.TreeMedium, 5, 8, _entityLayer, 5);
-            PlaceTile(Tiles.TreeSmall, 2, 6, _entityLayer, 5);
-            PlaceTile(Tiles.Mushroom, 4, 14, _entityLayer, 5);
-            PlaceTile(Tiles.Mushroom, 7, 11, _entityLayer, 5);
+            // Merchants
+            CreateNPC(Tiles.Skeleton, 96, 52, NpcAI.AIBehavior.Stationary, "bone_armory", skeletonFaction, "high", null);
 
-            // Lower left forest
-            PlaceTile(Tiles.TreeLarge, 1, 4, _entityLayer, 5);
-            PlaceTile(Tiles.TreePine, 4, 2, _entityLayer, 5);
-            PlaceTile(Tiles.TreeMedium, 7, 3, _entityLayer, 5);
-            PlaceTile(Tiles.TreeSmall, 10, 1, _entityLayer, 5);
-            PlaceTile(Tiles.TreeLarge, 12, 3, _entityLayer, 5);
-            PlaceTile(Tiles.TreePine, 15, 2, _entityLayer, 5);
-            PlaceTile(Tiles.Mushroom, 6, 1, _entityLayer, 5);
-            PlaceTile(Tiles.Mushroom, 9, 4, _entityLayer, 5);
+            // Skeleton sentries & Ghost guards — patrol Iron Keep
+            CreateNPC(Tiles.Skeleton, 88, 58, NpcAI.AIBehavior.Wander, null, skeletonFaction, "mid", null);
+            CreateNPC(Tiles.Skeleton, 102, 48, NpcAI.AIBehavior.Wander, null, skeletonFaction, "low", null);
+            CreateNPC(Tiles.Ghost, 86, 62, NpcAI.AIBehavior.Wander, null, ghostFaction, "low", null);
 
-            // Trees around dungeon entrance
-            PlaceTile(Tiles.TreeLarge, 14, 12, _entityLayer, 5);
-            PlaceTile(Tiles.TreePine, 16, 8, _entityLayer, 5);
-            PlaceTile(Tiles.TreeMedium, 12, 6, _entityLayer, 5);
-            PlaceTile(Tiles.Mushroom, 15, 10, _entityLayer, 5);
+            // Iron Keep trees (sparse — military zone)
+            PlaceTile(Tiles.TreeLarge, 85, 64, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 110, 62, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 86, 46, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 108, 46, _entityLayer, 5);
 
-            // Right side forest (sparse - near graveyard)
-            PlaceTile(Tiles.TreeLarge, 42, 18, _entityLayer, 5);
-            PlaceTile(Tiles.TreePine, 44, 22, _entityLayer, 5);
-            PlaceTile(Tiles.TreeMedium, 40, 24, _entityLayer, 5);
-            PlaceTile(Tiles.TreeSmall, 46, 20, _entityLayer, 5);
+            // Iron Keep building interior
+            PlaceTile(Tiles.Barrel, 92, 51, _entityLayer, 8);
+            PlaceTile(Tiles.Barrel, 93, 51, _entityLayer, 8);
+            PlaceTile(Tiles.Candle, 98, 57, _entityLayer, 8);
+            PlaceTile(Tiles.ChestClosed, 103, 56, _entityLayer, 8);
+            PlaceTile(Tiles.ChestBig, 101, 52, _entityLayer, 8);
 
-            // Bottom center trees
-            PlaceTile(Tiles.TreeLarge, 20, 2, _entityLayer, 5);
-            PlaceTile(Tiles.TreePine, 25, 1, _entityLayer, 5);
-            PlaceTile(Tiles.TreeMedium, 30, 3, _entityLayer, 5);
+            // Iron Keep enemies
+            CreateEnemy(Tiles.Skeleton, 94, 56, "skeleton", 3);
+            CreateEnemy(Tiles.Skeleton, 106, 50, "skeleton", 3);
+            CreateEnemy(Tiles.Ghost, 100, 60, "ghost", 4);
+            CreateEnemy(Tiles.Ghost, 86, 48, "ghost", 4);
+            CreateEnemy(Tiles.Skeleton, 110, 58, "skeleton", 4);
 
-            // Wilds area trees (new — give the Wilds visual identity)
-            PlaceTile(Tiles.TreeLarge, 16, 22, _entityLayer, 5);
-            PlaceTile(Tiles.TreePine, 18, 26, _entityLayer, 5);
-            PlaceTile(Tiles.TreeMedium, 22, 25, _entityLayer, 5);
-            PlaceTile(Tiles.TreeSmall, 24, 21, _entityLayer, 5);
-            PlaceTile(Tiles.TreePine, 27, 23, _entityLayer, 5);
-            PlaceTile(Tiles.TreeLarge, 15, 20, _entityLayer, 5);
-            PlaceTile(Tiles.Mushroom, 17, 24, _entityLayer, 5);
-            PlaceTile(Tiles.Mushroom, 26, 22, _entityLayer, 5);
+            // Iron Keep items
+            CreateItemPickup("shield", Tiles.Armor, 98, 53, 1);
+            CreateItemPickup("steel_armor", Tiles.Armor, 103, 52, 1);
+            CreateItemPickup("potion", Tiles.Potion, 92, 56, 2);
 
-            // === GRAVEYARD (bottom right) ===
-            PlaceTile(Tiles.Cross, 40, 4, _entityLayer, 5);
-            PlaceTile(Tiles.Cross, 42, 3, _entityLayer, 5);
-            PlaceTile(Tiles.CrossLarge, 44, 5, _entityLayer, 5);
-            PlaceTile(Tiles.Tombstone, 41, 6, _entityLayer, 5);
-            PlaceTile(Tiles.Cross, 45, 2, _entityLayer, 5);
-            PlaceTile(Tiles.Tombstone, 43, 7, _entityLayer, 5);
-            // Extended Boneyard graveyard props
-            PlaceTile(Tiles.Cross, 37, 1, _entityLayer, 5);
-            PlaceTile(Tiles.Tombstone, 38, 5, _entityLayer, 5);
-            PlaceTile(Tiles.CrossLarge, 46, 3, _entityLayer, 5);
-            PlaceTile(Tiles.Cross, 39, 7, _entityLayer, 5);
+            // ================================================================
+            // TERRITORY 4: OUTER SLUMS (SW, x:3-30, y:3-25) — Goblin
+            // ================================================================
 
-            // === DUNGEON INTERIOR DECORATIONS ===
-            // Main room furniture
-            PlaceTile(Tiles.Barrel, 20, 7, _entityLayer, 8);
-            PlaceTile(Tiles.Barrel, 21, 7, _entityLayer, 8);
-            PlaceTile(Tiles.ChestClosed, 35, 7, _entityLayer, 8);
-            PlaceTile(Tiles.Candle, 25, 12, _entityLayer, 8);
-            PlaceTile(Tiles.Candle, 33, 12, _entityLayer, 8);
-            // Upper wing
-            PlaceTile(Tiles.ChestBig, 36, 20, _entityLayer, 8);
-            PlaceTile(Tiles.Candle, 30, 16, _entityLayer, 8);
-            PlaceTile(Tiles.Barrel, 34, 16, _entityLayer, 8);
+            // Merchants
+            CreateNPC(Tiles.Goblin, 14, 12, NpcAI.AIBehavior.Stationary, "goblin_fence", goblinFaction, "high", null);
 
-            // === IRON KEEP OUTPOST (east side, x=38-46, y=10-16) ===
-            // Bottom wall
-            PlaceWall(Tiles.WallCornerBL, 38, 10);
-            for (int x = 39; x < 46; x++)
-                PlaceWall(Tiles.WallBottom, x, 10);
-            PlaceWall(Tiles.WallCornerBR, 46, 10);
-            // Top wall
-            PlaceWall(Tiles.WallCornerTL, 38, 16);
-            for (int x = 39; x < 46; x++)
-                PlaceWall(Tiles.WallTop, x, 16);
-            PlaceWall(Tiles.WallCornerTR, 46, 16);
-            // Left wall with door
-            for (int y = 11; y < 16; y++)
-            {
-                if (y == 13)
-                    PlaceTile(Tiles.DoorWood, 38, y, _wallLayer, 1); // Door on west side
-                else
-                    PlaceWall(Tiles.WallLeft, 38, y);
-            }
-            // Right wall
-            for (int y = 11; y < 16; y++)
-                PlaceWall(Tiles.WallRight, 46, y);
-            // Interior decorations
-            PlaceTile(Tiles.Barrel, 40, 11, _entityLayer, 8);
-            PlaceTile(Tiles.Barrel, 41, 11, _entityLayer, 8);
-            PlaceTile(Tiles.Candle, 42, 15, _entityLayer, 8);
-            PlaceTile(Tiles.ChestClosed, 45, 14, _entityLayer, 8);
+            // Goblin scouts — patrol Outer Slums
+            CreateNPC(Tiles.Goblin, 6, 8, NpcAI.AIBehavior.Wander, null, goblinFaction, "mid", null);
+            CreateNPC(Tiles.Goblin, 22, 18, NpcAI.AIBehavior.Wander, null, goblinFaction, "low", null);
 
-            // === ENEMIES (Original — with bug fixes) ===
-            // Forest enemies (left/upper area)
-            CreateEnemy(Tiles.Ghost, 5, 20, "ghost", 3);
-            CreateEnemy(Tiles.Ghost, 8, 14, "ghost", 2);
-            CreateEnemy(Tiles.Slime, 10, 22, "slime", 1);
-            CreateEnemy(Tiles.Slime, 3, 8, "slime", 1);
-            CreateEnemy(Tiles.Goblin, 12, 18, "goblin", 2);  // BUG FIX: was "skeleton"
-            CreateEnemy(Tiles.Snake, 9, 19, "snake", 1);
-            CreateEnemy(Tiles.Snake, 11, 21, "snake", 1);
-            CreateEnemy(Tiles.Snake, 13, 17, "snake", 1);
+            // Outer Slums trees & debris
+            PlaceTile(Tiles.TreeLarge, 4, 22, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 8, 24, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 26, 20, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 3, 6, _entityLayer, 5);
+            PlaceTile(Tiles.TreeLarge, 28, 4, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 24, 22, _entityLayer, 5);
+            PlaceTile(Tiles.Mushroom, 7, 18, _entityLayer, 5);
+            PlaceTile(Tiles.Mushroom, 20, 6, _entityLayer, 5);
 
-            // Enemies near dungeon
-            CreateEnemy(Tiles.Ghost, 15, 14, "ghost", 3);
-            CreateEnemy(Tiles.Slime, 14, 6, "slime", 1);
+            // Outer Slums building interior
+            PlaceTile(Tiles.Barrel, 12, 10, _entityLayer, 8);
+            PlaceTile(Tiles.Barrel, 13, 10, _entityLayer, 8);
+            PlaceTile(Tiles.ChestClosed, 18, 14, _entityLayer, 8);
 
-            // Inside dungeon
-            CreateEnemy(Tiles.Skeleton, 22, 8, "skeleton", 2);
-            CreateEnemy(Tiles.Skeleton, 28, 12, "skeleton", 2);
-            CreateEnemy(Tiles.Ghost, 34, 8, "ghost", 3);    // BUG FIX: was "skeleton"
-            CreateEnemy(Tiles.Ghost, 32, 19, "ghost", 4);
+            // Outer Slums enemies
+            CreateEnemy(Tiles.Goblin, 8, 4, "goblin", 1);
+            CreateEnemy(Tiles.Snake, 22, 10, "snake", 1);
+            CreateEnemy(Tiles.Slime, 12, 20, "slime", 2);
+            CreateEnemy(Tiles.Goblin, 26, 14, "goblin", 2);
+            CreateEnemy(Tiles.Goblin, 5, 16, "goblin", 1);
 
-            // Graveyard skeletons
-            CreateEnemy(Tiles.Skeleton, 42, 5, "skeleton", 2);
-            CreateEnemy(Tiles.Skeleton, 45, 4, "skeleton", 3);
-            CreateEnemy(Tiles.Ghost, 40, 8, "ghost", 4);     // BUG FIX: was "skeleton"
+            // Outer Slums items
+            CreateItemPickup("sword", Tiles.Sword, 16, 10, 1);
+            CreateItemPickup("coin", Tiles.Coin, 8, 16, 5);
+            CreateItemPickup("potion", Tiles.Potion, 24, 6, 1);
 
-            // === ENEMIES (New) ===
-            // Wilds (upper forest, y=19-27)
-            CreateEnemy(Tiles.Goblin, 16, 24, "goblin", 2);
-            CreateEnemy(Tiles.Goblin, 22, 22, "goblin", 2);
-            CreateEnemy(Tiles.Snake, 19, 26, "snake", 2);
-            CreateEnemy(Tiles.Snake, 25, 20, "snake", 1);
+            // ================================================================
+            // TERRITORY 5: THE WILDS (S-Center, x:44-70, y:3-25) — Snake/Slime
+            // ================================================================
 
-            // Iron Keep (east side, x=33-47, y=9-22)
-            CreateEnemy(Tiles.Skeleton, 36, 12, "skeleton", 3);
-            CreateEnemy(Tiles.Skeleton, 40, 16, "skeleton", 3);
-            CreateEnemy(Tiles.Ghost, 38, 20, "ghost", 4);
-            CreateEnemy(Tiles.Goblin, 42, 14, "goblin", 3);
-            CreateEnemy(Tiles.Demon, 44, 18, "demon", 5);
+            // Merchants
+            CreateNPC(Tiles.Snake, 56, 14, NpcAI.AIBehavior.Stationary, "snake_herbalist", snakeFaction, "mid", null);
 
-            // Boneyard (bottom-right, x=36-47, y=0-8)
-            CreateEnemy(Tiles.Demon, 38, 3, "demon", 4);
-            CreateEnemy(Tiles.Skeleton, 44, 2, "skeleton", 3);
-            CreateEnemy(Tiles.Ghost, 46, 6, "ghost", 5);
-            CreateEnemy(Tiles.Goblin, 40, 1, "goblin", 2);
+            // Snake rangers — patrol The Wilds
+            CreateNPC(Tiles.Snake, 50, 8, NpcAI.AIBehavior.Wander, null, snakeFaction, "mid", null);
+            CreateNPC(Tiles.Snake, 64, 18, NpcAI.AIBehavior.Wander, null, snakeFaction, "low", null);
 
-            // Dungeon Interior — new additions
-            CreateEnemy(Tiles.Goblin, 25, 11, "goblin", 2);
-            CreateEnemy(Tiles.Demon, 35, 18, "demon", 6);    // Boss-tier demon in upper wing
+            // Wilds dense forest (no building — wilderness territory)
+            PlaceTile(Tiles.TreeLarge, 46, 22, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 50, 24, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 54, 22, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 58, 24, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 62, 20, _entityLayer, 5);
+            PlaceTile(Tiles.TreeLarge, 66, 22, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 48, 4, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 52, 6, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 60, 4, _entityLayer, 5);
+            PlaceTile(Tiles.TreeLarge, 68, 6, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 45, 12, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 67, 14, _entityLayer, 5);
+            PlaceTile(Tiles.Mushroom, 49, 16, _entityLayer, 5);
+            PlaceTile(Tiles.Mushroom, 63, 10, _entityLayer, 5);
+            PlaceTile(Tiles.Mushroom, 55, 20, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 46, 8, _entityLayer, 5);
+            PlaceTile(Tiles.TreeLarge, 64, 24, _entityLayer, 5);
 
-            // Outer Slums — new additions
-            CreateEnemy(Tiles.Goblin, 6, 5, "goblin", 1);
-            CreateEnemy(Tiles.Snake, 8, 2, "snake", 1);
-            CreateEnemy(Tiles.Slime, 11, 10, "slime", 2);
+            // Wilds enemies
+            CreateEnemy(Tiles.Snake, 48, 12, "snake", 1);
+            CreateEnemy(Tiles.Snake, 60, 18, "snake", 2);
+            CreateEnemy(Tiles.Slime, 54, 6, "slime", 1);
+            CreateEnemy(Tiles.Slime, 66, 10, "slime", 1);
+            CreateEnemy(Tiles.Goblin, 68, 16, "goblin", 2);
+            CreateEnemy(Tiles.Snake, 46, 20, "snake", 2);
 
-            // === PICKUPABLE ITEMS (Original) ===
-            // Forest items
-            CreateItemPickup("potion", Tiles.Potion, 7, 16, 1);
-            CreateItemPickup("coin", Tiles.Coin, 4, 10, 5);
-            CreateItemPickup("sword", Tiles.Sword, 11, 4, 1);
+            // Wilds items
+            CreateItemPickup("dagger", Tiles.Sword, 54, 10, 1);
+            CreateItemPickup("potion", Tiles.Potion, 62, 16, 1);
+            CreateItemPickup("coin", Tiles.Coin, 50, 22, 8);
 
-            // Dungeon items
-            CreateItemPickup("potion", Tiles.Potion, 23, 7, 1);
-            CreateItemPickup("coin", Tiles.Coin, 30, 8, 10);
-            CreateItemPickup("key", Tiles.Key, 35, 12, 1);
-            CreateItemPickup("gem", Tiles.Gem, 36, 19, 1);
-            CreateItemPickup("leather_armor", Tiles.Armor, 20, 12, 1);
-            CreateItemPickup("iron_armor", Tiles.Armor, 32, 16, 1);
+            // ================================================================
+            // TERRITORY 6: THE BONEYARD (SE, x:84-112, y:3-25) — Demon
+            // ================================================================
 
-            // Graveyard loot
-            CreateItemPickup("potion", Tiles.Potion, 44, 6, 2);
-            CreateItemPickup("coin", Tiles.Coin, 41, 3, 15);
+            // Merchants
+            CreateNPC(Tiles.Demon, 96, 12, NpcAI.AIBehavior.Stationary, "demon_broker", demonFaction, "mid", null);
 
-            // === PICKUPABLE ITEMS (New — missing item types) ===
-            CreateItemPickup("dagger", Tiles.Sword, 17, 22, 1);         // Wilds
-            CreateItemPickup("shield", Tiles.Armor, 37, 15, 1);         // Iron Keep
-            CreateItemPickup("ring", Tiles.Gem, 29, 20, 1);             // Upper wing area
-            CreateItemPickup("potion_large", Tiles.Potion, 41, 7, 1);   // Boneyard
-            CreateItemPickup("ink", Tiles.Candle, 24, 16, 3);           // Temple Ward
-            CreateItemPickup("steel_armor", Tiles.Armor, 45, 16, 1);    // Iron Keep outpost
-            CreateItemPickup("gem", Tiles.Gem, 39, 2, 2);               // Boneyard
-            CreateItemPickup("coin", Tiles.Coin, 15, 23, 8);            // Wilds
-            CreateItemPickup("potion", Tiles.Potion, 34, 14, 2);        // Iron Keep approach
+            // Demon wardens — patrol Boneyard
+            CreateNPC(Tiles.Demon, 88, 18, NpcAI.AIBehavior.Wander, null, demonFaction, "mid", null);
+            CreateNPC(Tiles.Demon, 106, 8, NpcAI.AIBehavior.Wander, null, demonFaction, "mid", null);
+
+            // Boneyard graveyard props
+            PlaceTile(Tiles.Cross, 86, 6, _entityLayer, 5);
+            PlaceTile(Tiles.Cross, 90, 4, _entityLayer, 5);
+            PlaceTile(Tiles.CrossLarge, 94, 6, _entityLayer, 5);
+            PlaceTile(Tiles.Tombstone, 88, 8, _entityLayer, 5);
+            PlaceTile(Tiles.Cross, 100, 4, _entityLayer, 5);
+            PlaceTile(Tiles.Tombstone, 104, 6, _entityLayer, 5);
+            PlaceTile(Tiles.CrossLarge, 108, 4, _entityLayer, 5);
+            PlaceTile(Tiles.Cross, 110, 8, _entityLayer, 5);
+            PlaceTile(Tiles.Tombstone, 86, 20, _entityLayer, 5);
+            PlaceTile(Tiles.Cross, 102, 22, _entityLayer, 5);
+
+            // Boneyard crypt interior
+            PlaceTile(Tiles.Candle, 94, 14, _entityLayer, 8);
+            PlaceTile(Tiles.Candle, 100, 14, _entityLayer, 8);
+            PlaceTile(Tiles.ChestBig, 98, 10, _entityLayer, 8);
+            PlaceTile(Tiles.Barrel, 94, 10, _entityLayer, 8);
+
+            // Sparse trees around Boneyard edges
+            PlaceTile(Tiles.TreeLarge, 85, 24, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 110, 22, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 112, 4, _entityLayer, 5);
+
+            // Boneyard enemies
+            CreateEnemy(Tiles.Demon, 88, 6, "demon", 4);
+            CreateEnemy(Tiles.Skeleton, 100, 20, "skeleton", 3);
+            CreateEnemy(Tiles.Ghost, 108, 14, "ghost", 5);
+            CreateEnemy(Tiles.Goblin, 92, 22, "goblin", 2);
+            CreateEnemy(Tiles.Demon, 106, 4, "demon", 5);
+
+            // Boneyard items
+            CreateItemPickup("gem", Tiles.Gem, 94, 8, 2);
+            CreateItemPickup("potion_large", Tiles.Potion, 102, 16, 1);
+            CreateItemPickup("coin", Tiles.Coin, 98, 20, 15);
+            CreateItemPickup("gem", Tiles.Gem, 108, 10, 1);
+
+            // ================================================================
+            // WILDERNESS CORRIDORS — Forest between territories
+            // ================================================================
+
+            // Horizontal corridor: Market Row ↔ Temple Ward (x:31-43, y:50-60)
+            PlaceTile(Tiles.TreeLarge, 33, 58, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 36, 54, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 40, 60, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 34, 48, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 38, 52, _entityLayer, 5);
+            PlaceTile(Tiles.TreeLarge, 42, 56, _entityLayer, 5);
+
+            // Horizontal corridor: Temple Ward ↔ Iron Keep (x:71-83, y:50-60)
+            PlaceTile(Tiles.TreeLarge, 73, 56, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 76, 52, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 80, 58, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 74, 48, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 78, 54, _entityLayer, 5);
+            PlaceTile(Tiles.TreeLarge, 82, 50, _entityLayer, 5);
+
+            // Vertical corridor: Market Row ↔ Outer Slums (x:10-20, y:26-43)
+            PlaceTile(Tiles.TreeLarge, 6, 36, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 10, 30, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 14, 38, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 8, 42, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 18, 34, _entityLayer, 5);
+            PlaceTile(Tiles.TreeLarge, 22, 28, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 4, 32, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 26, 40, _entityLayer, 5);
+
+            // Vertical corridor: Temple Ward ↔ Wilds (x:50-60, y:26-43)
+            PlaceTile(Tiles.TreeLarge, 48, 36, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 54, 30, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 60, 38, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 52, 42, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 58, 34, _entityLayer, 5);
+            PlaceTile(Tiles.TreeLarge, 64, 28, _entityLayer, 5);
+
+            // Vertical corridor: Iron Keep ↔ Boneyard (x:92-102, y:26-43)
+            PlaceTile(Tiles.TreeLarge, 88, 36, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 94, 30, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 100, 38, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 90, 42, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 96, 34, _entityLayer, 5);
+            PlaceTile(Tiles.TreeLarge, 104, 28, _entityLayer, 5);
+
+            // Horizontal corridor: Outer Slums ↔ Wilds (x:31-43, y:10-18)
+            PlaceTile(Tiles.TreeLarge, 33, 16, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 36, 12, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 40, 18, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 34, 6, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 38, 10, _entityLayer, 5);
+
+            // Horizontal corridor: Wilds ↔ Boneyard (x:71-83, y:10-18)
+            PlaceTile(Tiles.TreeLarge, 73, 14, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 76, 10, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 80, 18, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 74, 6, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 78, 12, _entityLayer, 5);
+            PlaceTile(Tiles.TreeLarge, 82, 8, _entityLayer, 5);
+
+            // Center wilderness (x:31-83, y:26-43) — dense forest
+            PlaceTile(Tiles.TreeLarge, 35, 32, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 40, 36, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 46, 30, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 50, 40, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 56, 32, _entityLayer, 5);
+            PlaceTile(Tiles.TreeLarge, 62, 38, _entityLayer, 5);
+            PlaceTile(Tiles.TreeMedium, 68, 34, _entityLayer, 5);
+            PlaceTile(Tiles.TreeSmall, 72, 30, _entityLayer, 5);
+            PlaceTile(Tiles.TreePine, 76, 40, _entityLayer, 5);
+            PlaceTile(Tiles.TreeLarge, 80, 36, _entityLayer, 5);
+            PlaceTile(Tiles.Mushroom, 44, 34, _entityLayer, 5);
+            PlaceTile(Tiles.Mushroom, 58, 38, _entityLayer, 5);
+            PlaceTile(Tiles.Mushroom, 70, 32, _entityLayer, 5);
+
+            // ================================================================
+            // CROSS-FACTION BORDER PATROLS (in wilderness between territories)
+            // ================================================================
+
+            // Market Row / Outer Slums border — Inkbound meets Goblin (tense)
+            CreateNPC(Tiles.NPC1, 15, 38, NpcAI.AIBehavior.Wander, null, inkboundFaction, "low", humanSpecies);
+            CreateNPC(Tiles.Goblin, 15, 32, NpcAI.AIBehavior.Wander, null, goblinFaction, "low", null);
+
+            // Temple Ward / Wilds border — Inkguard meets Snake (tense)
+            CreateNPC(Tiles.NPC2, 57, 38, NpcAI.AIBehavior.Wander, null, inkguardFaction, "low", humanSpecies);
+            CreateNPC(Tiles.Snake, 57, 32, NpcAI.AIBehavior.Wander, null, snakeFaction, "low", null);
+
+            // Iron Keep / Boneyard border — Skeleton meets Demon (allied)
+            CreateNPC(Tiles.Skeleton, 98, 38, NpcAI.AIBehavior.Wander, null, skeletonFaction, "low", null);
+            CreateNPC(Tiles.Demon, 98, 32, NpcAI.AIBehavior.Wander, null, demonFaction, "low", null);
+
+            // Market Row / Temple Ward border — Ghost meets Goblin (tense)
+            CreateNPC(Tiles.Ghost, 35, 56, NpcAI.AIBehavior.Wander, null, ghostFaction, "low", null);
+            CreateNPC(Tiles.Goblin, 39, 56, NpcAI.AIBehavior.Wander, null, goblinFaction, "low", null);
 
             // === PALIMPSEST INSCRIPTIONS ===
             BootstrapInscriptions();
@@ -660,15 +738,15 @@ private void PlaceEntities()
         {
             // Register palimpsest layers directly (using grid coordinates for correct distance checks)
             // Market Row — CHEAP zone (prices lower near general store)
-            RegisterPalimpsestLayer(6, 18, new List<string> { "DEFLATE:0.2" }, radius: 4, turns: -1);
+            RegisterPalimpsestLayer(14, 52, new List<string> { "DEFLATE:0.2" }, radius: 6, turns: -1);
             // Iron Keep — TAX_HEAVY zone (military taxation)
-            RegisterPalimpsestLayer(40, 14, new List<string> { "TAX:+0.15" }, radius: 5, turns: -1);
+            RegisterPalimpsestLayer(96, 54, new List<string> { "TAX:+0.15" }, radius: 7, turns: -1);
             // Boneyard — SCARCITY + EXPENSIVE zone (harsh economy)
-            RegisterPalimpsestLayer(43, 4, new List<string> { "INFLATE:0.3", "SCARCITY:gem" }, radius: 4, turns: -1);
+            RegisterPalimpsestLayer(96, 12, new List<string> { "INFLATE:0.3", "SCARCITY:gem" }, radius: 6, turns: -1);
             // Wilds — FREE_TRADE zone (no taxes, no restrictions)
-            RegisterPalimpsestLayer(20, 24, new List<string> { "FREE_TRADE" }, radius: 5, turns: -1);
+            RegisterPalimpsestLayer(56, 14, new List<string> { "FREE_TRADE" }, radius: 7, turns: -1);
             // Temple Ward — TRUCE zone (no combat near the temple)
-            RegisterPalimpsestLayer(26, 14, new List<string> { "TRUCE", "TAX_BREAK:0.05" }, radius: 4, turns: -1);
+            RegisterPalimpsestLayer(56, 54, new List<string> { "TRUCE", "TAX_BREAK:0.05" }, radius: 6, turns: -1);
         }
 
         private void RegisterPalimpsestLayer(int gridX, int gridY, List<string> tokens, int radius = 5, int turns = -1, int priority = 0)
@@ -842,11 +920,11 @@ private PlayerController CreatePlayer(int tileIndex, int x, int y)
             PlayerController player = go.AddComponent<PlayerController>();
             player.gridX = x;
             player.gridY = y;
-            
+
             // Add leveling system
             Levelable levelable = go.AddComponent<Levelable>();
             player.levelable = levelable;
-            
+
             // Load and assign player-specific level profile
             var playerProfile = Resources.Load<LevelProfile>("Levels/PlayerHighHp");
             if (playerProfile != null)
@@ -854,7 +932,7 @@ private PlayerController CreatePlayer(int tileIndex, int x, int y)
                 levelable.profile = playerProfile;
                 levelable.RecomputeStats();
             }
-            
+
             return player;
         }
 
@@ -929,7 +1007,7 @@ private void CreateSpellSystem()
 private void CreateEnemy(int tileIndex, int x, int y, string lootTableId, int level = 1, SpeciesDefinition species = null, FactionDefinition faction = null, string factionRankId = "low")
         {
             Debug.Log($"[TestMapBuilder] CreateEnemy at ({x}, {y}) - {lootTableId} level {level}");
-            
+
             GameObject enemyGO = new GameObject($"Enemy_{x}_{y}");
             enemyGO.transform.SetParent(_entityLayer);
             enemyGO.transform.localPosition = new Vector3(x * tileSize, y * tileSize, 0);
@@ -992,7 +1070,7 @@ private void CreateEnemy(int tileIndex, int x, int y, string lootTableId, int le
             npc.gridX = x;
             npc.gridY = y;
             npc.behavior = behavior;
-            
+
             // Add merchant component if specified
             if (!string.IsNullOrEmpty(merchantId))
             {
@@ -1046,7 +1124,7 @@ private void CreateDummy(int tileIndex, int x, int y)
 private void CreateItemPickup(string itemId, int tileIndex, int x, int y, int quantity = 1)
         {
             Debug.Log($"[TestMapBuilder] CreateItemPickup at ({x}, {y}) - {itemId} x{quantity}");
-            
+
             GameObject go = new GameObject($"Pickup_{itemId}_{x}_{y}");
             go.transform.SetParent(_entityLayer);
             go.transform.localPosition = new Vector3(x * tileSize, y * tileSize, 0);
@@ -1093,7 +1171,7 @@ private void CreateItemPickup(string itemId, int tileIndex, int x, int y, int qu
             cam.orthographic = true;
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = new Color(0.15f, 0.12f, 0.18f);
-            
+
             if (showTileCatalog)
             {
                 cam.transform.position = new Vector3(mapWidth * tileSize * 0.5f - tileSize * 0.5f, -mapHeight * tileSize * 0.5f + tileSize * 0.5f, -10);
@@ -1103,7 +1181,7 @@ private void CreateItemPickup(string itemId, int tileIndex, int x, int y, int qu
             {
                 // Keep viewport size same as original 14-tile height map
                 cam.orthographicSize = 14 * tileSize * 0.6f;
-                
+
                 // Add camera controller for smooth follow
                 CameraController camController = cam.gameObject.AddComponent<CameraController>();
                 camController.target = _player?.transform;
@@ -1112,7 +1190,7 @@ private void CreateItemPickup(string itemId, int tileIndex, int x, int y, int qu
                 camController.deadZone = new Vector2(0.5f, 0.3f);
                 camController.enableLookAhead = true;
                 camController.lookAheadDistance = 0.8f;
-                
+
                 // Snap to player initially
                 camController.SnapToTarget();
             }
@@ -1121,21 +1199,21 @@ private void CreateItemPickup(string itemId, int tileIndex, int x, int y, int qu
         private void ShowTileCatalog()
         {
             int cols = 16;
-            
+
             for (int i = 0; i < _allSprites.Length; i++)
             {
                 int x = i % cols;
                 int y = i / cols;
-                
+
                 GameObject go = new GameObject($"tile_{i:D4}");
                 go.transform.SetParent(transform);
                 go.transform.localPosition = new Vector3(x * tileSize, -y * tileSize, 0);
-                
+
                 SpriteRenderer sr = go.AddComponent<SpriteRenderer>();
                 sr.sprite = _allSprites[i];
                 sr.sortingOrder = 0;
             }
-            
+
             mapWidth = cols;
             mapHeight = (_allSprites.Length + cols - 1) / cols;
         }

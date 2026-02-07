@@ -16,10 +16,10 @@ MonoBehaviour:
   displayName: Market Row
   population: 0.6
   economicValue: 0.9
-  minX: 4
-  maxX: 14
-  minY: 16
-  maxY: 26
+  minX: 3
+  maxX: 30
+  minY: 44
+  maxY: 66
   producedGoods:
   - potion
   - gem

@@ -16,10 +16,10 @@ MonoBehaviour:
   displayName: The Wilds
   population: 0.3
   economicValue: 0.4
-  minX: 13
-  maxX: 28
-  minY: 19
-  maxY: 27
+  minX: 44
+  maxX: 70
+  minY: 3
+  maxY: 25
   producedGoods:
   - potion
   - leather_armor

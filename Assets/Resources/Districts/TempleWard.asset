@@ -16,10 +16,10 @@ MonoBehaviour:
   displayName: Temple Ward
   population: 0.4
   economicValue: 0.5
-  minX: 18
-  maxX: 32
-  minY: 8
-  maxY: 18
+  minX: 44
+  maxX: 70
+  minY: 44
+  maxY: 66
   producedGoods:
   - ink
   - potion_large
