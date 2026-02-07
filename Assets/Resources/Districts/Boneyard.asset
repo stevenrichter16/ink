@@ -16,10 +16,10 @@ MonoBehaviour:
   displayName: The Boneyard
   population: 0.2
   economicValue: 0.3
-  minX: 36
-  maxX: 47
-  minY: 0
-  maxY: 8
+  minX: 84
+  maxX: 112
+  minY: 3
+  maxY: 25
   producedGoods:
   - gem
   - dagger

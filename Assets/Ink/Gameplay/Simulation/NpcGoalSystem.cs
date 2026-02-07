@@ -195,7 +195,7 @@ namespace InkSim
                             currentWaypointIndex = 0,
                             target = waypoints[0],
                             targetDistrictId = patrolDistrict.Id,
-                            turnsRemaining = 30,
+                            turnsRemaining = 60,
                         };
                     }
                 }
@@ -216,7 +216,7 @@ namespace InkSim
                             currentWaypointIndex = 0,
                             target = waypoints[0],
                             targetDistrictId = districtState.Id,
-                            turnsRemaining = 20, // Shorter duration
+                            turnsRemaining = 40, // Shorter duration
                         };
                     }
                 }
@@ -250,7 +250,7 @@ namespace InkSim
                         type = NpcGoalType.Migrate,
                         target = new Vector2Int(centerX, centerY),
                         targetDistrictId = bestDistrict.Id,
-                        turnsRemaining = 40,
+                        turnsRemaining = 120,
                     };
                 }
             }

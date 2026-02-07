@@ -16,10 +16,10 @@ MonoBehaviour:
   displayName: Iron Keep
   population: 0.5
   economicValue: 0.7
-  minX: 33
-  maxX: 47
-  minY: 9
-  maxY: 22
+  minX: 84
+  maxX: 112
+  minY: 44
+  maxY: 66
   producedGoods:
   - sword
   - shield
