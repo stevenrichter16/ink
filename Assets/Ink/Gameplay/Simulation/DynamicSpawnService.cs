@@ -10,8 +10,8 @@ namespace InkSim
     public static class DynamicSpawnService
     {
         // Population caps
-        private const int MaxEnemiesPerFactionPerDistrict = 6;
-        private const int GlobalEnemyCap = 50;
+        private const int MaxEnemiesPerFactionPerDistrict = 12;
+        private const int GlobalEnemyCap = 120;
 
         // Last raid info (for quest generation)
         public static string LastRaidDistrictId { get; private set; }

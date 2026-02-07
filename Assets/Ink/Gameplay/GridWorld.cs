@@ -11,8 +11,8 @@ namespace InkSim
         public static GridWorld Instance { get; private set; }
 
         [Header("Grid Settings")]
-        public int width = 24;
-        public int height = 14;
+        public int width = 120;
+        public int height = 70;
         public float tileSize = 0.5f;
 
         private bool[,] _walkable;

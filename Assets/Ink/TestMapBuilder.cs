@@ -419,7 +419,7 @@ namespace InkSim
 
             // Market Row items
             CreateItemPickup("potion", Tiles.Potion, 10, 46, 1);
-            CreateItemPickup("coin", Tiles.Coin, 20, 56, 5);
+            CreateItemPickup("coin", Tiles.Coin, 19, 56, 5);
             CreateItemPickup("leather_armor", Tiles.Armor, 15, 52, 1);
 
             // ================================================================
@@ -459,6 +459,7 @@ namespace InkSim
             CreateItemPickup("ink", Tiles.Candle, 55, 56, 3);
             CreateItemPickup("key", Tiles.Key, 60, 53, 1);
             CreateItemPickup("iron_armor", Tiles.Armor, 52, 52, 1);
+            CreateItemPickup("ring", Tiles.Gem, 65, 54, 1);
 
             // ================================================================
             // TERRITORY 3: IRON KEEP (NE, x:84-112, y:44-66) — Skeleton/Ghost
@@ -620,8 +621,8 @@ namespace InkSim
             CreateEnemy(Tiles.Demon, 106, 4, "demon", 5);
 
             // Boneyard items
-            CreateItemPickup("gem", Tiles.Gem, 94, 8, 2);
-            CreateItemPickup("potion_large", Tiles.Potion, 102, 16, 1);
+            CreateItemPickup("gem", Tiles.Gem, 94, 9, 2);
+            CreateItemPickup("potion_large", Tiles.Potion, 100, 15, 1);
             CreateItemPickup("coin", Tiles.Coin, 98, 20, 15);
             CreateItemPickup("gem", Tiles.Gem, 108, 10, 1);
 
@@ -747,6 +748,8 @@ namespace InkSim
             RegisterPalimpsestLayer(56, 14, new List<string> { "FREE_TRADE" }, radius: 7, turns: -1);
             // Temple Ward — TRUCE zone (no combat near the temple)
             RegisterPalimpsestLayer(56, 54, new List<string> { "TRUCE", "TAX_BREAK:0.05" }, radius: 6, turns: -1);
+            // Outer Slums — BLACK_MARKET zone (stolen goods flow freely)
+            RegisterPalimpsestLayer(14, 12, new List<string> { "DEFLATE:0.1", "FREE_TRADE" }, radius: 5, turns: -1);
         }
 
         private void RegisterPalimpsestLayer(int gridX, int gridY, List<string> tokens, int radius = 5, int turns = -1, int priority = 0)
