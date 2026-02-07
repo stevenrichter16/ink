@@ -745,6 +745,9 @@ namespace InkSim
                 }
             }
 
+            // Palimpsest zone info — show active inscription effects at this tile
+            AppendPalimpsestInfo(sb, x, y, cyan, white, gold);
+
             sb.AppendLine();
             sb.AppendLine($"<color=#666666>Position: ({x}, {y})</color>");
 
@@ -880,6 +883,97 @@ namespace InkSim
                 sb.AppendLine($"<color={white}>Heals:</color>  <color={gold}>{data.healAmount} HP</color>");
             if (data.value > 0)
                 sb.AppendLine($"<color={white}>Value:</color>  <color={gold}>{data.value}</color>");
+        }
+
+        private void AppendPalimpsestInfo(StringBuilder sb, int x, int y, string cyan, string white, string gold)
+        {
+            var rules = OverlayResolver.GetRulesAt(x, y);
+
+            // Check if there's anything worth showing
+            bool hasEffects = rules.truce
+                || !string.IsNullOrEmpty(rules.allyFactionId)
+                || !string.IsNullOrEmpty(rules.huntFactionId)
+                || Mathf.Abs(rules.priceMultiplier - 1f) > 0.01f
+                || Mathf.Abs(rules.taxModifier) > 0.001f
+                || rules.tradeBlocked
+                || rules.blackMarketAccess
+                || rules.taxEnforcementDisabled
+                || (rules.tradeBannedFactions != null && rules.tradeBannedFactions.Count > 0);
+
+            if (!hasEffects) return;
+
+            string inscColor = "#88CCFF"; // Light blue for inscription header
+
+            sb.AppendLine();
+            sb.AppendLine($"<color={inscColor}>\u270D Inscription Zone</color>");
+            sb.AppendLine($"<color={white}>───────────────────</color>");
+
+            if (rules.truce)
+                sb.AppendLine($"<color={gold}>\u2694 Truce</color> <color=#999999>— hostilities paused</color>");
+
+            if (!string.IsNullOrEmpty(rules.allyFactionId))
+            {
+                string allyName = GetFactionDisplayName(rules.allyFactionId);
+                sb.AppendLine($"<color={white}>Territory:</color> <color={gold}>{allyName}</color>");
+            }
+
+            if (!string.IsNullOrEmpty(rules.huntFactionId))
+            {
+                string huntName = GetFactionDisplayName(rules.huntFactionId);
+                sb.AppendLine($"<color=#FF6666>\u2620 Hunt Decree:</color> <color={gold}>{huntName}</color>");
+            }
+
+            if (Mathf.Abs(rules.priceMultiplier - 1f) > 0.01f)
+            {
+                float pct = (rules.priceMultiplier - 1f) * 100f;
+                string sign = pct > 0 ? "+" : "";
+                string priceColor = pct > 0 ? "#FF8888" : "#88FF88"; // Red for inflation, green for deflation
+                sb.AppendLine($"<color={white}>Prices:</color>  <color={priceColor}>{sign}{pct:F0}%</color>");
+            }
+
+            if (Mathf.Abs(rules.taxModifier) > 0.001f)
+            {
+                float taxPct = rules.taxModifier * 100f;
+                string sign = taxPct > 0 ? "+" : "";
+                string taxColor = taxPct > 0 ? "#FF8888" : "#88FF88";
+                sb.AppendLine($"<color={white}>Tax:</color>     <color={taxColor}>{sign}{taxPct:F0}%</color>");
+            }
+
+            if (rules.tradeBlocked)
+                sb.AppendLine($"<color=#FF6666>\u26D4 Blockade</color> <color=#999999>— trade routes blocked</color>");
+
+            if (rules.tradeBannedFactions != null && rules.tradeBannedFactions.Count > 0)
+            {
+                foreach (var bannedId in rules.tradeBannedFactions)
+                {
+                    string bannedName = GetFactionDisplayName(bannedId);
+                    sb.AppendLine($"<color=#FF8866>\u2718 Trade Ban:</color> <color={gold}>{bannedName}</color>");
+                }
+            }
+
+            if (rules.blackMarketAccess)
+                sb.AppendLine($"<color=#CC88FF>Black Market Active</color>");
+
+            if (rules.taxEnforcementDisabled)
+                sb.AppendLine($"<color=#88FF88>Tax-Free Zone</color>");
+        }
+
+        /// <summary>Resolve a faction ID to its display name, falling back to the raw ID.</summary>
+        private string GetFactionDisplayName(string factionId)
+        {
+            var dcs = DistrictControlService.Instance;
+            if (dcs != null && dcs.Factions != null)
+            {
+                for (int i = 0; i < dcs.Factions.Count; i++)
+                {
+                    if (dcs.Factions[i] != null && dcs.Factions[i].id == factionId)
+                        return dcs.Factions[i].displayName;
+                }
+            }
+            // Clean up raw ID for display (e.g., "faction_inkguard" → "Inkguard")
+            if (factionId.StartsWith("faction_"))
+                factionId = factionId.Substring(8);
+            return char.ToUpper(factionId[0]) + factionId.Substring(1);
         }
 
         private ItemPickup FindPickupAt(int x, int y)

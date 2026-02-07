@@ -274,9 +274,17 @@ namespace InkSim
             }
 
             if (currentHealth <= 0)
+            {
                 Die();
+                return;
+            }
 
-            // Could turn hostile, flee, etc.
+            // Flee when health drops critically low
+            if (currentHealth <= maxHealth * 0.35f)
+            {
+                NpcGoalSystem.AssignFleeGoal(this);
+                hostileTarget = null; // Stop fighting, start running
+            }
         }
 
         private System.Collections.IEnumerator DamageFlash()

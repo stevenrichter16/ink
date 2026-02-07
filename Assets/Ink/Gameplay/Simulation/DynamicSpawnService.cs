@@ -86,6 +86,8 @@ namespace InkSim
                         if (spawned != null)
                         {
                             Debug.Log($"[DynamicSpawn] Reinforcement: {enemyId} Lv{level} at ({spawnPos.Value.x},{spawnPos.Value.y}) for {faction.id} in {state.Id}");
+                            string factionName = faction.displayName;
+                            SimulationEventLog.ToastAtGrid($"{factionName} reinforcements!", SimulationEventLog.ColorSpawn, spawnPos.Value.x, spawnPos.Value.y);
                         }
                     }
                 }
@@ -151,6 +153,11 @@ namespace InkSim
                     LastRaidFactionId = attackerFactionId;
                     LastRaidDay = dayNumber;
                     Debug.Log($"[DynamicSpawn] RAID: {spawned} {enemyId}(s) from {attackerFactionId} raiding {districtId}!");
+
+                    // Major event — screen banner
+                    string factionName = attackerFaction.displayName;
+                    string districtDisplayName = districtDef.displayName;
+                    SimulationEventLog.Banner($"\u26a0 {factionName} Raid on {districtDisplayName}!", SimulationEventLog.ColorRaid);
                 }
             }
         }

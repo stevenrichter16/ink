@@ -336,6 +336,10 @@ namespace InkSim
             player.questLog.AddQuest(quest);
             _activeQuests[quest.id] = dayNumber;
             Debug.Log($"[DynamicQuest] NEW QUEST: \"{quest.title}\" — {quest.description}");
+
+            // Player-visible quest notification
+            SimulationEventLog.Banner($"\u2728 New Quest: {quest.title}", SimulationEventLog.ColorQuest);
+
             return true;
         }
 

@@ -128,6 +128,24 @@ namespace InkSim
                         LastSkirmishDistrictId = state.Id;
                         LastSkirmishAttackerFactionId = dcs.Factions[second].id;
                         Debug.Log($"[FactionStrategy] SKIRMISH triggered in {state.Id}! {dcs.Factions[second].id} challenging {dcs.Factions[first].id}");
+
+                        // Player-visible notification
+                        string defenderName = dcs.Factions[first].displayName;
+                        string attackerName = dcs.Factions[second].displayName;
+                        string districtName = state.Definition != null ? state.Definition.displayName : state.Id;
+                        SimulationEventLog.Banner($"\u2694 {attackerName} vs {defenderName} — Skirmish in {districtName}!", SimulationEventLog.ColorContest);
+                    }
+                    else if (days == 1)
+                    {
+                        // First day of contest — smaller notification
+                        string districtName = state.Definition != null ? state.Definition.displayName : state.Id;
+                        var districtDef = state.Definition;
+                        if (districtDef != null)
+                        {
+                            int cx = (districtDef.minX + districtDef.maxX) / 2;
+                            int cy = (districtDef.minY + districtDef.maxY) / 2;
+                            SimulationEventLog.ToastAtGrid($"Territory contested!", SimulationEventLog.ColorContest, cx, cy);
+                        }
                     }
                 }
             }

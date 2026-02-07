@@ -126,6 +126,16 @@ namespace InkSim
                     _activeLayerIds[key] = layerId;
 
                     Debug.Log($"[InscriptionPolitics] {faction.id} inscribed [{string.Join(", ", tokens)}] in {state.Id} (control={control:F2}, priority={priority})");
+
+                    // Player-visible toast for notable inscriptions
+                    string primaryToken = tokens[0];
+                    if (primaryToken.StartsWith("TRUCE") || primaryToken.StartsWith("BLOCKADE")
+                        || primaryToken.StartsWith("FREE_TRADE") || primaryToken.StartsWith("TRADE_BAN"))
+                    {
+                        string factionName = faction.displayName;
+                        string tokenDisplay = FormatTokenForDisplay(primaryToken);
+                        SimulationEventLog.ToastAtGrid($"{factionName}: {tokenDisplay}", SimulationEventLog.ColorInscription, centerX, centerY);
+                    }
                 }
             }
         }
@@ -212,6 +222,24 @@ namespace InkSim
             }
 
             return tokens;
+        }
+
+        /// <summary>Format a palimpsest token for player-readable display.</summary>
+        private static string FormatTokenForDisplay(string token)
+        {
+            if (token.StartsWith("TRUCE")) return "Truce declared!";
+            if (token.StartsWith("BLOCKADE")) return "Blockade imposed!";
+            if (token.StartsWith("FREE_TRADE")) return "Free trade zone!";
+            if (token.StartsWith("TRADE_BAN"))
+            {
+                string target = token.Length > 10 ? token.Substring(10) : "rivals";
+                return $"Trade ban on {target}";
+            }
+            if (token.StartsWith("INFLATE")) return "Prices rising!";
+            if (token.StartsWith("DEFLATE")) return "Prices lowered!";
+            if (token.StartsWith("ALLY")) return "Territory claimed";
+            if (token.StartsWith("HUNT")) return "Hunt decree!";
+            return token;
         }
 
         /// <summary>Clear state for testing / game restart.</summary>

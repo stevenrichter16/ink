@@ -353,6 +353,7 @@ private void PlaceEntities()
             var simGO = new GameObject("WorldSimulationService");
             simGO.transform.SetParent(transform, false);
             simGO.AddComponent<WorldSimulationService>();
+            simGO.AddComponent<SimulationEventLog>();
 
             // === TRAINING DUMMY ===
             CreateDummy(Tiles.Barrel, 10, 10);
@@ -390,6 +391,34 @@ private void PlaceEntities()
             CreateNPC(Tiles.Snake, 20, 24, NpcAI.AIBehavior.Stationary, "snake_herbalist", snakeFaction, "mid", null);
             // Inkguard Patrol Captain — Quest Giver, Temple Ward
             CreateNPC(Tiles.Wizard, 26, 14, NpcAI.AIBehavior.Stationary, null, inkguardFaction, "high", humanSpecies);
+
+            // === FACTION SOLDIERS (Wandering NPCs — driven by NpcGoalSystem) ===
+            // These non-merchant NPCs patrol their faction's territory.
+            // The NpcGoalSystem upgrades their movement to patrol/guard goals each economic day.
+
+            // Inkguard soldiers — Temple Ward & Iron Keep
+            CreateNPC(Tiles.NPC2, 24, 10, NpcAI.AIBehavior.Wander, null, inkguardFaction, "mid", humanSpecies);
+            CreateNPC(Tiles.NPC2, 30, 16, NpcAI.AIBehavior.Wander, null, inkguardFaction, "mid", humanSpecies);
+            CreateNPC(Tiles.NPC1, 36, 14, NpcAI.AIBehavior.Wander, null, inkguardFaction, "low", humanSpecies);
+
+            // Inkbound sentinels — Market Row
+            CreateNPC(Tiles.NPC1, 8, 22, NpcAI.AIBehavior.Wander, null, inkboundFaction, "mid", humanSpecies);
+            CreateNPC(Tiles.NPC1, 12, 20, NpcAI.AIBehavior.Wander, null, inkboundFaction, "low", humanSpecies);
+
+            // Goblin scouts — Outer Slums & Wilds border
+            CreateNPC(Tiles.Goblin, 4, 4, NpcAI.AIBehavior.Wander, null, goblinFaction, "mid", null);
+            CreateNPC(Tiles.Goblin, 10, 8, NpcAI.AIBehavior.Wander, null, goblinFaction, "low", null);
+
+            // Skeleton sentries — Iron Keep & Boneyard
+            CreateNPC(Tiles.Skeleton, 38, 10, NpcAI.AIBehavior.Wander, null, skeletonFaction, "mid", null);
+            CreateNPC(Tiles.Skeleton, 42, 4, NpcAI.AIBehavior.Wander, null, skeletonFaction, "low", null);
+
+            // Snake rangers — Wilds
+            CreateNPC(Tiles.Snake, 18, 22, NpcAI.AIBehavior.Wander, null, snakeFaction, "mid", null);
+            CreateNPC(Tiles.Snake, 24, 26, NpcAI.AIBehavior.Wander, null, snakeFaction, "low", null);
+
+            // Demon wardens — Boneyard
+            CreateNPC(Tiles.Demon, 40, 2, NpcAI.AIBehavior.Wander, null, demonFaction, "mid", null);
 
             // === FOREST - DENSE TREE PLACEMENT ===
             // Upper left forest

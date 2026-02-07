@@ -157,35 +157,67 @@ namespace InkSim
                 }
             }
 
-            // High-rank NPCs patrol their faction's territory
-            if (fm.rankId == "mid" || fm.rankId == "high")
+            // Mid/high-rank NPCs patrol their faction's territory
+            // Low-rank NPCs also patrol if their current district is controlled
+            int factionIdx = FactionStrategyService.GetFactionIndex(dcs, factionId);
+            if (factionIdx >= 0 && (fm.rankId == "mid" || fm.rankId == "high"))
             {
-                // Find a district controlled by this faction
-                for (int d = 0; d < dcs.States.Count; d++)
+                // Prefer patrolling the NPC's current district if the faction has presence
+                DistrictState patrolDistrict = null;
+                if (districtState != null && districtState.control[factionIdx] > 0.3f)
                 {
-                    var state = dcs.States[d];
-                    int fIdx = FactionStrategyService.GetFactionIndex(dcs, factionId);
-                    if (fIdx < 0) continue;
-
-                    if (state.control[fIdx] > 0.4f)
+                    patrolDistrict = districtState;
+                }
+                else
+                {
+                    // Fallback: find any district this faction controls
+                    for (int d = 0; d < dcs.States.Count; d++)
                     {
-                        var def = state.Definition;
-                        if (def == null) continue;
-
-                        // Generate patrol waypoints within the district
-                        var waypoints = GeneratePatrolWaypoints(def, 3);
-                        if (waypoints.Count > 0)
+                        var state = dcs.States[d];
+                        if (state.control[factionIdx] > 0.4f && state.Definition != null)
                         {
-                            return new NpcGoal
-                            {
-                                type = NpcGoalType.PatrolRoute,
-                                waypoints = waypoints,
-                                currentWaypointIndex = 0,
-                                target = waypoints[0],
-                                targetDistrictId = state.Id,
-                                turnsRemaining = 30,
-                            };
+                            patrolDistrict = state;
+                            break;
                         }
+                    }
+                }
+
+                if (patrolDistrict != null && patrolDistrict.Definition != null)
+                {
+                    var def = patrolDistrict.Definition;
+                    var waypoints = GeneratePatrolWaypoints(def, 3);
+                    if (waypoints.Count > 0)
+                    {
+                        return new NpcGoal
+                        {
+                            type = NpcGoalType.PatrolRoute,
+                            waypoints = waypoints,
+                            currentWaypointIndex = 0,
+                            target = waypoints[0],
+                            targetDistrictId = patrolDistrict.Id,
+                            turnsRemaining = 30,
+                        };
+                    }
+                }
+            }
+            else if (factionIdx >= 0 && fm.rankId == "low")
+            {
+                // Low-rank NPCs: patrol locally if faction has presence, otherwise wander (default)
+                if (districtState != null && districtState.control[factionIdx] > 0.3f && districtState.Definition != null)
+                {
+                    var def = districtState.Definition;
+                    var waypoints = GeneratePatrolWaypoints(def, 2); // Shorter patrol routes
+                    if (waypoints.Count > 0)
+                    {
+                        return new NpcGoal
+                        {
+                            type = NpcGoalType.PatrolRoute,
+                            waypoints = waypoints,
+                            currentWaypointIndex = 0,
+                            target = waypoints[0],
+                            targetDistrictId = districtState.Id,
+                            turnsRemaining = 20, // Shorter duration
+                        };
                     }
                 }
             }
