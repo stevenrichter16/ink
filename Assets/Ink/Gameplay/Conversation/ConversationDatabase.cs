@@ -14,12 +14,16 @@ namespace InkSim
         private static readonly Dictionary<ConversationTopicTag, List<ConversationTemplate>> _byTopic
             = new Dictionary<ConversationTopicTag, List<ConversationTemplate>>();
 
+        // Reusable list for FindTemplate filtering (avoids allocation per lookup)
+        private static readonly List<ConversationTemplate> _filteredCandidates = new List<ConversationTemplate>(16);
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStatics()
         {
             _initialized = false;
             _all.Clear();
             _byTopic.Clear();
+            _filteredCandidates.Clear();
         }
 
         public static void EnsureInitialized()
@@ -77,16 +81,16 @@ namespace InkSim
             if (!_byTopic.TryGetValue(topic, out var candidates) || candidates.Count == 0)
                 return null;
 
-            bool sameFaction = HostilityService.AreSameFaction(
-                initiator.GetComponent<GridEntity>(),
-                responder.GetComponent<GridEntity>());
+            // Use faction IDs directly instead of GetComponent<GridEntity>() for same-faction check
+            bool sameFaction = initiator.faction != null && responder.faction != null
+                && initiator.faction.id == responder.faction.id;
 
             int interRep = 0;
             if (!sameFaction && initiator.faction != null && responder.faction != null)
                 interRep = ReputationSystem.GetInterRep(initiator.faction.id, responder.faction.id);
 
-            // Build filtered list
-            var valid = new List<ConversationTemplate>();
+            // Reuse static list instead of allocating new List per call
+            _filteredCandidates.Clear();
             for (int i = 0; i < candidates.Count; i++)
             {
                 var t = candidates[i];
@@ -109,11 +113,11 @@ namespace InkSim
                         continue;
                 }
 
-                valid.Add(t);
+                _filteredCandidates.Add(t);
             }
 
-            if (valid.Count == 0) return null;
-            return valid[Random.Range(0, valid.Count)];
+            if (_filteredCandidates.Count == 0) return null;
+            return _filteredCandidates[Random.Range(0, _filteredCandidates.Count)];
         }
 
         /// <summary>

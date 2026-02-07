@@ -16,7 +16,7 @@ namespace InkSim
                 "Teleport Here",
                 ActionCategory.Movement,
                 (x, y) => {
-                    var player = Object.FindObjectOfType<PlayerController>();
+                    var player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
                     if (player != null)
                     {
                         world.ClearOccupant(player.gridX, player.gridY);
@@ -35,7 +35,7 @@ namespace InkSim
                 "Swap with Player",
                 ActionCategory.Movement,
                 (x, y) => {
-                    var player = Object.FindObjectOfType<PlayerController>();
+                    var player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
                     var entity = world.GetEntityAt(x, y);
                     if (player != null && entity != null && entity != player)
                     {

@@ -74,7 +74,7 @@ namespace InkSim
             if (currentHealth <= 0 || currentHealth == 3)
                 currentHealth = maxHealth;
             
-            _player = FindObjectOfType<PlayerController>();
+            _player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
             _turnManager = TurnManager.Instance;
             
             if (_turnManager != null)
@@ -362,7 +362,7 @@ public override void ApplyDamageInternal(int amount, GridEntity attacker)
 
         private void NotifyQuests()
         {
-            var player = FindObjectOfType<PlayerController>();
+            var player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
             var questLog = player != null ? player.questLog : null;
             string id = !string.IsNullOrEmpty(enemyId) ? enemyId : lootTableId;
             questLog?.OnEnemyKilled(id);

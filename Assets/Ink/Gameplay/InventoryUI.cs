@@ -34,7 +34,7 @@ namespace InkSim
         private void Start()
         {
             if (player == null)
-                player = FindObjectOfType<PlayerController>();
+                player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
 
             _monoFont = Font.CreateDynamicFontFromOSFont("Courier New", 16);
             if (_monoFont == null)
@@ -110,7 +110,7 @@ namespace InkSim
                     player.inventory.RemoveItem(selected.data.id, 1);
                     
                     // Spawn pickup at player's feet
-                    var gridWorld = FindObjectOfType<GridWorld>();
+                    var gridWorld = UnityEngine.Object.FindFirstObjectByType<GridWorld>();
                     float tileSize = gridWorld != null ? gridWorld.tileSize : 0.5f;
                     ItemPickup.CreateFromLoot(selected.data.id, player.gridX, player.gridY, 1, tileSize);
                     

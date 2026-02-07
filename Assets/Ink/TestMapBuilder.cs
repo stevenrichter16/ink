@@ -908,7 +908,7 @@ private void CreateTileInfoPanel()
             GameObject go = new GameObject("TileInfoPanel");
             TileInfoPanel panel = go.AddComponent<TileInfoPanel>();
             panel.gridWorld = _gridWorld;
-            panel.cursor = FindObjectOfType<TileCursor>();
+            panel.cursor = UnityEngine.Object.FindFirstObjectByType<TileCursor>();
         }
 
 private void CreateSpellSystem()
@@ -916,7 +916,7 @@ private void CreateSpellSystem()
             GameObject go = new GameObject("SpellSystem");
             SpellSystem spellSystem = go.AddComponent<SpellSystem>();
             spellSystem.player = _player;
-            spellSystem.tileCursor = FindObjectOfType<TileCursor>();
+            spellSystem.tileCursor = UnityEngine.Object.FindFirstObjectByType<TileCursor>();
             spellSystem.gridWorld = _gridWorld;
         }
 

@@ -22,7 +22,7 @@ namespace InkSim
                     var runner = entity.GetComponent<DialogueRunner>();
                     if (runner == null) return;
 
-                    var player = Object.FindObjectOfType<PlayerController>();
+                    var player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
                     if (player == null) return;
 
                     runner.Begin(player);

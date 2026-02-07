@@ -35,7 +35,7 @@ namespace InkSim
                 equipment = GetComponent<Equipment>();
 
             if (spriteLibrary == null)
-                spriteLibrary = FindObjectOfType<SpriteLibrary>();
+                spriteLibrary = UnityEngine.Object.FindFirstObjectByType<SpriteLibrary>();
 
             // Setup armor color mapping
             _armorColors = new Dictionary<string, Color>

@@ -13,6 +13,8 @@ namespace InkSim
 
         private readonly Queue<SpeechBubble> _pool = new Queue<SpeechBubble>();
         private readonly Dictionary<GridEntity, SpeechBubble> _activeBubbles = new Dictionary<GridEntity, SpeechBubble>();
+        // Reverse lookup: bubble → entity (avoids O(n) dictionary scan in Recycle)
+        private readonly Dictionary<SpeechBubble, GridEntity> _bubbleToEntity = new Dictionary<SpeechBubble, GridEntity>();
         private Transform _root;
         private Font _font;
         private const int MaxPoolSize = 24; // Increased from 16 for turn-based lifetime
@@ -63,6 +65,7 @@ namespace InkSim
             var bubble = Instance.GetBubble();
             bubble.Show(entity, text, color);
             Instance._activeBubbles[entity] = bubble;
+            Instance._bubbleToEntity[bubble] = entity;
         }
 
         /// <summary>
@@ -93,13 +96,12 @@ namespace InkSim
             if (bubble == null) return;
             bubble.gameObject.SetActive(false);
 
-            // Remove from active tracking
-            GridEntity toRemove = null;
-            foreach (var kvp in _activeBubbles)
+            // O(1) reverse lookup instead of O(n) dictionary scan
+            if (_bubbleToEntity.TryGetValue(bubble, out var entity))
             {
-                if (kvp.Value == bubble) { toRemove = kvp.Key; break; }
+                _activeBubbles.Remove(entity);
+                _bubbleToEntity.Remove(bubble);
             }
-            if (toRemove != null) _activeBubbles.Remove(toRemove);
 
             if (_pool.Count < MaxPoolSize)
                 _pool.Enqueue(bubble);

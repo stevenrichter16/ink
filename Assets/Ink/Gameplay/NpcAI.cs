@@ -54,7 +54,7 @@ namespace InkSim
             _turnManager = TurnManager.Instance;
             _factionMember = GetComponent<FactionMember>();
             _levelable = GetComponent<Levelable>();
-            _player = FindObjectOfType<PlayerController>();
+            _player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
             InitializeHealth();
             if (_turnManager != null)
                 _turnManager.RegisterNPC(this);

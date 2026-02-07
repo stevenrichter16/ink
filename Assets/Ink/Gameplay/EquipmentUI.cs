@@ -34,7 +34,7 @@ namespace InkSim
             _camera = Camera.main;
 
             if (player == null)
-                player = FindObjectOfType<PlayerController>();
+                player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
 
             if (spriteLibrary == null)
                 spriteLibrary = SpriteLibrary.Instance;

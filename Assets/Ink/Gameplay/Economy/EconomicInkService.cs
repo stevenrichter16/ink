@@ -14,7 +14,7 @@ namespace InkSim
         private static PlayerController GetPlayer()
         {
             if (_cachedPlayer == null)
-                _cachedPlayer = Object.FindObjectOfType<PlayerController>();
+                _cachedPlayer = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
             return _cachedPlayer;
         }
 

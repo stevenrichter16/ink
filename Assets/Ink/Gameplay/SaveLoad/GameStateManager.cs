@@ -19,7 +19,7 @@ namespace InkSim
             var state = GameState.Create();
             
             // Player
-            var player = Object.FindObjectOfType<PlayerController>();
+            var player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
             if (player != null)
             {
                 state.player = CollectPlayerData(player);
@@ -86,7 +86,7 @@ private static PlayerSaveData CollectPlayerData(PlayerController player)
         {
             var list = new List<EnemySaveData>();
             
-            foreach (var enemy in Object.FindObjectsOfType<EnemyAI>())
+            foreach (var enemy in UnityEngine.Object.FindObjectsByType<EnemyAI>(FindObjectsSortMode.None))
             {
                 string enemyId = enemy.lootTableId ?? "slime";
                 int level = enemy.levelable?.Level ?? 1;
@@ -107,7 +107,7 @@ private static PlayerSaveData CollectPlayerData(PlayerController player)
         {
             var list = new List<ItemPickupSaveData>();
             
-            foreach (var pickup in Object.FindObjectsOfType<ItemPickup>())
+            foreach (var pickup in UnityEngine.Object.FindObjectsByType<ItemPickup>(FindObjectsSortMode.None))
             {
                 list.Add(new ItemPickupSaveData(
                     pickup.itemId,
@@ -248,7 +248,7 @@ private static PlayerSaveData CollectPlayerData(PlayerController player)
             ClearCurrentState();
             
             // 2. Restore player
-            var player = Object.FindObjectOfType<PlayerController>();
+            var player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
             if (player != null && state.player != null)
             {
                 ApplyPlayerData(player, state.player);
@@ -277,7 +277,7 @@ private static PlayerSaveData CollectPlayerData(PlayerController player)
             var turnManager = TurnManager.Instance;
             
             // Destroy all enemies
-            var enemies = Object.FindObjectsOfType<EnemyAI>();
+            var enemies = UnityEngine.Object.FindObjectsByType<EnemyAI>(FindObjectsSortMode.None);
             foreach (var enemy in enemies)
             {
                 if (gridWorld != null)
@@ -290,7 +290,7 @@ private static PlayerSaveData CollectPlayerData(PlayerController player)
             }
             
             // Destroy all ground items
-            var pickups = Object.FindObjectsOfType<ItemPickup>();
+            var pickups = UnityEngine.Object.FindObjectsByType<ItemPickup>(FindObjectsSortMode.None);
             foreach (var pickup in pickups)
             {
                 Object.Destroy(pickup.gameObject);

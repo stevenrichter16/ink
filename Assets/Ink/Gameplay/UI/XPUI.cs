@@ -27,7 +27,7 @@ namespace InkSim
             // Auto-find player's Levelable if not assigned
             if (target == null)
             {
-                var player = FindObjectOfType<PlayerController>();
+                var player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
                 if (player != null)
                     target = player.GetComponent<Levelable>();
             }

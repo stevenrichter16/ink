@@ -22,7 +22,7 @@ namespace InkSim
                     var merchant = entity.GetComponent<Merchant>();
                     if (merchant == null) return;
                     
-                    var player = Object.FindObjectOfType<PlayerController>();
+                    var player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
                     if (player == null) return;
                     
                     MerchantUI.Open(merchant, player);

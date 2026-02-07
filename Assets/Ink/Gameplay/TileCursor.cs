@@ -35,7 +35,7 @@ namespace InkSim
             _camera = Camera.main;
             
             if (gridWorld == null)
-                gridWorld = FindObjectOfType<GridWorld>();
+                gridWorld = UnityEngine.Object.FindFirstObjectByType<GridWorld>();
 
             if (gridWorld != null)
             {
@@ -164,7 +164,7 @@ private ItemPickup FindPickupAt(int x, int y)
             }
             
             // Fallback to slow method (shouldn't happen if ItemPickup has registry)
-            foreach (var pickup in FindObjectsOfType<ItemPickup>())
+            foreach (var pickup in UnityEngine.Object.FindObjectsByType<ItemPickup>(FindObjectsSortMode.None))
             {
                 if (pickup.gridX == x && pickup.gridY == y)
                     return pickup;

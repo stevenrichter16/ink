@@ -117,7 +117,7 @@ namespace InkSim
             AddButton(buttonsGO.transform, "Apply Edit (cursor district)", () =>
             {
                 var svc = DistrictControlService.Instance;
-                var cursor = FindObjectOfType<TileCursor>();
+                var cursor = UnityEngine.Object.FindFirstObjectByType<TileCursor>();
                 if (svc != null && cursor != null)
                 {
                     var state = svc.GetStateByPosition(cursor.gridX, cursor.gridY);
@@ -132,7 +132,7 @@ namespace InkSim
             AddButton(buttonsGO.transform, "Cleanup (cursor district)", () =>
             {
                 var svc = DistrictControlService.Instance;
-                var cursor = FindObjectOfType<TileCursor>();
+                var cursor = UnityEngine.Object.FindFirstObjectByType<TileCursor>();
                 if (svc != null && cursor != null)
                 {
                     var state = svc.GetStateByPosition(cursor.gridX, cursor.gridY);
@@ -275,7 +275,7 @@ namespace InkSim
                 }
             }
 
-            var cursor = FindObjectOfType<TileCursor>();
+            var cursor = UnityEngine.Object.FindFirstObjectByType<TileCursor>();
             if (cursor != null)
             {
                 var state = svc.GetStateByPosition(cursor.gridX, cursor.gridY);

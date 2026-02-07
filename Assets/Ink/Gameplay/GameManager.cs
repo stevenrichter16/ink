@@ -34,7 +34,7 @@ namespace InkSim
         private void Start()
         {
             // Find and register player
-            _player = FindObjectOfType<PlayerController>();
+            _player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
             if (_player != null)
             {
                 _playerSpawn = new Vector2Int(_player.gridX, _player.gridY);
@@ -43,7 +43,7 @@ namespace InkSim
             }
 
             // Find and register all enemies
-            foreach (var enemy in FindObjectsOfType<EnemyAI>())
+            foreach (var enemy in UnityEngine.Object.FindObjectsByType<EnemyAI>(FindObjectsSortMode.None))
             {
                 _enemySpawns.Add(new EnemySpawnData
                 {

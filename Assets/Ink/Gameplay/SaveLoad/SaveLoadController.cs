@@ -30,7 +30,7 @@ namespace InkSim
             // Find or create menu
             if (menu == null)
             {
-                menu = FindObjectOfType<SaveLoadMenu>();
+                menu = UnityEngine.Object.FindFirstObjectByType<SaveLoadMenu>();
                 if (menu == null)
                 {
                     GameObject menuGO = new GameObject("SaveLoadMenu");
@@ -38,7 +38,7 @@ namespace InkSim
                 }
             }
             
-            _player = FindObjectOfType<PlayerController>();
+            _player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
             
             // Auto-save at game start (guarantees save exists for death reload)
             if (autoSaveOnStart)
@@ -144,7 +144,7 @@ namespace InkSim
                     Debug.Log("[SaveLoadController] Auto-loaded after death");
                     
                     // Re-find player reference after load
-                    _player = FindObjectOfType<PlayerController>();
+                    _player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
                     _wasPlayerDead = false;
                 }
                 else

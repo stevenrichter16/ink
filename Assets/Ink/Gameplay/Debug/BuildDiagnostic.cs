@@ -44,7 +44,7 @@ namespace InkSim
             }
             
             // Check scene objects
-            var renderers = FindObjectsOfType<SpriteRenderer>();
+            var renderers = UnityEngine.Object.FindObjectsByType<SpriteRenderer>(FindObjectsSortMode.None);
             Debug.Log($"[Diag] SpriteRenderers in scene: {renderers.Length}");
             
             if (renderers.Length > 0)
@@ -72,7 +72,7 @@ namespace InkSim
             Debug.Log($"[Diag] GridWorld: {(gridWorld != null ? $"{gridWorld.width}x{gridWorld.height}" : "NULL")}");
             
             // Check player
-            var player = FindObjectOfType<PlayerController>();
+            var player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
             Debug.Log($"[Diag] Player: {(player != null ? $"at ({player.gridX}, {player.gridY})" : "NULL")}");
             
             Debug.Log("========== BUILD DIAGNOSTIC END ==========");

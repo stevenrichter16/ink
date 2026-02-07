@@ -321,7 +321,7 @@ namespace InkSim
             QuestDatabase.Register(quest);
 
             // Find the player's quest log
-            var player = Object.FindObjectOfType<PlayerController>();
+            var player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
             if (player == null || player.questLog == null)
             {
                 Debug.LogWarning($"[DynamicQuest] Cannot find player quest log. Quest '{quest.title}' registered but not added to log.");

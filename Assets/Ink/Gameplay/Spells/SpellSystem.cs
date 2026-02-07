@@ -36,8 +36,8 @@ namespace InkSim
         void Start()
         {
             // Auto-find references if not set
-            if (player == null) player = FindObjectOfType<PlayerController>();
-            if (tileCursor == null) tileCursor = FindObjectOfType<TileCursor>();
+            if (player == null) player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
+            if (tileCursor == null) tileCursor = UnityEngine.Object.FindFirstObjectByType<TileCursor>();
             if (gridWorld == null) gridWorld = GridWorld.Instance;
             
             // Initialize cooldown timers

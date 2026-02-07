@@ -82,7 +82,7 @@ namespace InkSim
 
             // Get GridWorld if not provided
             if (gridWorld == null)
-                gridWorld = Object.FindObjectOfType<GridWorld>();
+                gridWorld = UnityEngine.Object.FindFirstObjectByType<GridWorld>();
 
             if (gridWorld == null)
             {

@@ -103,9 +103,9 @@ namespace InkSim
         private void Start()
         {
             if (cursor == null)
-                cursor = FindObjectOfType<TileCursor>();
+                cursor = UnityEngine.Object.FindFirstObjectByType<TileCursor>();
             if (gridWorld == null)
-                gridWorld = FindObjectOfType<GridWorld>();
+                gridWorld = UnityEngine.Object.FindFirstObjectByType<GridWorld>();
 
             _monoFont = Font.CreateDynamicFontFromOSFont("Courier New", 16);
             if (_monoFont == null)
@@ -282,7 +282,7 @@ namespace InkSim
 
             _canvas.AddComponent<GraphicRaycaster>();
 
-            if (FindObjectOfType<EventSystem>() == null)
+            if (UnityEngine.Object.FindFirstObjectByType<EventSystem>() == null)
             {
                 GameObject eventSystem = new GameObject("EventSystem");
                 eventSystem.AddComponent<EventSystem>();

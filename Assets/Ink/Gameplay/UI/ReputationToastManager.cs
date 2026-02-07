@@ -31,7 +31,7 @@ namespace InkSim
         {
             if (Instance != null) return;
 
-            var existing = FindObjectOfType<ReputationToastManager>();
+            var existing = UnityEngine.Object.FindFirstObjectByType<ReputationToastManager>();
             if (existing != null)
             {
                 Instance = existing;
@@ -124,9 +124,9 @@ namespace InkSim
         private Vector3 GetToastWorldPosition()
         {
             if (_cursor == null)
-                _cursor = FindObjectOfType<TileCursor>();
+                _cursor = UnityEngine.Object.FindFirstObjectByType<TileCursor>();
             if (_gridWorld == null)
-                _gridWorld = FindObjectOfType<GridWorld>();
+                _gridWorld = UnityEngine.Object.FindFirstObjectByType<GridWorld>();
 
             if (_cursor != null && _gridWorld != null)
             {
@@ -135,7 +135,7 @@ namespace InkSim
                 return basePos + new Vector3(tileSize * 0.4f, tileSize * 0.8f, 0f);
             }
 
-            var player = FindObjectOfType<PlayerController>();
+            var player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
             if (player != null)
                 return player.transform.position + Vector3.up * 0.4f;
 

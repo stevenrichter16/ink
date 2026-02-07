@@ -14,6 +14,7 @@ namespace InkSim
     {
         private Text _text;
         private Image _background;
+        private RectTransform _bgRect; // Cached to avoid GetComponent<RectTransform>() in Show()
         private GridEntity _anchor;
         private Vector3 _offset;
         private Color _baseColor;
@@ -49,9 +50,9 @@ namespace InkSim
             _background.color = new Color(0f, 0f, 0f, 0.55f);
             _background.raycastTarget = false;
 
-            RectTransform bgRect = bgGO.GetComponent<RectTransform>();
-            bgRect.sizeDelta = new Vector2(520, 70);
-            bgRect.anchoredPosition = Vector2.zero;
+            _bgRect = bgGO.GetComponent<RectTransform>();
+            _bgRect.sizeDelta = new Vector2(520, 70);
+            _bgRect.anchoredPosition = Vector2.zero;
 
             // Text
             GameObject textGO = new GameObject("Text");
@@ -101,12 +102,11 @@ namespace InkSim
             if (_anchor != null)
                 transform.position = _anchor.transform.position + _offset;
 
-            // Scale background to text width (approximate)
-            if (_background != null)
+            // Scale background to text width (approximate) — uses cached RectTransform
+            if (_background != null && _bgRect != null)
             {
                 float approxWidth = Mathf.Min(message.Length * 12f + 20f, 520f);
-                var bgRect = _background.GetComponent<RectTransform>();
-                bgRect.sizeDelta = new Vector2(approxWidth, 50f);
+                _bgRect.sizeDelta = new Vector2(approxWidth, 50f);
                 // Reset alpha in case recycled bubble was mid-fade
                 _background.color = new Color(0f, 0f, 0f, 0.55f);
             }

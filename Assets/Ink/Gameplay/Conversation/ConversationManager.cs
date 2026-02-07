@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 namespace InkSim
@@ -15,6 +16,12 @@ namespace InkSim
         public GridEntity responder;
         public FactionMember initiatorFm;
         public FactionMember responderFm;
+
+        // Cached AI components (avoid GetComponent per tick in IsInCombat)
+        public NpcAI initiatorNpc;
+        public NpcAI responderNpc;
+        public EnemyAI initiatorEnemy;
+        public EnemyAI responderEnemy;
 
         // State
         public int currentLineIndex;
@@ -111,6 +118,14 @@ namespace InkSim
         // Reusable lists to avoid GC
         private readonly List<FactionMember> _partnerCandidates = new List<FactionMember>(16);
         private readonly List<WeightedTopic> _topicWeights = new List<WeightedTopic>(16);
+        private readonly List<GridEntity> _cooldownRemoveList = new List<GridEntity>(8);
+
+        // Reusable StringBuilder for ResolveTokens (avoids 7-10 string allocs per call)
+        private readonly StringBuilder _tokenSB = new StringBuilder(256);
+
+        // Cached display name lookups (FactionMember → display name) to avoid
+        // GetComponent<FactionMember>() per DeliverLine call
+        private readonly Dictionary<GridEntity, string> _displayNameCache = new Dictionary<GridEntity, string>(32);
 
         private struct WeightedTopic
         {
@@ -159,8 +174,9 @@ namespace InkSim
                     continue;
                 }
 
-                // Interrupt if either participant entered combat
-                if (IsInCombat(conv.initiatorFm) || IsInCombat(conv.responderFm))
+                // Interrupt if either participant entered combat (uses cached AI components)
+                if (IsInCombat(conv.initiatorFm, conv.initiatorNpc, conv.initiatorEnemy)
+                    || IsInCombat(conv.responderFm, conv.responderNpc, conv.responderEnemy))
                 {
                     EndConversation(conv, i);
                     continue;
@@ -173,7 +189,7 @@ namespace InkSim
                     GridEntity listener = (speaker == conv.initiator) ? conv.responder : conv.initiator;
                     string text = conv.GetCurrentText();
                     Color color = SpeechBubblePool.GetColorForRelationship(conv.initiatorFm, conv.responderFm);
-                    DeliverLine(speaker, listener, text, color);
+                    DeliverLine(speaker, listener, text, color, conv.conversationId);
                 }
 
                 if (conv.isComplete)
@@ -245,7 +261,7 @@ namespace InkSim
                 GridEntity listener = (speaker == conv.initiator) ? conv.responder : conv.initiator;
                 string text = conv.GetCurrentText();
                 Color color = SpeechBubblePool.GetColorForRelationship(initiatorFm, partnerFm);
-                DeliverLine(speaker, listener, text, color);
+                DeliverLine(speaker, listener, text, color, conv.conversationId);
             }
 
             return true;
@@ -278,6 +294,7 @@ namespace InkSim
             _active.Clear();
             _inConversation.Clear();
             _lastConversationTurn.Clear();
+            _displayNameCache.Clear();
         }
 
         // =====================================================================
@@ -476,6 +493,11 @@ namespace InkSim
                 responder = responder,
                 initiatorFm = initiatorFm,
                 responderFm = responderFm,
+                // Cache AI components once at creation (avoids GetComponent per tick)
+                initiatorNpc = initiator.GetComponent<NpcAI>(),
+                responderNpc = responder.GetComponent<NpcAI>(),
+                initiatorEnemy = initiator.GetComponent<EnemyAI>(),
+                responderEnemy = responder.GetComponent<EnemyAI>(),
                 currentLineIndex = 0,
                 turnsUntilNextLine = 0, // First line plays immediately
                 isComplete = false,
@@ -501,34 +523,33 @@ namespace InkSim
         {
             if (string.IsNullOrEmpty(text)) return text;
 
-            // Faction names
+            // Quick check: skip StringBuilder path if no tokens present
+            if (text.IndexOf('{') < 0) return text;
+
+            // Pre-resolve all token values
             string selfName = speakerFm?.faction?.displayName ?? "Unknown";
             string otherName = listenerFm?.faction?.displayName ?? "Unknown";
-            text = text.Replace("{FACTION_SELF}", selfName);
-            text = text.Replace("{FACTION_OTHER}", otherName);
 
-            // District info
+            string districtName = "this place";
+            string prosDesc = "uncertain";
+            string controlDesc = "unknown";
+
             var dcs = DistrictControlService.Instance;
             if (dcs != null)
             {
                 var districtState = dcs.GetStateByPosition(speaker.gridX, speaker.gridY);
                 if (districtState != null && districtState.Definition != null)
                 {
-                    text = text.Replace("{DISTRICT}", districtState.Definition.displayName);
+                    districtName = districtState.Definition.displayName;
 
-                    // Prosperity descriptor
-                    string prosDesc;
                     if (districtState.prosperity >= 0.8f) prosDesc = "thriving";
                     else if (districtState.prosperity >= 0.5f) prosDesc = "stable";
                     else if (districtState.prosperity >= 0.3f) prosDesc = "struggling";
                     else prosDesc = "desperate";
-                    text = text.Replace("{PROSPERITY}", prosDesc);
 
-                    // Control descriptor
                     int fIdx = speakerFm?.faction != null
                         ? FactionStrategyService.GetFactionIndex(dcs, speakerFm.faction.id)
                         : -1;
-                    string controlDesc;
                     if (fIdx >= 0)
                     {
                         float control = districtState.control[fIdx];
@@ -541,21 +562,13 @@ namespace InkSim
                     {
                         controlDesc = "unclaimed";
                     }
-                    text = text.Replace("{CONTROL}", controlDesc);
-                }
-                else
-                {
-                    text = text.Replace("{DISTRICT}", "this place");
-                    text = text.Replace("{PROSPERITY}", "uncertain");
-                    text = text.Replace("{CONTROL}", "unknown");
                 }
             }
 
-            // Trade status
+            string tradeDesc = "open";
             if (speakerFm?.faction != null && listenerFm?.faction != null)
             {
                 var relation = TradeRelationRegistry.GetRelation(speakerFm.faction.id, listenerFm.faction.id);
-                string tradeDesc = "open";
                 if (relation != null)
                 {
                     switch (relation.status)
@@ -564,17 +577,45 @@ namespace InkSim
                         case TradeStatus.Embargo: tradeDesc = "embargoed"; break;
                         case TradeStatus.Exclusive: tradeDesc = "exclusive"; break;
                         case TradeStatus.Alliance: tradeDesc = "allied"; break;
-                        default: tradeDesc = "open"; break;
                     }
                 }
-                text = text.Replace("{TRADE_STATUS}", tradeDesc);
-            }
-            else
-            {
-                text = text.Replace("{TRADE_STATUS}", "open");
             }
 
-            return text;
+            // Single-pass token replacement using StringBuilder
+            _tokenSB.Clear();
+            int i = 0;
+            while (i < text.Length)
+            {
+                if (text[i] == '{')
+                {
+                    int closeBrace = text.IndexOf('}', i + 1);
+                    if (closeBrace > i)
+                    {
+                        string token = text.Substring(i + 1, closeBrace - i - 1);
+                        switch (token)
+                        {
+                            case "FACTION_SELF":   _tokenSB.Append(selfName); break;
+                            case "FACTION_OTHER":  _tokenSB.Append(otherName); break;
+                            case "DISTRICT":       _tokenSB.Append(districtName); break;
+                            case "PROSPERITY":     _tokenSB.Append(prosDesc); break;
+                            case "CONTROL":        _tokenSB.Append(controlDesc); break;
+                            case "TRADE_STATUS":   _tokenSB.Append(tradeDesc); break;
+                            default:
+                                // Unknown token — keep as-is
+                                _tokenSB.Append('{');
+                                _tokenSB.Append(token);
+                                _tokenSB.Append('}');
+                                break;
+                        }
+                        i = closeBrace + 1;
+                        continue;
+                    }
+                }
+                _tokenSB.Append(text[i]);
+                i++;
+            }
+
+            return _tokenSB.ToString();
         }
 
         // =====================================================================
@@ -583,28 +624,34 @@ namespace InkSim
 
         /// <summary>
         /// Delivers a dialogue line: shows speech bubble AND logs to ConversationLogPanel.
+        /// Uses cached display names to avoid GetComponent&lt;FactionMember&gt;() per call.
         /// </summary>
-        private void DeliverLine(GridEntity speaker, GridEntity listener, string text, Color color)
+        private void DeliverLine(GridEntity speaker, GridEntity listener, string text, Color color, int conversationId)
         {
             SpeechBubblePool.Show(speaker, text, color);
 
-            // Build speaker display name
-            string speakerName = speaker.name;
-            var speakerFm = speaker.GetComponent<FactionMember>();
-            if (speakerFm != null && speakerFm.faction != null)
-                speakerName = $"{speakerFm.faction.displayName} {speakerFm.rankId}";
+            string speakerName = GetDisplayName(speaker);
+            string listenerName = listener != null ? GetDisplayName(listener) : "";
 
-            // Build listener display name
-            string listenerName = "";
-            if (listener != null)
-            {
-                listenerName = listener.name;
-                var listenerFm = listener.GetComponent<FactionMember>();
-                if (listenerFm != null && listenerFm.faction != null)
-                    listenerName = $"{listenerFm.faction.displayName} {listenerFm.rankId}";
-            }
+            ConversationLogPanel.PushLine(speaker, speakerName, listener, listenerName, text, color, conversationId);
+        }
 
-            ConversationLogPanel.PushLine(speaker, speakerName, listener, listenerName, text, color);
+        /// <summary>
+        /// Get or build a cached display name for an entity (avoids repeated GetComponent calls).
+        /// </summary>
+        private string GetDisplayName(GridEntity entity)
+        {
+            if (entity == null) return "";
+            if (_displayNameCache.TryGetValue(entity, out string cached))
+                return cached;
+
+            string displayName = entity.name;
+            var fm = entity.GetComponent<FactionMember>();
+            if (fm != null && fm.faction != null)
+                displayName = $"{fm.faction.displayName} {fm.rankId}";
+
+            _displayNameCache[entity] = displayName;
+            return displayName;
         }
 
         private void EndConversation(ActiveConversation conv, int index)
@@ -619,17 +666,15 @@ namespace InkSim
             return entity != null && entity.gameObject.activeInHierarchy;
         }
 
-        private bool IsInCombat(FactionMember fm)
+        private bool IsInCombat(FactionMember fm, NpcAI npc, EnemyAI enemy)
         {
             if (fm == null) return false;
             if (fm.state == FactionMember.AlertState.Hostile) return true;
 
-            // Check if NPC has a hostile target
-            var npc = fm.GetComponent<NpcAI>();
+            // Check if NPC has a hostile target (using cached component)
             if (npc != null && npc.hostileTarget != null) return true;
 
-            // Check if enemy is in Chase or Attack state
-            var enemy = fm.GetComponent<EnemyAI>();
+            // Check if enemy is in Chase or Attack state (using cached component)
             if (enemy != null && enemy.state != EnemyAI.AIState.Idle) return true;
 
             return false;
@@ -649,14 +694,17 @@ namespace InkSim
             // Remove entries for dead entities (periodically, not every tick)
             if (Random.value > 0.1f) return; // 10% chance per tick
 
-            var toRemove = new List<GridEntity>();
+            _cooldownRemoveList.Clear();
             foreach (var kvp in _lastConversationTurn)
             {
                 if (kvp.Key == null || !kvp.Key.gameObject.activeInHierarchy)
-                    toRemove.Add(kvp.Key);
+                    _cooldownRemoveList.Add(kvp.Key);
             }
-            foreach (var key in toRemove)
-                _lastConversationTurn.Remove(key);
+            for (int i = 0; i < _cooldownRemoveList.Count; i++)
+            {
+                _lastConversationTurn.Remove(_cooldownRemoveList[i]);
+                _displayNameCache.Remove(_cooldownRemoveList[i]); // Also clear stale display name cache
+            }
         }
 
         private static bool HasRankDifference(FactionMember a, FactionMember b)

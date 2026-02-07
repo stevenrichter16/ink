@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -10,9 +11,13 @@ namespace InkSim
     /// <summary>
     /// Expandable/collapsible conversation log panel anchored at bottom-right.
     /// Logs all NPC-to-NPC dialogue lines with faction-colored speaker names.
-    /// Clicking a log entry highlights the speaker entity for 5 seconds.
+    /// Conversations are grouped by conversationId — click a group header to
+    /// expand/collapse the individual lines within that conversation.
+    /// Clicking an individual line highlights the speaker entity for 10 seconds
+    /// with layered effects (scale pulse, white flash, floating diamond indicator)
+    /// and pans the camera to focus on the entity.
     ///
-    /// Public API: ConversationLogPanel.PushLine(speaker, speakerName, listener, listenerName, text, color)
+    /// Public API: ConversationLogPanel.PushLine(speaker, speakerName, listener, listenerName, text, color, conversationId)
     /// Called by ConversationManager whenever a dialogue line is delivered.
     /// </summary>
     public class ConversationLogPanel : MonoBehaviour
@@ -24,9 +29,13 @@ namespace InkSim
         private const float CollapsedHeight = 48f;
         private const float ExpandedHeight = 520f;
         private const float EntryMinHeight = 44f;
-        private const float HighlightDuration = 5f;
+        private const float HeaderMinHeight = 44f;
+        private const float HighlightDuration = 10f;
 
-        // Data
+        // =====================================================================
+        // DATA MODEL
+        // =====================================================================
+
         private struct ConversationLogEntry
         {
             public string speakerName;
@@ -36,9 +45,27 @@ namespace InkSim
             public GridEntity speaker;
             public GridEntity listener;
             public int turnNumber;
+            public int conversationId;
         }
 
-        private readonly List<ConversationLogEntry> _entries = new List<ConversationLogEntry>();
+        private class ConversationGroup
+        {
+            public int conversationId;
+            public string initiatorName;   // First speaker's display name
+            public string responderName;   // First listener's display name
+            public Color color;            // Faction color from first line
+            public int lastActivityTurn;   // Turn when the most recent line was added
+            public GridEntity initiator;   // First speaker entity reference
+            public GridEntity responder;   // First listener entity reference
+            public readonly List<ConversationLogEntry> entries = new List<ConversationLogEntry>();
+        }
+
+        // Group-based storage (replaces flat _entries list)
+        private readonly List<ConversationGroup> _groups = new List<ConversationGroup>();
+        private readonly Dictionary<int, ConversationGroup> _groupLookup = new Dictionary<int, ConversationGroup>();
+        private readonly HashSet<int> _expandedGroups = new HashSet<int>();
+        private int _totalEntryCount;
+        private int _lastSeenTurn;  // Track when user last viewed — groups with activity after this are "new"
 
         // UI references
         private GameObject _canvasGO;
@@ -53,13 +80,41 @@ namespace InkSim
         private Text _badgeText;
         private GameObject _badgeGO;
 
-        // Entry pool (List-based for index access)
+        // Header pool (for group headers)
+        private readonly List<PooledGroupHeader> _headerPool = new List<PooledGroupHeader>();
+
+        // Entry pool (for individual line entries)
         private readonly List<PooledEntry> _entryPool = new List<PooledEntry>();
 
-        // Highlight tracking — prevents stacking coroutines on same entity
-        private Coroutine _activeHighlight;
-        private GridEntity _highlightedEntity;
-        private Color _highlightOriginalColor;
+        // Cached references (avoid FindFirstObjectByType per click)
+        private CameraController _cachedCamera;
+
+        // Cached material for highlight indicators (avoid allocating new Material per highlight)
+        private Material _highlightMaterial;
+
+        // Reusable StringBuilder to avoid string allocations in ConfigureGroupHeader/ConfigureLineEntry
+        private readonly StringBuilder _sb = new StringBuilder(256);
+
+        // Highlight tracking — supports multiple simultaneous highlights (e.g., both entities in a conversation)
+        private struct HighlightState
+        {
+            public Coroutine coroutine;
+            public GridEntity entity;
+            public Color originalColor;
+            public Vector3 originalScale;
+            public GameObject indicatorGO;
+        }
+        private readonly List<HighlightState> _activeHighlights = new List<HighlightState>(2);
+
+        private class PooledGroupHeader
+        {
+            public GameObject gameObject;
+            public Button arrowButton;      // Left-side arrow — toggles expand/collapse
+            public Text arrowText;          // ▶ or ▼
+            public Button bodyButton;       // Rest of header — camera pan + highlight both entities
+            public Text bodyText;           // Colored names + count + NEW tag
+            public Image background;
+        }
 
         private class PooledEntry
         {
@@ -88,6 +143,12 @@ namespace InkSim
         private void Start()
         {
             BuildUI();
+            _cachedCamera = UnityEngine.Object.FindFirstObjectByType<CameraController>();
+
+            // Pre-create shared material for highlight indicators
+            var shader = Shader.Find("Sprites/Default");
+            if (shader != null)
+                _highlightMaterial = new Material(shader);
         }
 
         // =====================================================================
@@ -100,19 +161,19 @@ namespace InkSim
         /// </summary>
         public static void PushLine(GridEntity speaker, string speakerName,
                                     GridEntity listener, string listenerName,
-                                    string text, Color color)
+                                    string text, Color color, int conversationId)
         {
             if (Instance == null) return;
-            Instance.PushLineInternal(speaker, speakerName, listener, listenerName, text, color);
+            Instance.PushLineInternal(speaker, speakerName, listener, listenerName, text, color, conversationId);
         }
 
         private void PushLineInternal(GridEntity speaker, string speakerName,
                                       GridEntity listener, string listenerName,
-                                      string text, Color color)
+                                      string text, Color color, int conversationId)
         {
             int turn = TurnManager.Instance != null ? TurnManager.Instance.TurnNumber : 0;
 
-            _entries.Add(new ConversationLogEntry
+            var entry = new ConversationLogEntry
             {
                 speakerName = speakerName,
                 listenerName = listenerName,
@@ -120,12 +181,33 @@ namespace InkSim
                 color = color,
                 speaker = speaker,
                 listener = listener,
-                turnNumber = turn
-            });
+                turnNumber = turn,
+                conversationId = conversationId
+            };
+
+            // Find or create group for this conversation
+            if (!_groupLookup.TryGetValue(conversationId, out var group))
+            {
+                group = new ConversationGroup
+                {
+                    conversationId = conversationId,
+                    initiatorName = speakerName,
+                    responderName = listenerName,
+                    color = color,
+                    initiator = speaker,
+                    responder = listener
+                };
+                _groups.Add(group);
+                _groupLookup[conversationId] = group;
+            }
+
+            group.entries.Add(entry);
+            group.lastActivityTurn = turn;
+            _totalEntryCount++;
 
             // Prune oldest if over limit
-            while (_entries.Count > MaxEntries)
-                _entries.RemoveAt(0);
+            while (_totalEntryCount > MaxEntries)
+                PruneOldest();
 
             // Refresh if expanded, otherwise track unread
             if (_expanded)
@@ -136,6 +218,22 @@ namespace InkSim
             {
                 _unreadCount++;
                 UpdateBadge();
+            }
+        }
+
+        private void PruneOldest()
+        {
+            if (_groups.Count == 0) return;
+
+            var oldest = _groups[0];
+            oldest.entries.RemoveAt(0);
+            _totalEntryCount--;
+
+            if (oldest.entries.Count == 0)
+            {
+                _groups.RemoveAt(0);
+                _groupLookup.Remove(oldest.conversationId);
+                _expandedGroups.Remove(oldest.conversationId);
             }
         }
 
@@ -160,7 +258,7 @@ namespace InkSim
             scaler.referenceResolution = new Vector2(1920, 1080);
 
             // Ensure EventSystem exists
-            if (FindObjectOfType<EventSystem>() == null)
+            if (UnityEngine.Object.FindFirstObjectByType<EventSystem>() == null)
             {
                 var es = new GameObject("EventSystem");
                 es.AddComponent<EventSystem>();
@@ -331,6 +429,7 @@ namespace InkSim
             if (_expanded)
             {
                 _unreadCount = 0;
+                _lastSeenTurn = TurnManager.Instance != null ? TurnManager.Instance.TurnNumber : 0;
                 UpdateBadge();
                 RefreshEntryList();
                 StartCoroutine(ScrollToBottomNextFrame());
@@ -352,11 +451,29 @@ namespace InkSim
         }
 
         // =====================================================================
-        // ENTRY LIST
+        // GROUP EXPAND / COLLAPSE
+        // =====================================================================
+
+        private void ToggleGroup(int conversationId)
+        {
+            if (!_expandedGroups.Remove(conversationId))
+                _expandedGroups.Add(conversationId);
+            RefreshEntryList();
+        }
+
+        // =====================================================================
+        // GROUPED ENTRY LIST
         // =====================================================================
 
         private void RefreshEntryList()
         {
+            // Deactivate all pooled headers
+            for (int i = 0; i < _headerPool.Count; i++)
+            {
+                if (_headerPool[i].gameObject != null)
+                    _headerPool[i].gameObject.SetActive(false);
+            }
+
             // Deactivate all pooled entries
             for (int i = 0; i < _entryPool.Count; i++)
             {
@@ -364,31 +481,192 @@ namespace InkSim
                     _entryPool[i].gameObject.SetActive(false);
             }
 
-            // Populate from entries
-            for (int i = 0; i < _entries.Count; i++)
+            int headerIndex = 0;
+            int entryIndex = 0;
+
+            for (int g = 0; g < _groups.Count; g++)
             {
-                var entry = _entries[i];
-                var pooled = GetOrCreateEntry(i);
+                var group = _groups[g];
+                bool groupExpanded = _expandedGroups.Contains(group.conversationId);
 
-                // Build rich text: colored speaker name + dimmed listener name + dialogue text
-                string colorHex = ColorUtility.ToHtmlStringRGB(entry.color);
-                if (!string.IsNullOrEmpty(entry.listenerName))
-                    pooled.text.text = $"<color=#{colorHex}>{entry.speakerName}</color> \u2192 <color=#AAAAAA>{entry.listenerName}</color>: {entry.text}";
-                else
-                    pooled.text.text = $"<color=#{colorHex}>{entry.speakerName}</color>: {entry.text}";
+                // --- Render group header ---
+                var header = GetOrCreateHeader(headerIndex++);
+                ConfigureGroupHeader(header, group, groupExpanded);
 
-                // Wire click handler
-                int capturedIndex = i;
-                pooled.button.onClick.RemoveAllListeners();
-                pooled.button.onClick.AddListener(() => OnEntryClicked(capturedIndex));
-
-                pooled.gameObject.SetActive(true);
-                pooled.gameObject.transform.SetAsLastSibling();
+                // --- If expanded, render individual line entries ---
+                if (groupExpanded)
+                {
+                    for (int e = 0; e < group.entries.Count; e++)
+                    {
+                        var pooled = GetOrCreateEntry(entryIndex++);
+                        ConfigureLineEntry(pooled, group.entries[e], e);
+                    }
+                }
             }
 
             // Auto-scroll to bottom
             StartCoroutine(ScrollToBottomNextFrame());
         }
+
+        // =====================================================================
+        // GROUP HEADER POOL
+        // =====================================================================
+
+        private PooledGroupHeader GetOrCreateHeader(int index)
+        {
+            if (index < _headerPool.Count)
+                return _headerPool[index];
+
+            // Create header container with horizontal layout for arrow | body split
+            var headerGO = new GameObject($"Header_{index}", typeof(Image), typeof(LayoutElement));
+            headerGO.transform.SetParent(_contentTransform, false);
+
+            var bg = headerGO.GetComponent<Image>();
+            bg.color = new Color(0.1f, 0.13f, 0.18f, 0.95f);
+
+            var le = headerGO.GetComponent<LayoutElement>();
+            le.minHeight = HeaderMinHeight;
+
+            var hlg = headerGO.AddComponent<HorizontalLayoutGroup>();
+            hlg.spacing = 0;
+            hlg.childControlWidth = true;
+            hlg.childForceExpandWidth = false;
+            hlg.childControlHeight = true;
+            hlg.childForceExpandHeight = true;
+            hlg.childAlignment = TextAnchor.MiddleLeft;
+            hlg.padding = new RectOffset(0, 0, 0, 0);
+
+            // --- Arrow button (left, fixed width ~36px) ---
+            var arrowGO = new GameObject("Arrow", typeof(Image), typeof(Button), typeof(LayoutElement));
+            arrowGO.transform.SetParent(headerGO.transform, false);
+
+            var arrowImg = arrowGO.GetComponent<Image>();
+            arrowImg.color = new Color(0.08f, 0.10f, 0.14f, 0.95f); // Slightly darker than header
+
+            var arrowBtn = arrowGO.GetComponent<Button>();
+
+            var arrowLE = arrowGO.GetComponent<LayoutElement>();
+            arrowLE.minWidth = 36f;
+            arrowLE.preferredWidth = 36f;
+            arrowLE.flexibleWidth = 0;
+
+            // Arrow text child
+            var arrowTextGO = new GameObject("Text", typeof(Text));
+            arrowTextGO.transform.SetParent(arrowGO.transform, false);
+
+            var arrowText = arrowTextGO.GetComponent<Text>();
+            arrowText.font = _font;
+            arrowText.fontSize = 18;
+            arrowText.fontStyle = FontStyle.Bold;
+            arrowText.color = new Color(0.7f, 0.85f, 0.9f, 1f);
+            arrowText.alignment = TextAnchor.MiddleCenter;
+            arrowText.text = "\u25B6"; // ▶
+
+            var arrowTextRT = arrowTextGO.GetComponent<RectTransform>();
+            arrowTextRT.anchorMin = Vector2.zero;
+            arrowTextRT.anchorMax = Vector2.one;
+            arrowTextRT.offsetMin = Vector2.zero;
+            arrowTextRT.offsetMax = Vector2.zero;
+
+            // --- Body button (right, flexible width) ---
+            var bodyGO = new GameObject("Body", typeof(Image), typeof(Button), typeof(LayoutElement));
+            bodyGO.transform.SetParent(headerGO.transform, false);
+
+            var bodyImg = bodyGO.GetComponent<Image>();
+            bodyImg.color = new Color(0f, 0f, 0f, 0f); // Transparent — header bg shows through
+
+            var bodyBtn = bodyGO.GetComponent<Button>();
+
+            var bodyLE = bodyGO.GetComponent<LayoutElement>();
+            bodyLE.flexibleWidth = 1f;
+
+            // Body text child
+            var bodyTextGO = new GameObject("Text", typeof(Text), typeof(ContentSizeFitter));
+            bodyTextGO.transform.SetParent(bodyGO.transform, false);
+
+            var bodyText = bodyTextGO.GetComponent<Text>();
+            bodyText.font = _font;
+            bodyText.fontSize = 18;
+            bodyText.fontStyle = FontStyle.Bold;
+            bodyText.color = new Color(0.85f, 0.85f, 0.85f, 1f);
+            bodyText.alignment = TextAnchor.MiddleLeft;
+            bodyText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            bodyText.verticalOverflow = VerticalWrapMode.Overflow;
+            bodyText.supportRichText = true;
+
+            var bodyTextRT = bodyTextGO.GetComponent<RectTransform>();
+            bodyTextRT.anchorMin = new Vector2(0, 0);
+            bodyTextRT.anchorMax = new Vector2(1, 1);
+            bodyTextRT.offsetMin = new Vector2(6, 2);
+            bodyTextRT.offsetMax = new Vector2(-8, -2);
+
+            var bodyTextFitter = bodyTextGO.GetComponent<ContentSizeFitter>();
+            bodyTextFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            bodyTextFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+
+            var pooled = new PooledGroupHeader
+            {
+                gameObject = headerGO,
+                arrowButton = arrowBtn,
+                arrowText = arrowText,
+                bodyButton = bodyBtn,
+                bodyText = bodyText,
+                background = bg
+            };
+
+            _headerPool.Add(pooled);
+            return pooled;
+        }
+
+        private void ConfigureGroupHeader(PooledGroupHeader pooled, ConversationGroup group, bool groupExpanded)
+        {
+            bool hasNewActivity = group.lastActivityTurn > _lastSeenTurn;
+
+            // Arrow text (just the indicator)
+            pooled.arrowText.text = groupExpanded ? "\u25BC" : "\u25B6"; // ▼ / ▶
+
+            // Body text: colored names + count + optional NEW tag (using StringBuilder)
+            _sb.Clear();
+            _sb.Append("<color=#");
+            _sb.Append(ColorUtility.ToHtmlStringRGB(group.color));
+            _sb.Append('>');
+            _sb.Append(group.initiatorName);
+            _sb.Append("</color> \u2194 <color=#AAAAAA>");
+            _sb.Append(group.responderName);
+            _sb.Append("</color> <color=#888888>(");
+            _sb.Append(group.entries.Count);
+            _sb.Append(")</color>");
+            if (hasNewActivity && !groupExpanded)
+                _sb.Append(" <color=#FFD700>NEW</color>");
+
+            pooled.bodyText.text = _sb.ToString();
+
+            // Header styling: brighter if new activity, darker when expanded
+            if (hasNewActivity && !groupExpanded)
+                pooled.background.color = new Color(0.16f, 0.18f, 0.10f, 0.95f); // Warm highlight for new activity
+            else if (groupExpanded)
+                pooled.background.color = new Color(0.14f, 0.17f, 0.22f, 0.95f);
+            else
+                pooled.background.color = new Color(0.1f, 0.13f, 0.18f, 0.95f);
+
+            // Arrow click → expand/collapse only (no camera pan)
+            pooled.arrowButton.onClick.RemoveAllListeners();
+            int convId = group.conversationId;
+            pooled.arrowButton.onClick.AddListener(() => ToggleGroup(convId));
+
+            // Body click → camera pan to midpoint + highlight BOTH entities (no expand/collapse)
+            pooled.bodyButton.onClick.RemoveAllListeners();
+            var capturedInitiator = group.initiator;
+            var capturedResponder = group.responder;
+            pooled.bodyButton.onClick.AddListener(() => OnGroupBodyClicked(capturedInitiator, capturedResponder));
+
+            pooled.gameObject.SetActive(true);
+            pooled.gameObject.transform.SetAsLastSibling();
+        }
+
+        // =====================================================================
+        // LINE ENTRY POOL
+        // =====================================================================
 
         private PooledEntry GetOrCreateEntry(int index)
         {
@@ -401,16 +679,14 @@ namespace InkSim
             entryGO.transform.SetParent(_contentTransform, false);
 
             var bg = entryGO.GetComponent<Image>();
-            bg.color = index % 2 == 0
-                ? new Color(0.08f, 0.1f, 0.12f, 0.6f)
-                : new Color(0.05f, 0.07f, 0.09f, 0.6f);
+            bg.color = new Color(0.06f, 0.08f, 0.10f, 0.6f);
 
             var btn = entryGO.GetComponent<Button>();
 
             var le = entryGO.GetComponent<LayoutElement>();
             le.minHeight = EntryMinHeight;
 
-            // Text child
+            // Text child — indented to show hierarchy under group header
             var textGO = new GameObject("Text", typeof(Text), typeof(ContentSizeFitter));
             textGO.transform.SetParent(entryGO.transform, false);
 
@@ -426,7 +702,7 @@ namespace InkSim
             var textRT = textGO.GetComponent<RectTransform>();
             textRT.anchorMin = new Vector2(0, 0);
             textRT.anchorMax = new Vector2(1, 1);
-            textRT.offsetMin = new Vector2(8, 2);
+            textRT.offsetMin = new Vector2(28, 2); // 28px left indent (vs 8px for headers)
             textRT.offsetMax = new Vector2(-8, -2);
 
             var textFitter = textGO.GetComponent<ContentSizeFitter>();
@@ -445,6 +721,41 @@ namespace InkSim
             return pooled;
         }
 
+        private void ConfigureLineEntry(PooledEntry pooled, ConversationLogEntry entry, int indexInGroup)
+        {
+            // Build rich text using StringBuilder to avoid string allocs
+            _sb.Clear();
+            _sb.Append("<color=#666666>[T");
+            _sb.Append(entry.turnNumber);
+            _sb.Append("]</color> <color=#");
+            _sb.Append(ColorUtility.ToHtmlStringRGB(entry.color));
+            _sb.Append('>');
+            _sb.Append(entry.speakerName);
+            _sb.Append("</color>");
+            if (!string.IsNullOrEmpty(entry.listenerName))
+            {
+                _sb.Append(" \u2192 <color=#AAAAAA>");
+                _sb.Append(entry.listenerName);
+                _sb.Append("</color>");
+            }
+            _sb.Append(": ");
+            _sb.Append(entry.text);
+            pooled.text.text = _sb.ToString();
+
+            // Alternating background for readability
+            pooled.background.color = indexInGroup % 2 == 0
+                ? new Color(0.06f, 0.08f, 0.10f, 0.6f)
+                : new Color(0.04f, 0.06f, 0.08f, 0.6f);
+
+            // Wire click handler — pass entry directly via closure capture
+            var capturedEntry = entry;
+            pooled.button.onClick.RemoveAllListeners();
+            pooled.button.onClick.AddListener(() => OnEntryClicked(capturedEntry));
+
+            pooled.gameObject.SetActive(true);
+            pooled.gameObject.transform.SetAsLastSibling();
+        }
+
         private IEnumerator ScrollToBottomNextFrame()
         {
             // Wait one frame for layout rebuild
@@ -457,51 +768,120 @@ namespace InkSim
         // CLICK-TO-HIGHLIGHT
         // =====================================================================
 
-        private void OnEntryClicked(int index)
+        /// <summary>
+        /// Called when the body (names area) of a group header is clicked.
+        /// Pans camera to the midpoint between both entities and highlights both.
+        /// Does NOT expand/collapse the group.
+        /// </summary>
+        private void OnGroupBodyClicked(GridEntity initiator, GridEntity responder)
         {
-            if (index < 0 || index >= _entries.Count) return;
+            bool initiatorAlive = initiator != null && initiator.gameObject.activeInHierarchy;
+            bool responderAlive = responder != null && responder.gameObject.activeInHierarchy;
 
-            var entry = _entries[index];
+            if (!initiatorAlive && !responderAlive)
+                return; // Both dead, nothing to do
 
+            // Cancel any existing highlights
+            CancelAllHighlights();
+
+            // Highlight each alive entity
+            if (initiatorAlive)
+                StartHighlight(initiator);
+            if (responderAlive)
+                StartHighlight(responder);
+
+            // Pan camera to the conversation location (midpoint between both entities)
+            Vector3 focusPos;
+            if (initiatorAlive && responderAlive)
+                focusPos = (initiator.transform.position + responder.transform.position) * 0.5f;
+            else if (initiatorAlive)
+                focusPos = initiator.transform.position;
+            else
+                focusPos = responder.transform.position;
+
+            if (_cachedCamera == null)
+                _cachedCamera = UnityEngine.Object.FindFirstObjectByType<CameraController>();
+            if (_cachedCamera != null)
+                _cachedCamera.FocusOnWorldPosition(focusPos, 10f);
+        }
+
+        private void OnEntryClicked(ConversationLogEntry entry)
+        {
             // Check if speaker is still alive (Unity null check)
             if (entry.speaker == null || !entry.speaker.gameObject.activeInHierarchy)
                 return;
 
-            // Stop any existing highlight and restore its color
-            CancelActiveHighlight();
+            // Stop any existing highlights
+            CancelAllHighlights();
 
-            _activeHighlight = StartCoroutine(HighlightEntity(entry.speaker));
+            // Highlight the single speaker entity
+            StartHighlight(entry.speaker);
+
+            // Pan camera to speaker and hold for 10 seconds
+            if (_cachedCamera == null)
+                _cachedCamera = UnityEngine.Object.FindFirstObjectByType<CameraController>();
+            if (_cachedCamera != null)
+                _cachedCamera.FocusOnWorldPosition(entry.speaker.transform.position, 10f);
         }
 
-        private void CancelActiveHighlight()
+        /// <summary>
+        /// Start a highlight on a single entity and track it for cancellation.
+        /// </summary>
+        private void StartHighlight(GridEntity entity)
         {
-            if (_activeHighlight != null)
-            {
-                StopCoroutine(_activeHighlight);
-                _activeHighlight = null;
-
-                // Restore the previously highlighted entity's color
-                if (_highlightedEntity != null)
-                {
-                    var sr = _highlightedEntity.GetComponent<SpriteRenderer>();
-                    if (sr != null) sr.color = _highlightOriginalColor;
-                }
-                _highlightedEntity = null;
-            }
-        }
-
-        private IEnumerator HighlightEntity(GridEntity entity)
-        {
-            if (entity == null) yield break;
+            if (entity == null) return;
 
             var sr = entity.GetComponent<SpriteRenderer>();
-            if (sr == null) yield break;
+            if (sr == null) return;
 
-            // Track for cancellation
-            _highlightedEntity = entity;
-            _highlightOriginalColor = sr.color;
+            var indicatorGO = CreateHighlightIndicator(entity);
+            var coroutine = StartCoroutine(HighlightEntity(entity, sr, sr.color, entity.transform.localScale, indicatorGO));
 
-            Color highlight = new Color(1f, 0.95f, 0.2f, 1f); // Yellow highlight
+            _activeHighlights.Add(new HighlightState
+            {
+                coroutine = coroutine,
+                entity = entity,
+                originalColor = sr.color,
+                originalScale = entity.transform.localScale,
+                indicatorGO = indicatorGO
+            });
+        }
+
+        /// <summary>
+        /// Cancel all active highlights, restoring original colors/scales and destroying indicators.
+        /// </summary>
+        private void CancelAllHighlights()
+        {
+            for (int i = 0; i < _activeHighlights.Count; i++)
+            {
+                var state = _activeHighlights[i];
+
+                if (state.coroutine != null)
+                    StopCoroutine(state.coroutine);
+
+                // Restore entity state
+                if (state.entity != null)
+                {
+                    var sr = state.entity.GetComponent<SpriteRenderer>();
+                    if (sr != null) sr.color = state.originalColor;
+                    state.entity.transform.localScale = state.originalScale;
+                }
+
+                // Destroy indicator
+                if (state.indicatorGO != null)
+                    Destroy(state.indicatorGO);
+            }
+
+            _activeHighlights.Clear();
+        }
+
+        /// <summary>
+        /// Coroutine that runs the 3-layer highlight effect on a single entity.
+        /// Each coroutine is self-contained with its own state — supports multiple concurrent highlights.
+        /// </summary>
+        private IEnumerator HighlightEntity(GridEntity entity, SpriteRenderer sr,
+            Color originalColor, Vector3 originalScale, GameObject indicatorGO)
+        {
             float elapsed = 0f;
 
             while (elapsed < HighlightDuration)
@@ -509,26 +889,87 @@ namespace InkSim
                 // Check entity still alive each frame
                 if (entity == null || !entity.gameObject.activeInHierarchy)
                 {
-                    if (sr != null) sr.color = _highlightOriginalColor;
-                    _activeHighlight = null;
-                    _highlightedEntity = null;
+                    if (sr != null) sr.color = originalColor;
+                    if (entity != null) entity.transform.localScale = originalScale;
+                    if (indicatorGO != null) Destroy(indicatorGO);
                     yield break;
                 }
 
-                // Pulse: smoothly oscillate between original and highlight
-                float t = Mathf.PingPong(elapsed * 3f, 1f);
-                sr.color = Color.Lerp(_highlightOriginalColor, highlight, t);
+                // --- Effect 1: Scale pulse (1.0x -> 1.25x, smooth sine, ~1s period) ---
+                float scalePulse = 1f + 0.25f * Mathf.Abs(Mathf.Sin(elapsed * Mathf.PI));
+                entity.transform.localScale = originalScale * scalePulse;
+
+                // --- Effect 2: Sharp white flash (every 1.5s, hold white 0.15s, ease back 0.3s) ---
+                float flashCycle = elapsed % 1.5f;
+                if (flashCycle < 0.15f)
+                {
+                    sr.color = Color.white;
+                }
+                else
+                {
+                    float fadeBack = Mathf.Clamp01((flashCycle - 0.15f) / 0.3f);
+                    sr.color = Color.Lerp(Color.white, originalColor, fadeBack);
+                }
+
+                // --- Effect 3: Floating diamond indicator follows entity and bobs ---
+                if (indicatorGO != null)
+                {
+                    float tileSize = GridWorld.Instance != null ? GridWorld.Instance.tileSize : 0.5f;
+                    float bobOffset = Mathf.Sin(elapsed * 3f) * tileSize * 0.15f;
+                    indicatorGO.transform.position =
+                        entity.transform.position + Vector3.up * (tileSize * 1.5f + bobOffset);
+                }
 
                 elapsed += Time.deltaTime;
                 yield return null;
             }
 
-            // Restore original color
+            // Restore original state
             if (entity != null && sr != null)
-                sr.color = _highlightOriginalColor;
+            {
+                sr.color = originalColor;
+                entity.transform.localScale = originalScale;
+            }
 
-            _activeHighlight = null;
-            _highlightedEntity = null;
+            if (indicatorGO != null)
+                Destroy(indicatorGO);
+        }
+
+        /// <summary>
+        /// Creates a diamond-shaped LineRenderer indicator above the entity.
+        /// Uses the same pattern as TileCursor (Sprites/Default shader, LineRenderer).
+        /// </summary>
+        private GameObject CreateHighlightIndicator(GridEntity entity)
+        {
+            float tileSize = GridWorld.Instance != null ? GridWorld.Instance.tileSize : 0.5f;
+
+            var go = new GameObject("HighlightIndicator");
+            // Not parented to entity — positioned manually each frame for independent cleanup
+            go.transform.position = entity.transform.position + Vector3.up * tileSize * 1.5f;
+
+            var line = go.AddComponent<LineRenderer>();
+            line.positionCount = 4;
+            line.loop = true;
+            line.startWidth = 0.03f;
+            line.endWidth = 0.03f;
+            line.useWorldSpace = false; // positions relative to GO
+            line.sortingOrder = 101;    // Just above TileCursor's 100
+
+            if (_highlightMaterial != null)
+                line.material = _highlightMaterial;
+
+            Color indicatorColor = new Color(1f, 0.95f, 0.2f, 1f); // Bright yellow
+            line.startColor = indicatorColor;
+            line.endColor = indicatorColor;
+
+            // Diamond shape (pointing downward like an arrow indicator)
+            float size = tileSize * 0.4f;
+            line.SetPosition(0, new Vector3(0, size, 0));           // Top
+            line.SetPosition(1, new Vector3(size * 0.6f, 0, 0));    // Right
+            line.SetPosition(2, new Vector3(0, -size * 0.5f, 0));   // Bottom (pointy)
+            line.SetPosition(3, new Vector3(-size * 0.6f, 0, 0));   // Left
+
+            return go;
         }
 
         // =====================================================================
@@ -552,6 +993,15 @@ namespace InkSim
 
         private void OnDestroy()
         {
+            CancelAllHighlights();
+
+            // Clean up cached material to prevent resource leak
+            if (_highlightMaterial != null)
+            {
+                Destroy(_highlightMaterial);
+                _highlightMaterial = null;
+            }
+
             if (Instance == this)
                 Instance = null;
         }

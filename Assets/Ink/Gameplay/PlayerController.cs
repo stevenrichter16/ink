@@ -69,7 +69,7 @@ namespace InkSim
             ItemDatabase.Initialize();
             LootDatabase.Initialize();
             
-            _turnManager = FindObjectOfType<TurnManager>();
+            _turnManager = UnityEngine.Object.FindFirstObjectByType<TurnManager>();
             
             // Auto-find Levelable if not assigned
             if (levelable == null)
@@ -191,7 +191,7 @@ namespace InkSim
         private ItemPickup FindPickupAt(int x, int y)
         {
             // Find ItemPickup at grid position
-            foreach (var pickup in FindObjectsOfType<ItemPickup>())
+            foreach (var pickup in UnityEngine.Object.FindObjectsByType<ItemPickup>(FindObjectsSortMode.None))
             {
                 if (pickup.gridX == x && pickup.gridY == y)
                     return pickup;

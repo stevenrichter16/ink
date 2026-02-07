@@ -572,7 +572,7 @@ public class LedgerTests
 
     private Text FindListLabel(string displayName)
     {
-        foreach (var txt in Object.FindObjectsOfType<Text>())
+        foreach (var txt in UnityEngine.Object.FindObjectsByType<Text>(FindObjectsSortMode.None))
         {
             if (txt.text.StartsWith(displayName) && System.Text.RegularExpressions.Regex.IsMatch(txt.text, @"\(-?\d+\)"))
                 return txt;

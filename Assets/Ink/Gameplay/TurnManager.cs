@@ -21,6 +21,7 @@ namespace InkSim
 
         public bool IsPlayerTurn { get; private set; } = true;
         public int TurnNumber { get; private set; } = 0;
+        public bool IsProcessingEnemyTurns => _processingEnemyTurns;
 
         private List<EnemyAI> _enemies = new List<EnemyAI>();
         private List<NpcAI> _npcs = new List<NpcAI>();

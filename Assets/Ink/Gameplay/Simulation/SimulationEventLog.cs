@@ -134,7 +134,7 @@ namespace InkSim
         /// </summary>
         public static void ToastAtPlayer(string message, Color color)
         {
-            var player = FindObjectOfType<PlayerController>();
+            var player = UnityEngine.Object.FindFirstObjectByType<PlayerController>();
             Vector3 pos = player != null
                 ? player.transform.position + Vector3.up * 0.5f
                 : Vector3.zero;

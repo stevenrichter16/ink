@@ -113,7 +113,7 @@ namespace InkSim
                     }
                     
                     // Also destroy any pickups
-                    foreach (var pickup in Object.FindObjectsOfType<ItemPickup>())
+                    foreach (var pickup in UnityEngine.Object.FindObjectsByType<ItemPickup>(FindObjectsSortMode.None))
                     {
                         if (pickup.gridX == x && pickup.gridY == y)
                             Object.Destroy(pickup.gameObject);
@@ -123,7 +123,7 @@ namespace InkSim
                     var entity = world.GetEntityAt(x, y);
                     bool hasNonPlayerEntity = entity != null && !(entity is PlayerController);
                     bool hasPickup = false;
-                    foreach (var pickup in Object.FindObjectsOfType<ItemPickup>())
+                    foreach (var pickup in UnityEngine.Object.FindObjectsByType<ItemPickup>(FindObjectsSortMode.None))
                     {
                         if (pickup.gridX == x && pickup.gridY == y)
                         {

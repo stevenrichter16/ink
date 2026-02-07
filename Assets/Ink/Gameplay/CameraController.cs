@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace InkSim
@@ -28,6 +29,11 @@ namespace InkSim
         private Camera _cam;
         private Vector3 _currentLookAhead;
         private Vector3 _lastTargetPos;
+
+        // Temporary focus override (used by ConversationLogPanel click-to-focus)
+        private bool _focusOverride;
+        private Vector3 _focusPosition;
+        private Coroutine _focusCoroutine;
         
         private void Start()
         {
@@ -47,11 +53,23 @@ namespace InkSim
         
         private void LateUpdate()
         {
-            if (target == null || _cam == null) return;
-            
+            if (_cam == null) return;
+
+            // Focus override: smoothly pan to a specific world position, skip normal follow
+            if (_focusOverride)
+            {
+                Vector3 focusCurrentPos = transform.position;
+                Vector3 focusSmoothed = Vector3.Lerp(focusCurrentPos, _focusPosition, smoothSpeed * Time.deltaTime);
+                focusSmoothed.z = -10f;
+                transform.position = ClampToBounds(focusSmoothed);
+                return;
+            }
+
+            if (target == null) return;
+
             Vector3 targetPos = target.position;
             Vector3 currentPos = transform.position;
-            
+
             // Calculate look-ahead based on movement direction
             if (enableLookAhead)
             {
@@ -127,12 +145,43 @@ namespace InkSim
         public void SnapToTarget()
         {
             if (target == null) return;
-            
+
             Vector3 pos = target.position;
             pos.z = -10f;
             transform.position = ClampToBounds(pos);
             _currentLookAhead = Vector3.zero;
             _lastTargetPos = target.position;
+        }
+
+        /// <summary>
+        /// Temporarily pan and hold the camera on a world position, then resume following the player.
+        /// Used by ConversationLogPanel to focus on a speaking entity.
+        /// Multiple calls cancel the previous focus.
+        /// </summary>
+        public void FocusOnWorldPosition(Vector3 worldPos, float holdDuration = 1.5f)
+        {
+            // Cancel any existing focus coroutine
+            if (_focusCoroutine != null)
+                StopCoroutine(_focusCoroutine);
+
+            Vector3 pos = worldPos;
+            pos.z = -10f;
+            _focusPosition = ClampToBounds(pos);
+            _focusOverride = true;
+
+            _focusCoroutine = StartCoroutine(FocusHoldCoroutine(holdDuration));
+        }
+
+        private IEnumerator FocusHoldCoroutine(float holdDuration)
+        {
+            yield return new WaitForSeconds(holdDuration);
+            _focusOverride = false;
+            _focusCoroutine = null;
+
+            // Reset look-ahead so camera doesn't lurch when resuming player follow
+            if (target != null)
+                _lastTargetPos = target.position;
+            _currentLookAhead = Vector3.zero;
         }
     }
 }
