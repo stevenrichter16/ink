@@ -81,7 +81,8 @@ namespace InkSim
                     var faction = dcs.Factions[f];
                     int factionEnemyCount = CountFactionEnemiesInDistrict(faction.id, def);
 
-                    if (factionEnemyCount < 2 && control > 0.65f)
+                    int reinforcementCap = SpawnCapScaler.GetReinforcementCap(state.prosperity);
+                    if (factionEnemyCount < reinforcementCap && control > 0.65f)
                     {
                         // Need reinforcements — check per-district cooldown
                         if (_reinforcementCooldowns.TryGetValue(state.Id, out int lastDay)
@@ -150,8 +151,18 @@ namespace InkSim
                 string enemyId = GetEnemyIdForFaction(attackerFactionId);
                 if (string.IsNullOrEmpty(enemyId)) continue;
 
-                // Spawn 2-3 raid enemies near the district border
-                int raidSize = Random.Range(2, 4);
+                // Spawn raid enemies — size scales with target district's prosperity deficit
+                float targetProsperity = 1f;
+                for (int d = 0; d < dcs.States.Count; d++)
+                {
+                    if (dcs.States[d].Id == districtId)
+                    {
+                        targetProsperity = dcs.States[d].prosperity;
+                        break;
+                    }
+                }
+                int baseRaidSize = Random.Range(2, 4);
+                int raidSize = SpawnCapScaler.GetRaidSize(baseRaidSize, targetProsperity);
                 int spawned = 0;
 
                 for (int i = 0; i < raidSize; i++)

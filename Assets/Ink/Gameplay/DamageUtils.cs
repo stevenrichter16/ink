@@ -44,7 +44,7 @@ namespace InkSim
             if (Random.value <= chance)
             {
                 // Show dodge feedback
-                DamageNumber.Spawn(defender.transform.position, 0, Color.cyan, true);
+                DamageNumber.SpawnText(defender.transform.position, "DODGE", Color.cyan, true);
 
                 // Spend attacker turn implicitly by just returning true
 

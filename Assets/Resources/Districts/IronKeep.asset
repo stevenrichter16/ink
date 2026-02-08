@@ -18,8 +18,8 @@ MonoBehaviour:
   economicValue: 0.7
   minX: 84
   maxX: 112
-  minY: 44
-  maxY: 66
+  minY: 132
+  maxY: 198
   producedGoods:
   - sword
   - shield

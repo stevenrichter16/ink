@@ -19,6 +19,8 @@ namespace InkSim
 
         [Header("Current State")]
         public int currentHealth;
+        public int currentInk;
+        public int maxInk = InkPool.DefaultMaxInk;
 
         [Header("Components")]
         public Inventory inventory;
@@ -80,6 +82,7 @@ namespace InkSim
                 levelable.OnLevelUp += OnLevelUp;
             
             currentHealth = MaxHealth;
+            currentInk = maxInk;
 
             // Start with armor tiers for testing
             inventory.AddItem("leather_armor", 1);
@@ -201,6 +204,9 @@ namespace InkSim
 
         private void EndTurn()
         {
+            // Regenerate ink each turn
+            currentInk = InkPool.RegenInk(currentInk, maxInk, InkPool.RegenPerTurn);
+
             if (_turnManager != null)
                 _turnManager.PlayerActed();
         }

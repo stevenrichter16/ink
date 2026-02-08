@@ -140,8 +140,18 @@ private void HandleSpellInput()
                 Debug.Log($"[SpellSystem] {spell.spellName} requires a target");
                 return false;
             }
-            
-            // All checks passed - cast the spell!
+
+            // Check ink (mana) cost
+            if (player != null && spell.manaCost > 0 && !InkPool.HasInk(player.currentInk, spell.manaCost))
+            {
+                Debug.Log($"[SpellSystem] Not enough ink for {spell.spellName} (need {spell.manaCost}, have {player.currentInk})");
+                return false;
+            }
+
+            // All checks passed - spend ink and cast the spell!
+            if (player != null && spell.manaCost > 0)
+                player.currentInk = InkPool.SpendInk(player.currentInk, spell.manaCost);
+
             CastSpell(spell, spellIndex, targetX, targetY);
             return true;
         }

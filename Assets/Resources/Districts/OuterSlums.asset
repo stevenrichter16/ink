@@ -18,8 +18,8 @@ MonoBehaviour:
   economicValue: 0.2
   minX: 3
   maxX: 30
-  minY: 3
-  maxY: 25
+  minY: 9
+  maxY: 75
   producedGoods:
   - dagger
   - leather_armor

@@ -42,6 +42,12 @@ namespace InkSim
         [Header("Targeting")]
         public bool targetFactionMembers = true;
 
+        [Header("Ranged")]
+        [Tooltip("Allow this enemy to use faction spells for ranged attacks.")]
+        public bool useFactionSpells = true;
+        private SpellData _rangedSpell;
+        private bool _rangedSpellChecked;
+
         public enum AIState
         {
             Idle,       // Stand still
@@ -105,6 +111,17 @@ namespace InkSim
             }
 
             int distToTarget = GridWorld.Distance(gridX, gridY, target.gridX, target.gridY);
+
+            // Try ranged attack before deciding to chase
+            EnsureRangedSpell();
+            if (EnemyRangedHelper.ShouldUseRanged(
+                    _rangedSpell != null, distToTarget, attackRange,
+                    _rangedSpell != null ? _rangedSpell.range : 0)
+                && CanCastSpellAt(target))
+            {
+                CastSpellAt(target);
+                return;
+            }
 
             if (distToTarget <= attackRange)
             {
@@ -235,9 +252,57 @@ namespace InkSim
         public override void Attack(GridEntity target)
         {
             if (!CanAttack(target)) return;
-            
+
             Debug.Log($"[{name}] Attacking {target.name} for {attackDamage} damage!");
             target.ReceiveHit(this, attackDamage, "melee");
+        }
+
+        // ── Ranged spell support (mirrors NpcAI pattern) ──────────────────
+
+        private void EnsureRangedSpell()
+        {
+            if (_rangedSpellChecked || !useFactionSpells) return;
+            _rangedSpellChecked = true;
+
+            var fm = GetComponent<FactionMember>();
+            if (fm == null || fm.faction == null) return;
+
+            var rank = fm.faction.GetRank(fm.rankId);
+            if (rank == null || rank.defaultSpells == null) return;
+
+            for (int i = 0; i < rank.defaultSpells.Count; i++)
+            {
+                var spell = rank.defaultSpells[i];
+                if (spell == null) continue;
+                if (spell.projectileType == ProjectileType.Fireball)
+                {
+                    _rangedSpell = spell;
+                    break;
+                }
+            }
+        }
+
+        private bool CanCastSpellAt(GridEntity target)
+        {
+            if (_rangedSpell == null || target == null) return false;
+            if (_rangedSpell.requiresLineOfSight &&
+                !SpellUtils.HasLineOfSight(gridX, gridY, target.gridX, target.gridY, _world))
+                return false;
+            return _rangedSpell.IsInRange(gridX, gridY, target.gridX, target.gridY);
+        }
+
+        private void CastSpellAt(GridEntity target)
+        {
+            if (_rangedSpell == null || _world == null || target == null) return;
+
+            Vector2Int adjusted = SpellUtils.GetAdjustedTarget(gridX, gridY, target.gridX, target.gridY, _world);
+            if (adjusted.x == gridX && adjusted.y == gridY) return;
+
+            float tileSize = _world.tileSize;
+            Vector3 startPos = new Vector3(gridX * tileSize, gridY * tileSize, 0f);
+            Vector3 targetPos = new Vector3(adjusted.x * tileSize, adjusted.y * tileSize, 0f);
+            Fireball.Create(_rangedSpell, startPos, targetPos, adjusted.x, adjusted.y, this);
+            Debug.Log($"[{name}] Casting ranged spell at {target.name}!");
         }
 
 public override void ApplyDamageInternal(int amount, GridEntity attacker)

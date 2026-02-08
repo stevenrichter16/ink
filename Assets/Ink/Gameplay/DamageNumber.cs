@@ -47,6 +47,16 @@ namespace InkSim
             return dn;
         }
 
+        /// <summary>
+        /// Spawn a text label (e.g. "DODGE", "MISS") at world position.
+        /// </summary>
+        public static DamageNumber SpawnText(Vector3 worldPos, string text, Color color, bool large = false)
+        {
+            DamageNumber dn = GetPooled();
+            dn.PrepareText(worldPos, text, color, large);
+            return dn;
+        }
+
         private void Update()
         {
             _elapsed += Time.deltaTime;
@@ -116,8 +126,13 @@ namespace InkSim
 
         private void Prepare(Vector3 worldPos, int damage, Color color, bool large)
         {
+            PrepareText(worldPos, damage.ToString(), color, large);
+        }
+
+        private void PrepareText(Vector3 worldPos, string label, Color color, bool large)
+        {
             _elapsed = 0f;
-            _text.text = damage.ToString();
+            _text.text = label;
             _text.fontSize = large ? 48 : 36;
             _text.color = color;
             _text.font = GetMonoFont();

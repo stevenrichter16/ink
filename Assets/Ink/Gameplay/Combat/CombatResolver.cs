@@ -20,6 +20,7 @@ namespace InkSim
             int actual = DamageUtils.ComputeDamageAfterDefense(rawDamage, defense);
 
             defender.ApplyDamageInternal(actual, attacker);
+            CombatFeedback.Play();
             return false;
         }
     }

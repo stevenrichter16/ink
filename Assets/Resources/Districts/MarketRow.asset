@@ -18,8 +18,8 @@ MonoBehaviour:
   economicValue: 0.9
   minX: 3
   maxX: 30
-  minY: 44
-  maxY: 66
+  minY: 132
+  maxY: 198
   producedGoods:
   - potion
   - gem

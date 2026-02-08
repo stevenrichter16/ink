@@ -206,6 +206,7 @@ namespace InkSim
             sb.AppendLine($"  <color={white}>Health:</color>  <color={gold}>{player.currentHealth}</color> / <color={gold}>{player.MaxHealth}</color> <color={dim}>(base {baseHp} + equip {player.equipment?.TotalHealthBonus ?? 0})</color>");
             sb.AppendLine($"  <color={white}>Attack:</color>  <color={gold}>{player.AttackDamage}</color> <color={dim}>(base {baseAtk} + equip {player.equipment?.TotalAttackBonus ?? 0})</color>");
             sb.AppendLine($"  <color={white}>Defense:</color> <color={gold}>{player.Defense}</color> <color={dim}>(base {baseDef} + equip {player.equipment?.TotalDefenseBonus ?? 0})</color>");
+            sb.AppendLine($"  <color=#4D99FF>Ink:</color>     <color={gold}>{player.currentInk}</color> / <color={gold}>{player.maxInk}</color> <color={dim}>(+{InkPool.RegenPerTurn}/turn)</color>");
             sb.AppendLine();
 
             // Equipment

@@ -131,8 +131,7 @@ private void SetupVisuals()
             // Create impact burst
             SpellVisuals.CreateImpactBurst(transform.position, edgeColor, 8, 2.5f);
             
-            // Screen shake could go here
-            // CameraShake.Instance?.Shake(0.1f, 0.05f);
+            // Hit-pause + camera shake now handled by CombatFeedback.Play() in CombatResolver
             
             Debug.Log($"[Fireball] Impact at ({targetGridX}, {targetGridY})");
         }

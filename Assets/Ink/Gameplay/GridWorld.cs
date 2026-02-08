@@ -12,7 +12,7 @@ namespace InkSim
 
         [Header("Grid Settings")]
         public int width = 120;
-        public int height = 70;
+        public int height = 210;
         public float tileSize = 0.5f;
 
         private bool[,] _walkable;

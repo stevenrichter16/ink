@@ -56,9 +56,23 @@ namespace InkSim
             if (!_stockInitialized || forceRestock)
             {
                 _runtimeStock.Clear();
+
+                // Scale stock quantities by district prosperity
+                float prosperity = 1f;
+                var dcs = DistrictControlService.Instance;
+                if (dcs != null)
+                {
+                    var pos = new Vector2Int(Mathf.RoundToInt(transform.position.x), Mathf.RoundToInt(transform.position.y));
+                    var state = dcs.GetStateByPosition(pos.x, pos.y);
+                    if (state != null)
+                        prosperity = state.prosperity;
+                }
+
                 foreach (var entry in Profile.stock)
                 {
-                    _runtimeStock.Add(entry.Clone());
+                    var clone = entry.Clone();
+                    clone.quantity = MerchantStockScaler.ScaleQuantity(clone.quantity, prosperity);
+                    _runtimeStock.Add(clone);
                 }
                 _stockInitialized = true;
             }

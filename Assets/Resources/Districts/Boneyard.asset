@@ -18,8 +18,8 @@ MonoBehaviour:
   economicValue: 0.3
   minX: 84
   maxX: 112
-  minY: 3
-  maxY: 25
+  minY: 9
+  maxY: 75
   producedGoods:
   - gem
   - dagger

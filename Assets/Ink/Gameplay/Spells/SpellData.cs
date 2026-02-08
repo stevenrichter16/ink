@@ -25,7 +25,7 @@ namespace InkSim
         
         [Header("Combat")]
         public int damage = 5;
-        public int manaCost = 0; // For future mana system
+        public int manaCost = 10;
         public float cooldown = 1f;
         
         [Header("Targeting")]
