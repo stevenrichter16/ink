@@ -8,8 +8,8 @@ public class DodgeTests
     public void EqualSpeeds_AboutFiftyPercentBeforeCaps()
     {
         float chance = DamageUtils.ComputeDodgeChance(defenderSpeed: 10, attackerSpeed: 10, typeHint: "melee");
-        // With melee multiplier 0.9, expected ~10/(10+10)=0.5 * 0.9 = 0.45
-        Assert.That(chance, Is.EqualTo(0.45f).Within(0.001f));
+        // With melee multiplier 1.1, expected ~10/(10+10)=0.5 * 1.1 = 0.5 (capped at DodgeMax)
+        Assert.That(chance, Is.EqualTo(DamageUtils.DodgeMax).Within(0.001f));
     }
 
     [Test]
@@ -29,10 +29,11 @@ public class DodgeTests
     }
 
     [Test]
-    public void ProjectileGetsHigherDodgeMultiplier()
+    public void MeleeEasierToDodgeThanProjectile()
     {
         float melee = DamageUtils.ComputeDodgeChance(defenderSpeed: 10, attackerSpeed: 10, typeHint: "melee");
         float proj = DamageUtils.ComputeDodgeChance(defenderSpeed: 10, attackerSpeed: 10, typeHint: "projectile");
-        Assert.Greater(proj, melee);
+        // Melee multiplier (1.1) > Projectile multiplier (0.9) — melee attacks are easier to dodge
+        Assert.Greater(melee, proj);
     }
 }

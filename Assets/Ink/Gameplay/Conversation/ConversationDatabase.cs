@@ -70,11 +70,13 @@ namespace InkSim
         /// <summary>
         /// Find a valid conversation template for two entities given their topic and faction relationship.
         /// Returns null if no valid template is found.
+        /// When districtState is provided, templates with predicates are validated against world state.
         /// </summary>
         public static ConversationTemplate FindTemplate(
             FactionMember initiator,
             FactionMember responder,
-            ConversationTopicTag topic)
+            ConversationTopicTag topic,
+            DistrictState districtState = null)
         {
             EnsureInitialized();
 
@@ -110,6 +112,28 @@ namespace InkSim
                 if (t.requireRankDifference && sameFaction)
                 {
                     if (!HasRankDifference(initiator, responder))
+                        continue;
+                }
+
+                // Faction gate filter (hostility dialogue is faction-specific)
+                if (!string.IsNullOrEmpty(t.requiredInitiatorFactionId))
+                {
+                    if (initiator.faction == null || initiator.faction.id != t.requiredInitiatorFactionId)
+                        continue;
+                }
+
+                // World-state predicate filter
+                if (t.predicate != null)
+                {
+                    if (!t.predicate(initiator, responder, districtState))
+                        continue;
+                }
+
+                // Per-template cooldown filter
+                if (t.cooldownTurns > 0 && ConversationManager.Instance != null)
+                {
+                    int currentTurn = TurnManager.Instance != null ? TurnManager.Instance.TurnNumber : 0;
+                    if (!ConversationManager.Instance.IsTemplateCooldownExpired(t.id, currentTurn, t.cooldownTurns))
                         continue;
                 }
 

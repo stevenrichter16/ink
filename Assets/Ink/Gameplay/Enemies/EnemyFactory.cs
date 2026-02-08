@@ -50,8 +50,10 @@ namespace InkSim
 
             var defaultSpecies = GetDefaultSpeciesForEnemyId(enemyId);
             if (defaultSpecies != null)
+            {
                 speciesMember.species = defaultSpecies;
                 speciesMember.EnsureDefaultFaction();
+            }
         }
         /// <summary>
         /// Spawn an enemy by type ID at the given grid position.
@@ -147,6 +149,19 @@ namespace InkSim
                 member.rankId = factionRankId;
             member.applyLevelFromRank = faction != null;
             member.ApplyRank();
+
+            // Safety net: ensure HP is initialized even if ApplyRank early-returned (no faction)
+            enemy.InitializeHealth();
+
+            // Assign home district and leash
+            var dcs = DistrictControlService.Instance;
+            if (dcs != null)
+            {
+                var districtState = dcs.GetStateByPosition(x, y);
+                if (districtState != null)
+                    member.homeDistrictId = districtState.Id;
+            }
+            enemy.leashRange = 15;
 
             // Register with world
             gridWorld.SetOccupant(x, y, enemy);

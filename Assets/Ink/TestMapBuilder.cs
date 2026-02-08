@@ -353,6 +353,11 @@ namespace InkSim
             territoryDebugGO.transform.SetParent(transform, false);
             territoryDebugGO.AddComponent<TerritoryDebugPanel>();
 
+            var territoryOverlayGO = new GameObject("TerritoryOverlay");
+            territoryOverlayGO.transform.SetParent(transform, false);
+            var territoryOverlay = territoryOverlayGO.AddComponent<TerritoryOverlay>();
+            territoryOverlay.Initialize(tileSize);
+
             // World simulation layer (faction AI, dynamic spawning, NPC goals, etc.)
             var simGO = new GameObject("WorldSimulationService");
             simGO.transform.SetParent(transform, false);
@@ -377,6 +382,24 @@ namespace InkSim
             var demonFaction = Resources.Load<FactionDefinition>("Factions/Demon");
             var snakeFaction = Resources.Load<FactionDefinition>("Factions/Snake");
             var slimeFaction = Resources.Load<FactionDefinition>("Factions/Slime");
+
+            // Assign territory overlay colors
+            if (inkboundFaction != null)  inkboundFaction.color  = new Color(0.2f, 0.4f, 0.9f, 0.25f);
+            if (inkguardFaction != null)  inkguardFaction.color  = new Color(0.9f, 0.8f, 0.2f, 0.25f);
+            if (skeletonFaction != null)  skeletonFaction.color  = new Color(0.7f, 0.7f, 0.7f, 0.25f);
+            if (goblinFaction != null)    goblinFaction.color    = new Color(0.2f, 0.8f, 0.3f, 0.25f);
+            if (snakeFaction != null)     snakeFaction.color     = new Color(0.6f, 0.2f, 0.8f, 0.25f);
+            if (demonFaction != null)     demonFaction.color     = new Color(0.9f, 0.2f, 0.2f, 0.25f);
+
+            // District HUD (upper-left: shows current district name + controlling faction)
+            var districtHudGO = new GameObject("DistrictHUD");
+            districtHudGO.transform.SetParent(transform, false);
+            districtHudGO.AddComponent<DistrictHUD>();
+
+            // Faction Legend (bottom-left: shows faction color key, synced with overlay toggle)
+            var legendGO = new GameObject("FactionLegendPanel");
+            legendGO.transform.SetParent(transform, false);
+            legendGO.AddComponent<FactionLegendPanel>().Initialize(territoryOverlay);
 
             // Load species
             var humanSpecies = Resources.Load<SpeciesDefinition>("Species/Human");
@@ -1033,7 +1056,7 @@ private void CreateEnemy(int tileIndex, int x, int y, string lootTableId, int le
             enemy.currentHealth = enemy.maxHealth; // Initialize from levelable
             enemy.lootTableId = lootTableId;
             enemy.enemyId = lootTableId;
-
+            enemy.leashRange = 15;
 
             if (species == null)
             {
@@ -1100,6 +1123,15 @@ private void CreateEnemy(int tileIndex, int x, int y, string lootTableId, int le
                 member.faction = faction ?? species?.defaultFaction;
                 member.rankId = factionRankId;
                 member.ApplyRank();
+
+                // Assign home district from spawn position (null for wilderness border patrols)
+                var dcs = DistrictControlService.Instance;
+                if (dcs != null)
+                {
+                    var districtState = dcs.GetStateByPosition(x, y);
+                    if (districtState != null)
+                        member.homeDistrictId = districtState.Id;
+                }
             }
             else
             {

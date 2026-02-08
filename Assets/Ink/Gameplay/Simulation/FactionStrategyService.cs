@@ -226,6 +226,12 @@ namespace InkSim
                         string loserId = dcs.Factions[f].id;
                         string winnerId = dcs.Factions[owner].id;
                         ReputationSystem.AddInterRep(loserId, winnerId, -5);
+
+                        // Report territory seizure to hostility pipeline
+                        var def = state.Definition;
+                        int cx = def != null ? (def.minX + def.maxX) / 2 : 0;
+                        int cy = def != null ? (def.minY + def.maxY) / 2 : 0;
+                        HostilityPipeline.ReportIncident(IncidentType.TerritorySeized, cx, cy, winnerId, loserId);
                     }
                 }
             }

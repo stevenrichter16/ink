@@ -14,8 +14,8 @@ namespace InkSim
         public const float DodgeMin = 0.05f;
         public const float DodgeMax = 0.5f;
         public const float DodgeBias = 1.0f; // scales attacker speed contribution
-        public const float MeleeDodgeMultiplier = 0.9f;
-        public const float ProjectileDodgeMultiplier = 1.1f;
+        public const float MeleeDodgeMultiplier = 1.1f;      // melee is easier to dodge (higher mult = more dodge chance)
+        public const float ProjectileDodgeMultiplier = 0.9f;  // projectiles are harder to dodge
 
         /// <summary>
         /// Compute dodge chance based on defender and attacker speed.
@@ -109,16 +109,21 @@ namespace InkSim
         }
 
         /// <summary>
+        /// Max fraction of damage that defense can absorb (80%).
+        /// </summary>
+        public const float MaxDefenseReduction = 0.8f;
+
+        /// <summary>
         /// Applies percent-based defense reduction to raw damage.
-        /// No soft caps; result is clamped at a minimum of 0.
+        /// Capped at 80% reduction so attacks always deal at least 20% of raw damage.
         /// </summary>
         public static int ComputeDamageAfterDefense(int rawDamage, int defense, float perPoint = DefenseReductionPerPoint)
         {
             if (rawDamage <= 0) return 0;
-            float reduction = defense * perPoint;
+            float reduction = Mathf.Min(MaxDefenseReduction, defense * perPoint);
             float scaled = rawDamage * (1f - reduction);
             int actual = Mathf.RoundToInt(scaled);
-            return Mathf.Max(0, actual);
+            return Mathf.Max(1, actual); // Always deal at least 1 damage
         }
     }
 }

@@ -104,6 +104,11 @@ namespace InkSim
 
             entry.state = QuestState.TurnedIn;
             GrantRewards(entry.definition);
+
+            // Notify territory system so quest completion shifts district control
+            if (entry.definition != null && !string.IsNullOrEmpty(entry.definition.districtId))
+                TerritoryImpactService.OnQuestCompleted(entry.definition.districtId);
+
             OnQuestUpdated?.Invoke(entry);
         }
 

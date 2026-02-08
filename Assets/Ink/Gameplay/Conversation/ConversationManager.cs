@@ -120,6 +120,15 @@ namespace InkSim
         private readonly List<WeightedTopic> _topicWeights = new List<WeightedTopic>(16);
         private readonly List<GridEntity> _cooldownRemoveList = new List<GridEntity>(8);
 
+        // Anti-spam: per-template cooldown tracking (templateId → last turn fired)
+        private readonly Dictionary<string, int> _templateLastFiredTurn = new Dictionary<string, int>(32);
+
+        // Anti-spam: topic frequency cap (topic → window start turn, count in window)
+        private readonly Dictionary<ConversationTopicTag, (int windowStart, int count)> _topicFrequency
+            = new Dictionary<ConversationTopicTag, (int, int)>(16);
+        private const int TopicFrequencyWindow = 20;  // turns
+        private const int TopicFrequencyMax = 3;       // max same-topic conversations per window
+
         // Reusable StringBuilder for ResolveTokens (avoids 7-10 string allocs per call)
         private readonly StringBuilder _tokenSB = new StringBuilder(256);
 
@@ -232,19 +241,34 @@ namespace InkSim
             // Select topic based on relationship + world state
             ConversationTopicTag topic = SelectTopic(entity, initiatorFm, partner, partnerFm);
 
-            // Find matching template
-            ConversationTemplate template = ConversationDatabase.FindTemplate(initiatorFm, partnerFm, topic);
+            // Resolve district state for predicate evaluation
+            DistrictState districtState = null;
+            var dcsRef = DistrictControlService.Instance;
+            if (dcsRef != null)
+                districtState = dcsRef.GetStateByPosition(entity.gridX, entity.gridY);
+
+            // Topic frequency cap — if this topic is over-saturated, fall back to Greeting
+            int currentTurn = TurnManager.Instance != null ? TurnManager.Instance.TurnNumber : 0;
+            if (!IsTopicUnderCap(topic, currentTurn))
+                topic = ConversationTopicTag.Greeting;
+
+            // Find matching template (predicates + cooldowns checked inside)
+            ConversationTemplate template = ConversationDatabase.FindTemplate(
+                initiatorFm, partnerFm, topic, districtState);
             if (template == null) return false;
 
             // Create and start conversation
             var conv = CreateConversation(template, entity, partner, initiatorFm, partnerFm);
-            int currentTurn = TurnManager.Instance != null ? TurnManager.Instance.TurnNumber : 0;
             conv.createdOnTurn = currentTurn;
             _active.Add(conv);
             _lastConversationTurn[entity] = currentTurn;
             _lastConversationTurn[partner] = currentTurn;
             _inConversation.Add(entity);
             _inConversation.Add(partner);
+
+            // Anti-spam: record template cooldown + topic frequency
+            _templateLastFiredTurn[template.id] = currentTurn;
+            RecordTopicUsage(template.topic, currentTurn);
 
             // Log to event feed
             bool sameFaction = initiatorFm.faction.id == partnerFm.faction.id;
@@ -295,6 +319,42 @@ namespace InkSim
             _inConversation.Clear();
             _lastConversationTurn.Clear();
             _displayNameCache.Clear();
+            _templateLastFiredTurn.Clear();
+            _topicFrequency.Clear();
+        }
+
+        // =====================================================================
+        // ANTI-SPAM
+        // =====================================================================
+
+        /// <summary>
+        /// Check if a template's cooldown has expired. Called by ConversationDatabase.FindTemplate.
+        /// </summary>
+        public bool IsTemplateCooldownExpired(string templateId, int currentTurn, int cooldownTurns)
+        {
+            if (string.IsNullOrEmpty(templateId) || cooldownTurns <= 0) return true;
+            if (!_templateLastFiredTurn.TryGetValue(templateId, out int lastTurn)) return true;
+            return (currentTurn - lastTurn) >= cooldownTurns;
+        }
+
+        private bool IsTopicUnderCap(ConversationTopicTag topic, int currentTurn)
+        {
+            if (!_topicFrequency.TryGetValue(topic, out var entry)) return true;
+            if (currentTurn - entry.windowStart >= TopicFrequencyWindow) return true;
+            return entry.count < TopicFrequencyMax;
+        }
+
+        private void RecordTopicUsage(ConversationTopicTag topic, int currentTurn)
+        {
+            if (!_topicFrequency.TryGetValue(topic, out var entry)
+                || currentTurn - entry.windowStart >= TopicFrequencyWindow)
+            {
+                _topicFrequency[topic] = (currentTurn, 1);
+            }
+            else
+            {
+                _topicFrequency[topic] = (entry.windowStart, entry.count + 1);
+            }
         }
 
         // =====================================================================
@@ -367,6 +427,7 @@ namespace InkSim
         {
             _topicWeights.Clear();
 
+            var dcs = DistrictControlService.Instance;
             bool sameFaction = fmA.faction.id == fmB.faction.id;
 
             if (sameFaction)
@@ -415,10 +476,38 @@ namespace InkSim
                 var relation = TradeRelationRegistry.GetRelation(fmA.faction.id, fmB.faction.id);
                 if (relation != null && relation.status == TradeStatus.Embargo)
                     AddTopic(ConversationTopicTag.TradeEmbargo, 35);
+
+                // Hostility pipeline stage-based topics
+                var pipelineStage = HostilityPipeline.GetStage(fmA.faction.id, fmB.faction.id,
+                    dcs != null ? (dcs.GetStateByPosition(entityA.gridX, entityA.gridY)?.Id ?? "") : "");
+                switch (pipelineStage)
+                {
+                    case EscalationStage.Uneasy:
+                        AddTopic(ConversationTopicTag.HostilityLowTension, 20);
+                        break;
+                    case EscalationStage.Tense:
+                        AddTopic(ConversationTopicTag.HostilityWarning, 25);
+                        AddTopic(ConversationTopicTag.HostilityGrievance, 20);
+                        break;
+                    case EscalationStage.Volatile:
+                        AddTopic(ConversationTopicTag.HostilityEscalation, 35);
+                        AddTopic(ConversationTopicTag.HostilityGrievance, 15);
+                        break;
+                    case EscalationStage.Explosive:
+                        AddTopic(ConversationTopicTag.HostilityBrawlStart, 40);
+                        AddTopic(ConversationTopicTag.HostilityEscalation, 20);
+                        break;
+                }
+
+                // De-escalation and aftermath (check peak tension for cross-district awareness)
+                var peakRecord = HostilityPipeline.GetPeakTension(fmA.faction.id, fmB.faction.id);
+                if (peakRecord.stage == EscalationStage.Volatile && peakRecord.incidentCount > 0)
+                    AddTopic(ConversationTopicTag.HostilityDeEscalation, 20);
+                if (peakRecord.stage <= EscalationStage.Uneasy && peakRecord.incidentCount >= 3)
+                    AddTopic(ConversationTopicTag.HostilityAftermath, 15);
             }
 
             // World context overlays (both same and cross-faction)
-            var dcs = DistrictControlService.Instance;
             if (dcs != null)
             {
                 var districtState = dcs.GetStateByPosition(entityA.gridX, entityA.gridY);
@@ -595,11 +684,54 @@ namespace InkSim
                         switch (token)
                         {
                             case "FACTION_SELF":   _tokenSB.Append(selfName); break;
-                            case "FACTION_OTHER":  _tokenSB.Append(otherName); break;
+                            case "FACTION_OTHER":
+                            case "OPPONENT_FACTION":
+                                _tokenSB.Append(otherName); break;
                             case "DISTRICT":       _tokenSB.Append(districtName); break;
                             case "PROSPERITY":     _tokenSB.Append(prosDesc); break;
                             case "CONTROL":        _tokenSB.Append(controlDesc); break;
                             case "TRADE_STATUS":   _tokenSB.Append(tradeDesc); break;
+                            case "INCIDENT_TYPE":
+                            {
+                                // Resolve from pipeline tension record
+                                if (speakerFm?.faction != null && listenerFm?.faction != null)
+                                {
+                                    string did = "";
+                                    if (dcs != null)
+                                    {
+                                        var ds2 = dcs.GetStateByPosition(speaker.gridX, speaker.gridY);
+                                        if (ds2 != null) did = ds2.Id;
+                                    }
+                                    var tr = HostilityPipeline.GetTension(speakerFm.faction.id, listenerFm.faction.id, did);
+                                    _tokenSB.Append(tr.incidentCount > 0
+                                        ? IncidentTensionDeltas.GetDisplayName(tr.lastIncidentType)
+                                        : "provocation");
+                                }
+                                else
+                                {
+                                    _tokenSB.Append("provocation");
+                                }
+                                break;
+                            }
+                            case "TENSION_LEVEL":
+                            {
+                                if (speakerFm?.faction != null && listenerFm?.faction != null)
+                                {
+                                    string did = "";
+                                    if (dcs != null)
+                                    {
+                                        var ds2 = dcs.GetStateByPosition(speaker.gridX, speaker.gridY);
+                                        if (ds2 != null) did = ds2.Id;
+                                    }
+                                    var stage = HostilityPipeline.GetStage(speakerFm.faction.id, listenerFm.faction.id, did);
+                                    _tokenSB.Append(stage.ToString().ToLowerInvariant());
+                                }
+                                else
+                                {
+                                    _tokenSB.Append("calm");
+                                }
+                                break;
+                            }
                             default:
                                 // Unknown token — keep as-is
                                 _tokenSB.Append('{');

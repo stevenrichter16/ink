@@ -267,7 +267,10 @@ private void UpdateRetracting()
             
             var entity = gridWorld.GetEntityAt(targetGridX, targetGridY);
             if (entity == null || entity == caster) return;
-            
+
+            // Hostility pipeline gate: skip allies, truce members, same faction
+            if (!HostilityPipeline.AuthorizeFight(caster, entity).authorized) return;
+
             int raw = damage;
             int casterAtk = DamageUtils.GetAttackDamage(caster);
             if (casterAtk > 0)
@@ -279,7 +282,7 @@ private void UpdateRetracting()
         
         private void SpawnPuddle()
         {
-            InkPuddle.Create(targetGridX, targetGridY, target);
+            InkPuddle.Create(targetGridX, targetGridY, target, casterEntity: caster);
         }
         
         /// <summary>

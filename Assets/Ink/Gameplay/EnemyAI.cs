@@ -41,7 +41,6 @@ namespace InkSim
 
         [Header("Targeting")]
         public bool targetFactionMembers = true;
-        private GridEntity _retaliationTarget;
 
         public enum AIState
         {
@@ -79,6 +78,10 @@ namespace InkSim
             
             if (_turnManager != null)
                 _turnManager.RegisterEnemy(this);
+
+            // Record spawn position for leash
+            spawnX = gridX;
+            spawnY = gridY;
         }
 
         /// <summary>
@@ -141,8 +144,10 @@ namespace InkSim
             string targetName = target is PlayerController ? "Player" : target.name;
             Debug.Log($"[Chase]{factionInfo} {name} is chasing {targetName} (distance: {GridWorld.Distance(gridX, gridY, target.gridX, target.gridY)})");
 
-            Vector2Int dir = GridWorld.DirectionToward(gridX, gridY, target.gridX, target.gridY);
-            
+            Vector2Int dir = GridPathfinder.GetNextStep(gridX, gridY, target.gridX, target.gridY, GridWorld.Instance);
+            if (dir == Vector2Int.zero)
+                dir = GridWorld.DirectionToward(gridX, gridY, target.gridX, target.gridY);
+
             // Try to move in that direction
             if (!TryMove(dir))
             {
@@ -165,29 +170,9 @@ namespace InkSim
             GridEntity bestTarget = null;
             int bestDistance = int.MaxValue;
 
-            // Prefer explicit retaliation target if valid AND still hostile
-            if (_retaliationTarget != null && _retaliationTarget.gameObject.activeInHierarchy)
-            {
-                // Clear retaliation if target is no longer hostile (e.g., reputation improved)
-                if (!HostilityService.IsHostile(this, _retaliationTarget))
-                {
-                    Debug.Log($"[{name}] Clearing retaliation target - no longer hostile");
-                    _retaliationTarget = null;
-                }
-                else
-                {
-                    int dist = GridWorld.Distance(gridX, gridY, _retaliationTarget.gridX, _retaliationTarget.gridY);
-                    if (dist <= aggroRange)
-                    {
-                        bestTarget = _retaliationTarget;
-                        bestDistance = dist;
-                    }
-                    else
-                    {
-                        _retaliationTarget = null;
-                    }
-                }
-            }
+            // Leash check: if too far from spawn, don't acquire new targets
+            if (leashRange > 0 && GridWorld.Distance(gridX, gridY, spawnX, spawnY) > leashRange)
+                return null;
 
             if (_player != null && _player.gameObject.activeInHierarchy && HostilityService.IsHostile(this, _player))
             {
@@ -235,13 +220,7 @@ namespace InkSim
         public override bool CanAttack(GridEntity target)
         {
             if (target == null) return false;
-            if (target == _retaliationTarget) return true;
-            return HostilityService.IsHostile(this, target);
-        }
-
-        public void SetRetaliationTarget(GridEntity target)
-        {
-            _retaliationTarget = target;
+            return HostilityPipeline.AuthorizeFight(this, target).authorized;
         }
 
         public override int GetDefenseValue()
@@ -273,8 +252,8 @@ public override void ApplyDamageInternal(int amount, GridEntity attacker)
                 FactionCombatService.OnPlayerHit(this, pc);
             }
 
-            // Dodge handled in CombatResolver
-            int actualDamage = DamageUtils.ComputeDamageAfterDefense(amount, GetDefenseValue());
+            // Defense already applied in CombatResolver — do not reduce again
+            int actualDamage = amount;
 
             if (actualDamage == 0)
             {
@@ -300,7 +279,8 @@ public override void ApplyDamageInternal(int amount, GridEntity attacker)
             }
             else if (attacker != null && !HostilityService.AreSameFaction(this, attacker) && HostilityService.ShouldRetaliate(this, attacker))
             {
-                _retaliationTarget = attacker;
+                // Record in pipeline so AuthorizeFight allows retaliation
+                HostilityPipeline.RecordRetaliation(attacker, this);
             }
         }
 

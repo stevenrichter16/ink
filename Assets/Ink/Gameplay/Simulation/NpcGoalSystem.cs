@@ -222,8 +222,8 @@ namespace InkSim
                 }
             }
 
-            // Low-rank NPCs might migrate toward prosperity
-            if (districtState != null && districtState.prosperity < 0.4f)
+            // Low-rank NPCs might migrate toward prosperity (only after day 5)
+            if (dcs.CurrentDay >= 5 && districtState != null && districtState.prosperity < 0.4f)
             {
                 // Look for a better district
                 DistrictState bestDistrict = null;
@@ -359,7 +359,11 @@ namespace InkSim
 
             if (dist <= 2)
             {
-                // Arrived at destination
+                // Arrived at destination — update home district so wander stays in bounds
+                var fm = npc.GetComponent<FactionMember>();
+                if (fm != null && !string.IsNullOrEmpty(goal.targetDistrictId))
+                    fm.homeDistrictId = goal.targetDistrictId;
+
                 Debug.Log($"[NpcGoalSystem] {npc.name} migrated to {goal.targetDistrictId}");
                 _goals.Remove(npc);
                 return true;
@@ -449,20 +453,22 @@ namespace InkSim
         /// </summary>
         private static bool MoveToward(NpcAI npc, Vector2Int target, GridWorld gridWorld)
         {
-            Vector2Int dir = GridWorld.DirectionToward(npc.gridX, npc.gridY, target.x, target.y);
+            Vector2Int dir = GridPathfinder.GetNextStep(npc.gridX, npc.gridY, target.x, target.y, gridWorld);
+            if (dir == Vector2Int.zero)
+                dir = GridWorld.DirectionToward(npc.gridX, npc.gridY, target.x, target.y);
             if (dir == Vector2Int.zero) return false;
 
             if (npc.TryMove(dir))
                 return true;
 
-            // Try alternate directions
+            // BFS gave a direction but tile is occupied — try perpendicular fallback
             Vector2Int alt1 = new Vector2Int(dir.y, dir.x);
             Vector2Int alt2 = new Vector2Int(-dir.y, -dir.x);
 
             if (npc.TryMove(alt1)) return true;
             if (npc.TryMove(alt2)) return true;
 
-            return true; // Still "handled" even if blocked
+            return false; // Movement failed — let caller try alternatives
         }
 
         private static Vector2Int GetRandomDirection()

@@ -114,7 +114,8 @@ namespace InkSim
                 3,
                 75 + dayNumber * 5,
                 50 + dayNumber * 3,
-                "potion"
+                "potion",
+                districtId
             );
 
             return TryRegisterQuest(quest, dayNumber) ? 1 : 0;
@@ -176,7 +177,8 @@ namespace InkSim
                     kvp.Value, // Kill count scales with contest duration
                     50 + kvp.Value * 15,
                     40 + kvp.Value * 10,
-                    null
+                    null,
+                    districtId
                 );
 
                 if (TryRegisterQuest(quest, dayNumber))
@@ -221,7 +223,8 @@ namespace InkSim
                     2,
                     100 + dayNumber * 5,
                     80 + dayNumber * 3,
-                    "gem"
+                    "gem",
+                    state.Id
                 );
 
                 return TryRegisterQuest(quest, dayNumber) ? 1 : 0;
@@ -277,7 +280,8 @@ namespace InkSim
                         2,
                         40 + dayNumber * 3,
                         30 + dayNumber * 2,
-                        itemId
+                        itemId,
+                        state.Id
                     );
 
                     if (TryRegisterQuest(quest, dayNumber))
@@ -292,7 +296,7 @@ namespace InkSim
         /// Create a QuestDefinition at runtime.
         /// </summary>
         private static QuestDefinition CreateQuest(string id, string title, string desc, string hint,
-            string enemyId, int count, int coins, int xp, string rewardItem)
+            string enemyId, int count, int coins, int xp, string rewardItem, string districtId = null)
         {
             var quest = ScriptableObject.CreateInstance<QuestDefinition>();
             quest.id = id;
@@ -306,6 +310,7 @@ namespace InkSim
             quest.rewardItemId = rewardItem;
             quest.rewardItemQuantity = 1;
             quest.autoTurnInOnComplete = true;
+            quest.districtId = districtId;
             return quest;
         }
 
@@ -341,6 +346,17 @@ namespace InkSim
             SimulationEventLog.Banner($"\u2728 New Quest: {quest.title}", SimulationEventLog.ColorQuest);
 
             return true;
+        }
+
+        /// <summary>Check if any active quest ID starts with the given prefix.</summary>
+        public static bool HasActiveQuestWithPrefix(string prefix)
+        {
+            if (string.IsNullOrEmpty(prefix)) return false;
+            foreach (var id in _activeQuests.Keys)
+            {
+                if (id.StartsWith(prefix)) return true;
+            }
+            return false;
         }
 
         /// <summary>Clear state for testing / game restart.</summary>

@@ -29,6 +29,9 @@ namespace InkSim
         [Tooltip("Auto-turn-in when objective is completed.")]
         public bool autoTurnInOnComplete = false;
 
+        /// <summary>District this quest relates to (for territory impact on completion). Set at runtime by DynamicQuestService.</summary>
+        [System.NonSerialized] public string districtId;
+
         [Header("Rewards")]
         public int rewardCoins = 0;
         public int rewardXp = 0;

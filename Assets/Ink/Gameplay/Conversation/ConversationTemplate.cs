@@ -4,6 +4,13 @@ using UnityEngine;
 namespace InkSim
 {
     /// <summary>
+    /// Predicate evaluated at FindTemplate time to validate world-state requirements.
+    /// Returns true if the template's dialogue is contextually valid.
+    /// </summary>
+    public delegate bool ConversationPredicate(
+        FactionMember initiator, FactionMember responder, DistrictState districtState);
+
+    /// <summary>
     /// Tags that identify what a conversation is about. Used to match
     /// templates to world-state conditions and faction relationships.
     /// </summary>
@@ -35,7 +42,16 @@ namespace InkSim
         // World context
         ProsperityLament,   // Low prosperity complaint
         RaidWarning,        // Incoming enemy discussion
-        QuestHint           // Hint about active quest objectives
+        QuestHint,          // Hint about active quest objectives
+
+        // Hostility pipeline stages (cross-faction, stage-gated)
+        HostilityLowTension,   // Uneasy muttering, suspicion
+        HostilityWarning,      // Verbal threats, ultimatums
+        HostilityGrievance,    // Specific incident complaints
+        HostilityEscalation,   // Weapons drawn, final warnings
+        HostilityBrawlStart,   // Combat cry, battle start
+        HostilityDeEscalation, // Stand down, ceasefire
+        HostilityAftermath     // Mourning, vows of revenge
     }
 
     /// <summary>
@@ -90,5 +106,18 @@ namespace InkSim
 
         [Header("Lines")]
         public ConversationLine[] lines;
+
+        // --- World-state predicate gate (set by ConversationContentSeeder, not Inspector) ---
+        // When non-null, the template is only valid if predicate returns true.
+        [System.NonSerialized]
+        public ConversationPredicate predicate;
+
+        // --- Anti-spam: minimum turns between firings (0 = no cooldown) ---
+        [System.NonSerialized]
+        public int cooldownTurns;
+
+        // --- Faction gate: when set, only initiators of this faction can use this template ---
+        [System.NonSerialized]
+        public string requiredInitiatorFactionId;
     }
 }

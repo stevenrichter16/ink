@@ -18,6 +18,7 @@ namespace InkSim
         [Header("Identity")]
         public string id = "faction_id";
         public string displayName = "Faction";
+        public Color color = Color.white;
         public int defaultReputation = 0;
         public LevelProfile defaultLevelProfile;
         public FactionDisposition disposition = FactionDisposition.Aggressive;

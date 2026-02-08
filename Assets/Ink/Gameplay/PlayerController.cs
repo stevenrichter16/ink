@@ -97,7 +97,7 @@ namespace InkSim
 
             if (!isMoving && Time.time > _lastInputTime + inputCooldown)
             {
-                if (!InventoryUI.IsOpen && !DialogueRunner.IsOpen && (_turnManager == null || _turnManager.IsPlayerTurn))
+                if (!GameplayInputBlocker.IsAnyModalOpen && (_turnManager == null || _turnManager.IsPlayerTurn))
                 {
                     ProcessInput();
                 }
@@ -149,7 +149,7 @@ namespace InkSim
                 int targetY = gridY + direction.y;
                 GridEntity target = _world?.GetEntityAt(targetX, targetY);
 
-                if (target != null && HostilityService.IsHostile(this, target))
+                if (target != null && HostilityPipeline.AuthorizeFight(this, target).authorized)
                 {
                     Attack(target);
                     EndTurn();
@@ -212,13 +212,14 @@ namespace InkSim
 
         public override bool CanAttack(GridEntity target)
         {
-            return target != null && HostilityService.IsHostile(this, target);
+            if (target == null) return false;
+            return HostilityPipeline.AuthorizeFight(this, target).authorized;
         }
 
         public override void Attack(GridEntity target)
         {
             if (target == null) return;
-            if (!HostilityService.IsHostile(this, target)) return;
+            if (!HostilityPipeline.AuthorizeFight(this, target).authorized) return;
 
             Debug.Log($"[Player] Attacking {target.name} for {AttackDamage} damage!");
             target.ReceiveHit(this, AttackDamage, "melee");

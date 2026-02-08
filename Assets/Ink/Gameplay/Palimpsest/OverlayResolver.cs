@@ -272,6 +272,7 @@ namespace InkSim
                 {
                     layer.blockTrade = false;
                     layer.tradeBannedFactions.Clear();
+                    layer.disableTaxEnforcement = true;
                 }
                 else if (upper == "BLOCKADE")
                 {

@@ -61,8 +61,8 @@ namespace InkSim
             // R to restart
             if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
             {
-                // Don't restart if inventory is open
-                if (!InventoryUI.IsOpen)
+                // Don't restart if any modal UI is open
+                if (!GameplayInputBlocker.IsAnyModalOpen)
                 {
                     Restart();
                 }
@@ -112,6 +112,8 @@ namespace InkSim
                 spawnData.enemy.currentHealth = spawnData.maxHealth;
                 spawnData.enemy.gridX = spawnData.position.x;
                 spawnData.enemy.gridY = spawnData.position.y;
+                spawnData.enemy.spawnX = spawnData.position.x;
+                spawnData.enemy.spawnY = spawnData.position.y;
                 spawnData.enemy.transform.localPosition = new Vector3(
                     spawnData.position.x * _tileSize,
                     spawnData.position.y * _tileSize,
@@ -127,6 +129,12 @@ namespace InkSim
 
             // Reset turn state
             TurnManager.Instance?.ResetTurn();
+
+            // Clear static spawn cooldowns so they don't carry over from the previous session
+            DynamicSpawnService.Clear();
+
+            // Clear hostility pipeline tension and retaliation state
+            HostilityPipeline.ClearAll();
 
             Debug.Log("[GameManager] Restart complete!");
         }

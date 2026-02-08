@@ -18,6 +18,9 @@ namespace InkSim
             int rep = ReputationSystem.GetRep(faction.id);
             member.NotePlayerAttack();
 
+            // Report assault to hostility pipeline
+            HostilityPipeline.ReportIncident(IncidentType.Assault, victim.gridX, victim.gridY, "player", faction.id);
+
             // Hostile rep: unchanged behavior
             if (rep <= HostilityService.HostileThreshold)
             {
@@ -70,6 +73,9 @@ namespace InkSim
 
             var faction = member.faction;
             int rep = ReputationSystem.GetRep(faction.id);
+
+            // Report murder to hostility pipeline
+            HostilityPipeline.ReportIncident(IncidentType.Murder, victim.gridX, victim.gridY, "player", faction.id);
 
             if (rep > HostilityService.HostileThreshold)
             {

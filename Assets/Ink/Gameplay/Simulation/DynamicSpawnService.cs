@@ -11,12 +11,23 @@ namespace InkSim
     {
         // Population caps
         private const int MaxEnemiesPerFactionPerDistrict = 12;
-        private const int GlobalEnemyCap = 120;
+        private const int GlobalEnemyCap = 60;
+
+        // Per-district spawn cooldowns (districtId → last day spawned)
+        private static readonly Dictionary<string, int> _reinforcementCooldowns = new Dictionary<string, int>();
+        private static readonly Dictionary<string, int> _raidCooldowns = new Dictionary<string, int>();
+        private const int ReinforcementCooldownDays = 2;
+        private const int RaidCooldownDays = 3;
 
         // Last raid info (for quest generation)
         public static string LastRaidDistrictId { get; private set; }
         public static string LastRaidFactionId { get; private set; }
         public static int LastRaidDay { get; private set; }
+
+        // Last reinforcement info (for conversation predicates)
+        public static string LastReinforcementDistrictId { get; private set; }
+        public static string LastReinforcementFactionId { get; private set; }
+        public static int LastReinforcementDay { get; private set; }
 
         // Faction → enemy type mapping
         private static readonly Dictionary<string, string> FactionEnemyMap = new Dictionary<string, string>
@@ -70,10 +81,11 @@ namespace InkSim
                     var faction = dcs.Factions[f];
                     int factionEnemyCount = CountFactionEnemiesInDistrict(faction.id, def);
 
-                    if (factionEnemyCount < 3 && control > 0.5f)
+                    if (factionEnemyCount < 2 && control > 0.65f)
                     {
-                        // Need reinforcements
-                        if (factionEnemyCount >= MaxEnemiesPerFactionPerDistrict) continue;
+                        // Need reinforcements — check per-district cooldown
+                        if (_reinforcementCooldowns.TryGetValue(state.Id, out int lastDay)
+                            && (dayNumber - lastDay) < ReinforcementCooldownDays) continue;
 
                         string enemyId = GetEnemyIdForFaction(faction.id);
                         if (string.IsNullOrEmpty(enemyId)) continue;
@@ -85,6 +97,10 @@ namespace InkSim
                         var spawned = EnemyFactory.Spawn(enemyId, spawnPos.Value.x, spawnPos.Value.y, gridWorld, level, faction, faction.DefaultRankId);
                         if (spawned != null)
                         {
+                            _reinforcementCooldowns[state.Id] = dayNumber;
+                            LastReinforcementDistrictId = state.Id;
+                            LastReinforcementFactionId = faction.id;
+                            LastReinforcementDay = dayNumber;
                             Debug.Log($"[DynamicSpawn] Reinforcement: {enemyId} Lv{level} at ({spawnPos.Value.x},{spawnPos.Value.y}) for {faction.id} in {state.Id}");
                             string factionName = faction.displayName;
                             SimulationEventLog.ToastAtGrid($"{factionName} reinforcements!", SimulationEventLog.ColorSpawn, spawnPos.Value.x, spawnPos.Value.y);
@@ -107,6 +123,10 @@ namespace InkSim
                 if (kvp.Value < 3) continue; // Not contested long enough
 
                 string districtId = kvp.Key;
+
+                // Per-district raid cooldown
+                if (_raidCooldowns.TryGetValue(districtId, out int lastRaidDay)
+                    && (dayNumber - lastRaidDay) < RaidCooldownDays) continue;
                 string attackerFactionId = FactionStrategyService.LastSkirmishAttackerFactionId;
                 if (string.IsNullOrEmpty(attackerFactionId)) continue;
 
@@ -149,9 +169,29 @@ namespace InkSim
 
                 if (spawned > 0)
                 {
+                    _raidCooldowns[districtId] = dayNumber;
                     LastRaidDistrictId = districtId;
                     LastRaidFactionId = attackerFactionId;
                     LastRaidDay = dayNumber;
+
+                    // Report raid as property damage to hostility pipeline
+                    int raidCx = (districtDef.minX + districtDef.maxX) / 2;
+                    int raidCy = (districtDef.minY + districtDef.maxY) / 2;
+                    // Determine defender faction (district owner)
+                    for (int sd = 0; sd < dcs.States.Count; sd++)
+                    {
+                        if (dcs.States[sd].Id == districtId)
+                        {
+                            int ownerIdx = dcs.States[sd].ControllingFactionIndex;
+                            if (ownerIdx >= 0)
+                            {
+                                string defenderFactionId = dcs.Factions[ownerIdx].id;
+                                HostilityPipeline.ReportIncident(IncidentType.PropertyDamage, raidCx, raidCy, attackerFactionId, defenderFactionId);
+                            }
+                            break;
+                        }
+                    }
+
                     Debug.Log($"[DynamicSpawn] RAID: {spawned} {enemyId}(s) from {attackerFactionId} raiding {districtId}!");
 
                     // Major event — screen banner
@@ -300,6 +340,11 @@ namespace InkSim
             LastRaidDistrictId = null;
             LastRaidFactionId = null;
             LastRaidDay = 0;
+            LastReinforcementDistrictId = null;
+            LastReinforcementFactionId = null;
+            LastReinforcementDay = 0;
+            _reinforcementCooldowns.Clear();
+            _raidCooldowns.Clear();
         }
     }
 }

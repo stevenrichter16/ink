@@ -296,18 +296,18 @@ namespace InkSim.Tests
             var playerObj = new GameObject("Player");
             var player = playerObj.AddComponent<PlayerController>();
 
-            // Set retaliation target
-            enemy.SetRetaliationTarget(player);
+            // Record retaliation via pipeline (replaces old SetRetaliationTarget)
+            HostilityPipeline.RecordRetaliation(player, enemy);
 
             // Act - Make faction friendly
             ReputationSystem.SetRep(ghostFaction.id, 50);
 
-            // Enemy should clear retaliation target when it's no longer hostile
-            // This happens during FindTarget() or via subscription to rep changes
+            // Enemy should not target friendly player even with retaliation recorded
+            // Pipeline's AuthorizeFight still denies when IsHostile is false and tension is low
             var target = enemy.FindTargetPublic(); // We'll need to expose this for testing
 
             // Assert - Should NOT chase friendly player
-            Assert.IsNull(target, 
+            Assert.IsNull(target,
                 "Enemy should not target player when faction became Friendly");
 
             // Cleanup
@@ -368,8 +368,8 @@ namespace InkSim.Tests
             var playerObj = new GameObject("Player");
             var player = playerObj.AddComponent<PlayerController>();
 
-            // Set retaliation target
-            enemy.SetRetaliationTarget(player);
+            // Record retaliation via pipeline (replaces old SetRetaliationTarget)
+            HostilityPipeline.RecordRetaliation(player, enemy);
 
             // Act - Find target (should still return player)
             var target = enemy.FindTargetPublic();

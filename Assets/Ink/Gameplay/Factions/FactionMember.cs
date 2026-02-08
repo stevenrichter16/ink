@@ -22,6 +22,9 @@ namespace InkSim
         public FactionDefinition faction;
         public string rankId = "low";
         public int reputationOffset = 0;
+
+        [System.NonSerialized]
+        public string homeDistrictId;
         public bool applyLevelFromRank = true;
         public AlertState state = AlertState.Calm;
         public int alertTurnsRemaining;
@@ -132,10 +135,6 @@ namespace InkSim
             var npc = GetComponent<NpcAI>();
             if (npc != null)
                 npc.hostileTarget = null;
-
-            var enemy = GetComponent<EnemyAI>();
-            if (enemy != null)
-                enemy.SetRetaliationTarget(null);
         }
 
         public void EnterHostile(GridEntity target = null)
@@ -151,9 +150,8 @@ namespace InkSim
             if (npc != null && target != null)
                 npc.hostileTarget = target;
 
-            var enemy = GetComponent<EnemyAI>();
-            if (enemy != null && target != null)
-                enemy.SetRetaliationTarget(target);
+            // Note: Assault incidents are reported by the caller (FactionCombatService,
+            // world event services) — not here, to avoid double-counting tension.
 
             // Interrupt any active conversation
             var ge = GetComponent<GridEntity>();
@@ -172,10 +170,6 @@ namespace InkSim
             var npc = GetComponent<NpcAI>();
             if (npc != null)
                 npc.hostileTarget = null;
-
-            var enemy = GetComponent<EnemyAI>();
-            if (enemy != null)
-                enemy.SetRetaliationTarget(null);
         }
 
         public void TickAlert()

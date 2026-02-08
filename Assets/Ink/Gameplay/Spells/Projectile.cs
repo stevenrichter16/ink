@@ -121,7 +121,10 @@ namespace InkSim
 
             // Don't damage self
             if (occupant == caster) return;
-            
+
+            // Hostility pipeline gate: skip allies, truce members, same faction
+            if (!HostilityPipeline.AuthorizeFight(caster, occupant).authorized) return;
+
             int raw = damage;
             int casterAtk = DamageUtils.GetAttackDamage(caster);
             if (casterAtk > 0)

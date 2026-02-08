@@ -31,6 +31,10 @@ namespace InkSim
         private float _initialAlpha;
         private bool _registered;
         private Vector2Int _cell;
+
+        /// <summary>Entity that created this puddle (for AuthorizeFight checks).</summary>
+        [System.NonSerialized]
+        public GridEntity caster;
         
         void Start()
         {
@@ -90,20 +94,13 @@ private void SetupVisuals()
             var entity = gridWorld.GetEntityAt(gridX, gridY);
             if (entity == null) return;
             
-            // Damage enemies standing in puddle
-            var enemy = entity as EnemyAI;
-            if (enemy != null)
-            {
-                enemy.TakeDamage(damagePerTick, null);
-                Debug.Log($"[InkPuddle] Tick damage to {enemy.name}: {damagePerTick}");
-                
-                // Small splatter effect on damage
-                InkVisuals.CreateInkSplatter(transform.position, 2, 1f);
-            }
-            
-            // Could also damage player if desired
-            // var player = entity as PlayerController;
-            // if (player != null) { ... }
+            // Hostility pipeline gate: skip allies, truce members, same faction
+            if (caster != null && !HostilityPipeline.AuthorizeFight(caster, entity).authorized)
+                return;
+
+            // Damage any entity standing in puddle via CombatResolver (dodge + defense)
+            entity.ReceiveHit(caster, damagePerTick, "puddle");
+            InkVisuals.CreateInkSplatter(transform.position, 2, 1f);
         }
         
 private void UpdateFade()
@@ -135,7 +132,7 @@ private void UpdateFade()
         /// <summary>
         /// Factory method to create a puddle at grid position
         /// </summary>
-        public static InkPuddle Create(int gridX, int gridY, Vector3 worldPos, float lifetime = 4f, int damagePerTick = 1)
+        public static InkPuddle Create(int gridX, int gridY, Vector3 worldPos, float lifetime = 4f, int damagePerTick = 1, GridEntity casterEntity = null)
         {
             Vector2Int key = new Vector2Int(gridX, gridY);
             if (_byCell.TryGetValue(key, out var existing))
@@ -144,6 +141,7 @@ private void UpdateFade()
                 existing._tickTimer = 0f;
                 existing.lifetime = Mathf.Max(existing.lifetime, lifetime);
                 existing.damagePerTick = damagePerTick;
+                if (casterEntity != null) existing.caster = casterEntity;
                 existing.SetupVisuals();
                 return existing;
             }
@@ -157,6 +155,7 @@ private void UpdateFade()
             puddle.gridY = gridY;
             puddle.lifetime = lifetime;
             puddle.damagePerTick = damagePerTick;
+            puddle.caster = casterEntity;
             puddle.InitializeForSpawn();
 
             return puddle;

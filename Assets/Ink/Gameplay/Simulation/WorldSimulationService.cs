@@ -13,7 +13,7 @@ namespace InkSim
 
         [Header("Simulation Tuning")]
         [Tooltip("Minimum day before simulation systems activate (let economy stabilize first).")]
-        public int activationDay = 1;
+        public int activationDay = 3;
 
         private void Awake()
         {
@@ -51,6 +51,9 @@ namespace InkSim
 
             // Phase 1: Faction strategy (patrol adjustment, territory contests, diplomacy)
             FactionStrategyService.Execute(dayNumber);
+
+            // Phase 1.5: Hostility pipeline decay (tension de-escalation)
+            HostilityPipeline.EvaluateEscalation(dayNumber);
 
             // Phase 2: Inscription politics (factions write/erase palimpsest inscriptions)
             InscriptionPoliticsService.Execute(dayNumber);

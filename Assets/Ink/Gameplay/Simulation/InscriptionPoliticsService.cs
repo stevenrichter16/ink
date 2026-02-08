@@ -64,6 +64,13 @@ namespace InkSim
                         {
                             OverlayResolver.UnregisterLayer(kvp.Value);
                             toRemove.Add(kvp.Key);
+
+                            // Report inscription defacement to hostility pipeline
+                            var inscDef = state.Definition;
+                            int icx = inscDef != null ? (inscDef.minX + inscDef.maxX) / 2 : 0;
+                            int icy = inscDef != null ? (inscDef.minY + inscDef.maxY) / 2 : 0;
+                            HostilityPipeline.ReportIncident(IncidentType.InscriptionDefaced, icx, icy, ownerId, factionId);
+
                             Debug.Log($"[InscriptionPolitics] ERASED inscription by {factionId} in {districtId} (controlled by {ownerId})");
                         }
                     }

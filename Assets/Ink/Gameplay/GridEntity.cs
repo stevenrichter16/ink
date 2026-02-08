@@ -13,6 +13,13 @@ namespace InkSim
         public int gridX;
         public int gridY;
 
+        [Header("Leash")]
+        [Tooltip("Spawn position for leash calculation (enemies only).")]
+        public int spawnX;
+        public int spawnY;
+        [Tooltip("Max distance from spawn before giving up chase. 0 = unlimited.")]
+        public int leashRange = 0;
+
         [Header("Movement")]
         public float moveSpeed = 50f;
         public bool isMoving { get; private set; }
@@ -130,6 +137,8 @@ namespace InkSim
 
         /// <summary>
         /// Force move to position (for initialization or teleport).
+        /// NOTE: This bypasses NPC district bounds and enemy leash checks.
+        /// Only use for initial placement, restart resets, or intentional teleports.
         /// </summary>
         public void SetPosition(int x, int y, bool immediate = true)
         {

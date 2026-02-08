@@ -19,11 +19,31 @@ public class DamageUtilsTests
     }
 
     [Test]
-    public void HighDefense_ClampsAtZero()
+    public void HighDefense_CapsAt80PercentReduction()
     {
-        // 10 damage, 30 DEF → reduction > 100%, expect 0
+        // 10 damage, 30 DEF → capped at 80% reduction → 10 * 0.2 = 2
         int actual = DamageUtils.ComputeDamageAfterDefense(10, 30);
-        Assert.AreEqual(0, actual);
+        Assert.AreEqual(2, actual);
+    }
+
+    [Test]
+    public void ExtremeDefense_AlwaysDealsAtLeast1()
+    {
+        // 1 damage, 100 DEF → capped at 80% → 1 * 0.2 = 0.2 rounds to 0, but min is 1
+        int actual = DamageUtils.ComputeDamageAfterDefense(1, 100);
+        Assert.AreEqual(1, actual);
+    }
+
+    [Test]
+    public void DefenseCapAt80Percent_VerifyThreshold()
+    {
+        // 16 DEF at 5% each = exactly 80% cap → 100 * 0.2 = 20
+        int actual = DamageUtils.ComputeDamageAfterDefense(100, 16);
+        Assert.AreEqual(20, actual);
+
+        // 20 DEF would be 100% but capped at 80% → 100 * 0.2 = 20
+        int actual2 = DamageUtils.ComputeDamageAfterDefense(100, 20);
+        Assert.AreEqual(20, actual2);
     }
 
     [Test]

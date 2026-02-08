@@ -69,9 +69,16 @@ namespace InkSim
             foreach (var def in _districtDefs)
             {
                 var state = new DistrictState(def, _factions.Count);
+
+                // Seed owning faction with high control, others with low
+                string owningFactionId = GetOwningFactionForDistrict(def.id);
+                int owningIdx = -1;
+                if (!string.IsNullOrEmpty(owningFactionId))
+                    _factionIndex.TryGetValue(owningFactionId.ToLowerInvariant(), out owningIdx);
+
                 for (int f = 0; f < _factions.Count; f++)
                 {
-                    state.control[f] = defaultControl;
+                    state.control[f] = (f == owningIdx) ? 0.7f : 0.1f;
                     state.patrol[f] = defaultPatrol;
                     state.heat[f] = defaultHeat;
                 }
@@ -186,8 +193,50 @@ namespace InkSim
             return null;
         }
 
+        public DistrictState GetStateById(string districtId)
+        {
+            if (string.IsNullOrEmpty(districtId)) return null;
+            for (int i = 0; i < _states.Count; i++)
+                if (_states[i].Id == districtId) return _states[i];
+            return null;
+        }
+
+        /// <summary>Maps district IDs to their owning faction at game start.</summary>
+        private static string GetOwningFactionForDistrict(string districtId)
+        {
+            switch (districtId)
+            {
+                case "district_market":   return "faction_inkbound";
+                case "district_temple":   return "faction_inkguard";
+                case "district_ironkeep": return "faction_skeleton";
+                case "district_slums":    return "faction_goblin";
+                case "district_wilds":    return "faction_snake";
+                case "district_boneyard": return "faction_demon";
+                default:
+                    if (!string.IsNullOrEmpty(districtId))
+                        Debug.LogWarning($"[DistrictControl] No owning faction mapped for district '{districtId}'");
+                    return null;
+            }
+        }
+
         public IReadOnlyList<DistrictState> States => _states;
         public IReadOnlyList<FactionDefinition> Factions => _factions;
+
+        /// <summary>Returns the faction ID with the highest control in the given district, or null.</summary>
+        public static string GetDominantFactionId(DistrictState state, IReadOnlyList<FactionDefinition> factions)
+        {
+            int idx = state.ControllingFactionIndex;
+            if (idx < 0 || idx >= factions.Count) return null;
+            return factions[idx].id;
+        }
+
+        /// <summary>Returns the FactionDefinition with the highest control in the given district, or null.</summary>
+        public static FactionDefinition GetDominantFaction(DistrictState state, IReadOnlyList<FactionDefinition> factions)
+        {
+            int idx = state.ControllingFactionIndex;
+            if (idx < 0 || idx >= factions.Count) return null;
+            return factions[idx];
+        }
 
         /// <summary>Adjust patrol value for a specific faction in a district (clamped 0..1).</summary>
         public void AdjustPatrol(string districtId, int factionIndex, float delta)

@@ -81,37 +81,20 @@ namespace InkSim
                 }
             }
 
-            if (hostileTarget != null)
+            // Reactive aggro: if recently hit, promote attacker to hostile target
+            // This ensures NPCs defend themselves even if ShouldRetaliate was false
+            // (e.g. non-Aggressive faction before rep drops to hostile)
+            if (hostileTarget == null && _lastAttacker != null
+                && _lastAttacker.gameObject.activeInHierarchy
+                && GridWorld.Distance(gridX, gridY, _lastAttacker.gridX, _lastAttacker.gridY) <= pursuitRange
+                && HostilityPipeline.AuthorizeFight(this, _lastAttacker).authorized)
             {
-                EnsureRangedSpell();
-                if (!IsValidTarget(hostileTarget))
-                {
-                    hostileTarget = null;
-                }
-                else
-                {
-                    int distToTarget = GridWorld.Distance(gridX, gridY, hostileTarget.gridX, hostileTarget.gridY);
-                    if (CanCastSpellAt(hostileTarget))
-                    {
-                        Attack(hostileTarget);
-                        return;
-                    }
-
-                    if (distToTarget <= attackRange)
-                    {
-                        Attack(hostileTarget);
-                        return;
-                    }
-
-                    if (distToTarget <= pursuitRange)
-                    {
-                        ChaseTarget(hostileTarget);
-                        return;
-                    }
-
-                    hostileTarget = null;
-                }
+                hostileTarget = _lastAttacker;
             }
+            _lastAttacker = null; // Clear each turn regardless
+
+            if (TryCombat())
+                return;
 
             // Check NPC goal system before default behavior
             if (NpcGoalSystem.TryExecuteGoal(this))
@@ -141,11 +124,51 @@ namespace InkSim
             }
         }
 
+        /// <summary>
+        /// Attempt to engage hostileTarget (spell, melee, or chase).
+        /// Returns true if this turn was consumed by combat.
+        /// </summary>
+        private bool TryCombat()
+        {
+            if (hostileTarget == null) return false;
+
+            EnsureRangedSpell();
+            if (!IsValidTarget(hostileTarget))
+            {
+                hostileTarget = null;
+                return false;
+            }
+
+            int distToTarget = GridWorld.Distance(gridX, gridY, hostileTarget.gridX, hostileTarget.gridY);
+            if (CanCastSpellAt(hostileTarget))
+            {
+                Attack(hostileTarget);
+                return true;
+            }
+
+            if (distToTarget <= attackRange)
+            {
+                Attack(hostileTarget);
+                return true;
+            }
+
+            if (distToTarget <= pursuitRange)
+            {
+                ChaseTarget(hostileTarget);
+                return true;
+            }
+
+            hostileTarget = null;
+            return false;
+        }
+
         private void ChaseTarget(GridEntity target)
         {
             if (target == null) return;
 
-            Vector2Int dir = GridWorld.DirectionToward(gridX, gridY, target.gridX, target.gridY);
+            Vector2Int dir = GridPathfinder.GetNextStep(gridX, gridY, target.gridX, target.gridY, GridWorld.Instance);
+            if (dir == Vector2Int.zero)
+                dir = GridWorld.DirectionToward(gridX, gridY, target.gridX, target.gridY);
 
             if (!TryMove(dir))
             {
@@ -200,8 +223,7 @@ namespace InkSim
         public override bool CanAttack(GridEntity target)
         {
             if (target == null || target == this) return false;
-            if (HostilityService.AreSameFaction(this, target)) return false;
-            return HostilityService.IsHostile(this, target) || hostileTarget == target;
+            return HostilityPipeline.AuthorizeFight(this, target).authorized;
         }
 
         public override void Attack(GridEntity target)
@@ -222,6 +244,19 @@ namespace InkSim
 
         private void WanderRandomly()
         {
+            // Look up home district bounds (null = unrestricted, e.g. border patrols)
+            DistrictDefinition homeDef = null;
+            if (_factionMember != null && !string.IsNullOrEmpty(_factionMember.homeDistrictId))
+            {
+                var dcs = DistrictControlService.Instance;
+                if (dcs != null)
+                {
+                    var state = dcs.GetStateById(_factionMember.homeDistrictId);
+                    if (state != null)
+                        homeDef = state.Definition;
+                }
+            }
+
             // Pick a random direction
             Vector2Int[] directions = new Vector2Int[]
             {
@@ -240,10 +275,34 @@ namespace InkSim
                 directions[j] = temp;
             }
 
+            bool moved = false;
+            bool anyFilteredByBounds = false;
             foreach (var dir in directions)
             {
+                // Soft territorial bound: skip directions that leave home district
+                if (homeDef != null && !homeDef.Contains(gridX + dir.x, gridY + dir.y))
+                {
+                    anyFilteredByBounds = true;
+                    continue;
+                }
+
                 if (TryMove(dir))
+                {
+                    moved = true;
                     break;
+                }
+            }
+
+            // Fallback: if blocked specifically by district bounds (not just occupancy),
+            // allow one step of overshoot to prevent NPCs freezing on boundary tiles.
+            // Next turn the main loop will pull them back inside.
+            if (!moved && anyFilteredByBounds)
+            {
+                foreach (var dir in directions)
+                {
+                    if (TryMove(dir))
+                        break;
+                }
             }
         }
 

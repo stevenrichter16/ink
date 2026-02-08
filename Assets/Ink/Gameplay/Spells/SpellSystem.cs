@@ -77,7 +77,7 @@ private void HandleSpellInput()
         {
             // Don't cast if no cursor or player
             if (tileCursor == null || player == null) return;
-            if (TileInfoPanel.IsOpen) return;
+            if (GameplayInputBlocker.IsAnyModalOpen) return;
             
             var kb = Keyboard.current;
             if (kb == null) return;
